@@ -90,8 +90,8 @@ export default function App() {
               />
             )}
           />
-          <Route path="/login" element={<ClientAuth mode="login" />} />
-          <Route path="/register" element={<ClientAuth mode="register" />} />
+          <Route path="/login" element={<ClientAuth key="login" mode="login" />} />
+          <Route path="/register" element={<ClientAuth key="register" mode="register" />} />
           <Route path="/business" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
           <Route path="/bussiness" element={<Navigate to="/business" replace />} />
           <Route path="/buissiness" element={<Navigate to="/business" replace />} />
