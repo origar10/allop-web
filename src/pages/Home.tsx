@@ -223,7 +223,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
             </div>
             <div className="cta-actions">
               <button className="btn btn-lg btn-outline-white" type="button" onClick={onSalonSignup}>Saber más</button>
-              <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>Registra tu salón</button>
+              <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>Alta de salón</button>
             </div>
           </div>
         </div>

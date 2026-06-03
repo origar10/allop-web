@@ -35,7 +35,7 @@ const modules = [
 ];
 
 export default function Business({ supportEmail, dashboardUrl }: BusinessProps) {
-  const demoHref = `mailto:${supportEmail}?subject=Quiero%20registrar%20mi%20salon%20en%20Allop&body=Hola%20Allop,%0A%0AQuiero%20informacion%20para%20registrar%20mi%20salon.%0A%0ANombre%20del%20salon:%0ACiudad:%0ATelefono:%0A`;
+  const demoHref = `mailto:${supportEmail}?subject=Quiero%20dar%20de%20alta%20mi%20salon%20en%20Allop&body=Hola%20Allop,%0A%0AQuiero%20informacion%20para%20dar%20de%20alta%20mi%20salon.%0A%0ANombre%20del%20salon:%0ACiudad:%0ATelefono:%0A`;
 
   return (
     <>
@@ -52,7 +52,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
                 Solicitar información
                 <ArrowRight size={16} />
               </a>
-              <a className="btn btn-lg btn-ghost" href={dashboardUrl}>Entrar al dashboard</a>
+              <a className="btn btn-lg btn-ghost" href={dashboardUrl}>Acceder al panel</a>
             </div>
           </div>
           <div className="business-visual" aria-label="Panel de gestión Allop">

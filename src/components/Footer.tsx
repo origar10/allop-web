@@ -69,7 +69,7 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           </div>
           <div className="footer-col">
             <h4>Para salones</h4>
-            <Link to={signupUrl}>Registra tu salón</Link>
+            <Link to={signupUrl}>Alta de salón</Link>
             <a href={dashboardUrl}>Dashboard</a>
             <Link to={`${signupUrl}#operativa`}>App empleados</Link>
             <Link to={`${signupUrl}#precios`}>Precios</Link>
