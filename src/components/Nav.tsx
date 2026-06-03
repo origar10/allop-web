@@ -33,7 +33,6 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
             <span>allop business</span>
           </Link>
           <div className="nav-actions">
-            <Link className="btn btn-ghost" to="/">Marketplace</Link>
             <a className="btn btn-primary" href={dashboardUrl}>Acceder al panel</a>
           </div>
         </div>
