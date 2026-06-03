@@ -9,7 +9,7 @@ import Business from './pages/Business';
 import type { Salon } from './data/salons';
 
 const DASHBOARD_URL = 'https://dashboard.allop.es';
-const BUSINESS_URL = '/buissiness';
+const BUSINESS_URL = '/bussiness';
 const SUPPORT_EMAIL = 'soporte@allop.es';
 
 function goTo(url: string) {
@@ -77,8 +77,9 @@ export default function App() {
               />
             )}
           />
-          <Route path="/buissiness" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
-          <Route path="/business" element={<Navigate to="/buissiness" replace />} />
+          <Route path="/bussiness" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
+          <Route path="/buissiness" element={<Navigate to="/bussiness" replace />} />
+          <Route path="/business" element={<Navigate to="/bussiness" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

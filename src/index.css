@@ -55,8 +55,10 @@ input { font: inherit; }
 .nav-logo { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: var(--brand); flex-shrink: 0; }
 .nav-logo img { width: 28px; height: 28px; }
 .nav-links { display: flex; align-items: center; gap: 4px; }
-.nav-links a { padding: 6px 12px; font-size: 14px; font-weight: 500; color: var(--fg-3); border-radius: var(--radius-sm); transition: color var(--dur-base), background var(--dur-base); }
-.nav-links a:hover { color: var(--fg-1); background: var(--surface-2); }
+.nav-links a, .nav-links button { padding: 6px 12px; font-size: 14px; font-weight: 500; color: var(--fg-3); border-radius: var(--radius-sm); transition: color var(--dur-base), background var(--dur-base); }
+.nav-links a:hover, .nav-links button:hover { color: var(--fg-1); background: var(--surface-2); }
+.nav-business .nav-inner { justify-content: space-between; }
+.nav-logo-business span { color: var(--brand); }
 .nav-search { flex: 1; position: relative; max-width: 280px; margin-left: auto; }
 .nav-search input { width: 100%; height: 36px; border: 1px solid var(--line); border-radius: var(--radius-full); padding: 0 12px 0 34px; font-size: 13px; background: var(--surface-2); color: var(--fg-2); transition: border-color var(--dur-base), box-shadow var(--dur-base); }
 .nav-search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
@@ -164,6 +166,7 @@ section[id] { scroll-margin-top: 84px; }
 .footer-col a { display: block; font-size: 14px; color: rgba(255,255,255,.6); margin-bottom: 10px; transition: color var(--dur-base); }
 .footer-col a:hover { color: #fff; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding-top: 24px; font-size: 12px; color: rgba(255,255,255,.3); }
+.footer-business-grid { grid-template-columns: 1.8fr 1fr 1fr; }
 
 /* SUPPORTING SECTIONS */
 .empty-results { margin-top: 18px; border: 1px dashed var(--line); border-radius: var(--radius-lg); padding: 28px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; color: var(--fg-3); background: var(--surface); }
