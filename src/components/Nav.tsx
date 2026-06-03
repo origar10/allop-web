@@ -62,7 +62,7 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
           />
         </form>
         <div className="nav-actions">
-          <button className="btn btn-ghost" type="button" onClick={onLogin}>Inicia sesión</button>
+          <button className="btn btn-ghost" type="button" onClick={onLogin}>Entrar</button>
           <button className="btn btn-primary" type="button" onClick={onRegister}>Registro</button>
         </div>
       </div>

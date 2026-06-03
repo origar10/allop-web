@@ -43,6 +43,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font-sans); background: var(--bg); color: var(--fg-2); -webkit-font-smoothing: antialiased; line-height: 1.55; }
 html { scroll-behavior: smooth; }
+html, body, #root { min-width: 0; overflow-x: hidden; }
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; font: inherit; border: none; background: none; }
 input, select { font: inherit; }
@@ -132,6 +133,7 @@ section[id] { scroll-margin-top: 84px; }
 .salon-img-glow { background-image: linear-gradient(135deg, rgba(30,27,75,.1), rgba(79,70,229,.55)), url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=700&q=80'); }
 .salon-info { padding: 14px; }
 .salon-name { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; color: var(--fg-1); margin-bottom: 3px; }
+.salon-name, .salon-loc, .salon-price { min-width: 0; overflow-wrap: anywhere; }
 .salon-verified { color: var(--accent); display: flex; }
 .salon-loc { font-size: 13px; color: var(--fg-3); margin-bottom: 8px; }
 .salon-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 10px; }
@@ -286,25 +288,105 @@ section[id] { scroll-margin-top: 84px; }
 
 @media (max-width: 720px) {
   .container { padding: 0 18px; }
-  .nav-inner { height: auto; min-height: 64px; flex-wrap: wrap; padding: 12px 18px; }
-  .nav-search { order: 3; flex-basis: 100%; max-width: none; margin-left: 0; }
-  .nav-actions { margin-left: auto; }
+  .container, .nav-inner { max-width: 390px; }
+  section { padding: 44px 0; }
+  section[id] { scroll-margin-top: 108px; }
+  .nav { position: sticky; }
+  .nav-inner { height: auto; min-height: 64px; flex-wrap: wrap; gap: 10px; padding: 10px 18px 12px; }
+  .nav-logo { font-size: 16px; }
+  .nav-logo img { width: 26px; height: 26px; }
+  .nav-search { order: 2; flex-basis: 100%; max-width: none; margin-left: 0; }
+  .nav-actions { order: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin-left: 0; gap: 8px; }
+  .nav-actions .btn { width: 100%; height: 36px; padding: 0 11px; font-size: 13px; }
+  .nav-business .nav-inner { flex-wrap: wrap; }
+  .nav-business .nav-actions { grid-template-columns: 1fr; }
+  .hero { padding: 48px 18px 42px; }
+  .hero h1 { font-size: 28px; line-height: 1.12; margin: 0 auto 14px; max-width: 320px; overflow-wrap: anywhere; }
+  .hero p { font-size: 15px; margin: 0 auto 28px; max-width: 320px; }
+  .cta-text h2 br { display: none; }
   .search-bar { flex-direction: column; align-items: stretch; border-radius: var(--radius-lg); }
-  .search-field { width: 100%; border-right: none; border-bottom: 1px solid var(--line); }
-  .search-btn { justify-content: center; }
+  .search-field { width: 100%; height: 52px; border-right: none; border-bottom: 1px solid var(--line); }
+  .search-btn { justify-content: center; width: 100%; height: 52px; }
+  .search-chips { justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; padding: 2px 0 8px; scroll-snap-type: x proximity; }
+  .chip { flex: 0 0 auto; scroll-snap-align: start; }
   .section-header { align-items: flex-start; gap: 14px; flex-direction: column; }
+  .section-title { font-size: 20px; line-height: 1.25; flex-wrap: wrap; max-width: 100%; overflow-wrap: anywhere; }
+  .section-title svg { flex-shrink: 0; }
+  .categories-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .category-pill { min-width: 0; padding: 14px 12px; border-radius: var(--radius-md); }
+  .category-icon { width: 42px; height: 42px; }
   .salons-grid { grid-template-columns: 1fr; }
+  .salon-card { display: grid; grid-template-columns: 118px minmax(0, 1fr); min-height: 146px; }
+  .salon-img { height: 100%; aspect-ratio: auto; }
+  .salon-info { padding: 12px; }
+  .salon-meta { align-items: flex-start; flex-wrap: wrap; row-gap: 3px; }
+  .salon-tags { max-height: 50px; overflow: hidden; }
+  .tag { font-size: 10px; padding: 3px 7px; }
+  .empty-results { padding: 24px 16px; text-align: center; }
   .how-steps { grid-template-columns: 1fr; gap: 28px; }
+  .how-section { padding: 52px 0; }
+  .how-title { font-size: 24px; margin-bottom: 34px; }
+  .how-step p { max-width: 320px; }
+  .pricing-grid { gap: 12px; }
+  .pricing-card { padding: 18px; }
+  .cta-section { padding-bottom: 44px; }
+  .cta-banner { padding: 30px 20px; gap: 22px; border-radius: var(--radius-md); }
+  .cta-text h2 { font-size: 26px; }
+  .cta-text p { font-size: 14px; }
   .cta-actions { width: 100%; flex-direction: column; }
   .cta-actions .btn { width: 100%; }
-  .business-hero { padding-top: 44px; }
-  .business-visual { min-height: 320px; padding: 16px; }
+  .business-hero { padding: 44px 0 42px; }
+  .business-hero-grid { gap: 30px; }
+  .business-hero-copy h1 { font-size: 28px; line-height: 1.12; max-width: 340px; overflow-wrap: anywhere; }
+  .business-hero-copy p { font-size: 15px; line-height: 1.65; max-width: 340px; }
+  .business-visual { min-height: 300px; padding: 14px; border-radius: var(--radius-md); }
+  .business-panel { padding: 14px; }
   .business-modules { grid-template-columns: 1fr; }
+  .business-module { min-height: 0; padding: 18px; border-radius: var(--radius-md); }
+  .business-pricing { gap: 14px; }
+  .business-plan { padding: 20px; border-radius: var(--radius-md); }
+  .plan-price { font-size: 30px; }
+  .business-process { gap: 20px; }
+  .business-final { padding-bottom: 44px; }
+  .business-final-inner { padding: 30px 20px; border-radius: var(--radius-md); }
+  .business-final-inner h2 { font-size: 25px; }
   .business-actions { width: 100%; flex-direction: column; }
   .business-actions .btn { width: 100%; }
+  .client-auth { min-height: 0; padding: 44px 0; align-items: flex-start; }
+  .client-auth-grid { gap: 28px; }
+  .client-auth-copy h1 { font-size: 28px; line-height: 1.12; max-width: 340px; overflow-wrap: anywhere; }
+  .client-auth-copy p { font-size: 15px; line-height: 1.65; max-width: 340px; }
+  .client-auth-points { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .client-auth-points span { width: 100%; border-radius: var(--radius-md); }
+  .client-auth-card { width: 100%; max-width: 360px; padding: 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
   .auth-two-cols { grid-template-columns: 1fr; }
-  .footer-grid { grid-template-columns: 1fr; gap: 26px; }
+  .footer { padding: 42px 0 28px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 26px; margin-bottom: 34px; }
+  .footer-desc { max-width: none; }
   .salon-modal { grid-template-columns: 1fr; overflow-y: auto; }
-  .salon-modal-media { min-height: 220px; }
+  .salon-modal-media { min-height: 210px; }
   .salon-modal-body { padding: 24px; }
+  .salon-modal-body h2 { font-size: 25px; }
+  .modal-actions { flex-direction: column; }
+  .modal-actions .btn { width: 100%; }
+}
+
+@media (max-width: 430px) {
+  .container { padding: 0 14px; }
+  .nav-inner { padding-left: 14px; padding-right: 14px; }
+  .nav-actions .btn { height: 34px; padding: 0 12px; }
+  .nav-search input { height: 34px; }
+  .hero { padding-left: 14px; padding-right: 14px; }
+  .categories-grid { grid-template-columns: 1fr 1fr; }
+  .category-pill { flex-direction: row; justify-content: flex-start; min-height: 68px; text-align: left; }
+  .category-icon { width: 38px; height: 38px; flex-shrink: 0; }
+  .salon-card { grid-template-columns: 104px minmax(0, 1fr); }
+  .salon-name { font-size: 14px; }
+  .salon-loc, .salon-meta { font-size: 12px; }
+  .business-visual { min-height: 260px; }
+  .business-panel-row { font-size: 13px; }
+  .client-auth-card { padding: 18px; }
+  .footer-bottom { line-height: 1.7; }
+  .modal-backdrop { align-items: stretch; padding: 10px; }
+  .salon-modal { width: 100%; max-height: none; border-radius: var(--radius-md); }
 }
