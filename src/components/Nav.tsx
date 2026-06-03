@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface NavProps {
   onSearch: (query: string) => void;
@@ -18,14 +19,14 @@ export default function Nav({ onSearch, onLogin, onRegister }: NavProps) {
   return (
     <nav className="nav">
       <div className="nav-inner">
-        <a href="/" className="nav-logo">
+        <Link to="/" className="nav-logo">
           <img src="/allop-icon.svg" alt="allop" />
           allop
-        </a>
+        </Link>
         <div className="nav-links">
-          <a href="#buscar">Buscar salón</a>
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#para-salones">Para salones</a>
+          <a href="/#buscar">Buscar salón</a>
+          <a href="/#como-funciona">Cómo funciona</a>
+          <Link to="/buissiness">Para salones</Link>
         </div>
         <form className="nav-search" onSubmit={submitSearch}>
           <span className="nav-search-icon"><Search size={14} /></span>

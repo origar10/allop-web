@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface FooterProps {
   dashboardUrl: string;
   signupUrl: string;
@@ -19,21 +21,21 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           </div>
           <div className="footer-col">
             <h4>Marketplace</h4>
-            <a href="#buscar">Buscar salón</a>
-            <a href="#como-funciona">Cómo funciona</a>
-            <a href="#tarifas">Tarifas</a>
+            <a href="/#buscar">Buscar salón</a>
+            <a href="/#como-funciona">Cómo funciona</a>
+            <Link to="/buissiness#precios">Tarifas</Link>
             <a href={`mailto:${supportEmail}?subject=Ayuda%20Allop`}>Ayuda</a>
           </div>
           <div className="footer-col">
             <h4>Para salones</h4>
-            <a href={signupUrl}>Registra tu salón</a>
+            <Link to={signupUrl}>Registra tu salón</Link>
             <a href={dashboardUrl}>Dashboard</a>
-            <a href={`${dashboardUrl}/empleados`}>App empleados</a>
-            <a href="#tarifas">Precios</a>
+            <Link to="/buissiness#operativa">App empleados</Link>
+            <Link to="/buissiness#precios">Precios</Link>
           </div>
           <div className="footer-col">
             <h4>Empresa</h4>
-            <a href="#empresa">Sobre nosotros</a>
+            <Link to="/buissiness#empresa">Sobre nosotros</Link>
             <a href={`mailto:${supportEmail}?subject=Prensa%20Allop`}>Prensa</a>
             <a href={`mailto:${supportEmail}?subject=Trabajar%20con%20Allop`}>Trabaja con nosotros</a>
             <a href={`mailto:${supportEmail}?subject=Contacto%20Allop`}>Contacto</a>

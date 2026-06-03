@@ -1,28 +1,54 @@
 import { CalendarDays, ExternalLink, Phone, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './index.css';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import Business from './pages/Business';
 import type { Salon } from './data/salons';
 
 const DASHBOARD_URL = 'https://dashboard.allop.es';
-const SIGNUP_URL = 'https://allop.es/registro/';
+const BUSINESS_URL = '/buissiness';
 const SUPPORT_EMAIL = 'soporte@allop.es';
 
 function goTo(url: string) {
   window.location.href = url;
 }
 
+function HashScroller() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    window.setTimeout(() => {
+      document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }, [location.pathname, location.hash]);
+
+  return null;
+}
+
 export default function App() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
 
   const handleSearch = (query: string) => {
     setSearchTerm(query);
+    navigate('/');
     window.setTimeout(() => {
       document.getElementById('buscar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 0);
+  };
+
+  const openBusiness = () => {
+    navigate(BUSINESS_URL);
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
   const openSalonProfile = (salon: Salon) => {
@@ -31,21 +57,32 @@ export default function App() {
 
   return (
     <div>
+      <HashScroller />
       <Nav
         onSearch={handleSearch}
         onLogin={() => goTo(DASHBOARD_URL)}
-        onRegister={() => goTo(SIGNUP_URL)}
+        onRegister={openBusiness}
       />
       <main>
-        <Home
-          searchTerm={searchTerm}
-          onSearchTermChange={setSearchTerm}
-          onSearch={handleSearch}
-          onOpenSalon={setSelectedSalon}
-          onSalonSignup={() => goTo(SIGNUP_URL)}
-        />
+        <Routes>
+          <Route
+            path="/"
+            element={(
+              <Home
+                searchTerm={searchTerm}
+                onSearchTermChange={setSearchTerm}
+                onSearch={handleSearch}
+                onOpenSalon={setSelectedSalon}
+                onSalonSignup={openBusiness}
+              />
+            )}
+          />
+          <Route path="/buissiness" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
+          <Route path="/business" element={<Navigate to="/buissiness" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-      <Footer dashboardUrl={DASHBOARD_URL} signupUrl={SIGNUP_URL} supportEmail={SUPPORT_EMAIL} />
+      <Footer dashboardUrl={DASHBOARD_URL} signupUrl={BUSINESS_URL} supportEmail={SUPPORT_EMAIL} />
 
       {selectedSalon && (
         <div className="modal-backdrop" role="presentation" onClick={() => setSelectedSalon(null)}>

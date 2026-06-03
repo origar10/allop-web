@@ -222,7 +222,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               <p>Gestiona tu agenda, cobra, fideliza clientes y aparece en el marketplace, todo desde un panel propio.</p>
             </div>
             <div className="cta-actions">
-              <a className="btn btn-lg btn-outline-white" href="#tarifas">Saber más</a>
+              <button className="btn btn-lg btn-outline-white" type="button" onClick={onSalonSignup}>Saber más</button>
               <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>Registra tu salón</button>
             </div>
           </div>
