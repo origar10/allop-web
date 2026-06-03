@@ -1,6 +1,20 @@
 import { Search } from 'lucide-react';
+import { type FormEvent, useState } from 'react';
 
-export default function Nav() {
+interface NavProps {
+  onSearch: (query: string) => void;
+  onLogin: () => void;
+  onRegister: () => void;
+}
+
+export default function Nav({ onSearch, onLogin, onRegister }: NavProps) {
+  const [query, setQuery] = useState('');
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSearch(query.trim());
+  };
+
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -9,17 +23,22 @@ export default function Nav() {
           allop
         </a>
         <div className="nav-links">
-          <a href="#">Buscar salón</a>
-          <a href="#">Cómo funciona</a>
-          <a href="#">Para salones</a>
+          <a href="#buscar">Buscar salón</a>
+          <a href="#como-funciona">Cómo funciona</a>
+          <a href="#para-salones">Para salones</a>
         </div>
-        <div className="nav-search">
+        <form className="nav-search" onSubmit={submitSearch}>
           <span className="nav-search-icon"><Search size={14} /></span>
-          <input placeholder="Buscar servicio o salón..." />
-        </div>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar servicio o salón..."
+            aria-label="Buscar servicio o salón"
+          />
+        </form>
         <div className="nav-actions">
-          <button className="btn btn-ghost">Inicia sesión</button>
-          <button className="btn btn-primary">Registro</button>
+          <button className="btn btn-ghost" type="button" onClick={onLogin}>Inicia sesión</button>
+          <button className="btn btn-primary" type="button" onClick={onRegister}>Registro</button>
         </div>
       </div>
     </nav>

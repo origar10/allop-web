@@ -8,13 +8,26 @@ interface SalonCardProps {
   reviews: number;
   desde: number;
   tags: string[];
+  imageClass?: string;
   verified?: boolean;
+  onSelect: () => void;
 }
 
-export default function SalonCard({ name, location, distance, rating, reviews, desde, tags, verified = true }: SalonCardProps) {
+export default function SalonCard({
+  name,
+  location,
+  distance,
+  rating,
+  reviews,
+  desde,
+  tags,
+  imageClass = '',
+  verified = true,
+  onSelect,
+}: SalonCardProps) {
   return (
-    <div className="salon-card">
-      <div className="salon-img">
+    <button className="salon-card" type="button" onClick={onSelect} aria-label={`Abrir ficha de ${name}`}>
+      <div className={`salon-img ${imageClass}`}>
         <Image size={32} strokeWidth={1.5} />
       </div>
       <div className="salon-info">
@@ -32,9 +45,9 @@ export default function SalonCard({ name, location, distance, rating, reviews, d
           <span className="salon-price">Desde {desde} €</span>
         </div>
         <div className="salon-tags">
-          {tags.map(t => <span key={t} className="tag">{t}</span>)}
+          {tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }

@@ -1,16 +1,92 @@
+import { CalendarDays, ExternalLink, Phone, X } from 'lucide-react';
+import { useState } from 'react';
 import './index.css';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import type { Salon } from './data/salons';
+
+const DASHBOARD_URL = 'https://dashboard.allop.es';
+const SIGNUP_URL = 'https://allop.es/registro/';
+const SUPPORT_EMAIL = 'soporte@allop.es';
+
+function goTo(url: string) {
+  window.location.href = url;
+}
 
 export default function App() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+
+  const handleSearch = (query: string) => {
+    setSearchTerm(query);
+    window.setTimeout(() => {
+      document.getElementById('buscar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  };
+
+  const openSalonProfile = (salon: Salon) => {
+    goTo(`https://allop.es/salones/${salon.slug}`);
+  };
+
   return (
     <div>
-      <Nav />
+      <Nav
+        onSearch={handleSearch}
+        onLogin={() => goTo(DASHBOARD_URL)}
+        onRegister={() => goTo(SIGNUP_URL)}
+      />
       <main>
-        <Home />
+        <Home
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          onSearch={handleSearch}
+          onOpenSalon={setSelectedSalon}
+          onSalonSignup={() => goTo(SIGNUP_URL)}
+        />
       </main>
-      <Footer />
+      <Footer dashboardUrl={DASHBOARD_URL} signupUrl={SIGNUP_URL} supportEmail={SUPPORT_EMAIL} />
+
+      {selectedSalon && (
+        <div className="modal-backdrop" role="presentation" onClick={() => setSelectedSalon(null)}>
+          <section
+            className="salon-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="salon-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button className="modal-close" type="button" aria-label="Cerrar ficha" onClick={() => setSelectedSalon(null)}>
+              <X size={18} />
+            </button>
+            <div className={`salon-modal-media ${selectedSalon.imageClass}`} />
+            <div className="salon-modal-body">
+              <p className="eyebrow">{selectedSalon.category} · {selectedSalon.location}</p>
+              <h2 id="salon-modal-title">{selectedSalon.name}</h2>
+              <p>{selectedSalon.description}</p>
+              <div className="modal-facts">
+                <span><CalendarDays size={16} /> Próximo hueco: {selectedSalon.nextSlot}</span>
+                <span>Desde {selectedSalon.desde} €</span>
+                <span>{selectedSalon.rating.toFixed(1)} · {selectedSalon.reviews} reseñas</span>
+              </div>
+              <div className="modal-actions">
+                <button className="btn btn-primary" type="button" onClick={() => openSalonProfile(selectedSalon)}>
+                  <CalendarDays size={16} />
+                  Reservar
+                </button>
+                <a className="btn btn-ghost" href={`tel:${selectedSalon.phone}`}>
+                  <Phone size={16} />
+                  Llamar
+                </a>
+                <button className="btn btn-ghost" type="button" onClick={() => openSalonProfile(selectedSalon)}>
+                  <ExternalLink size={16} />
+                  Ver perfil
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,7 @@
-import { CalendarDays, MapPin, Search, Scissors, Star, Sparkles, Hand, Heart, Wand2, Smile } from 'lucide-react';
+import { ArrowRight, CalendarDays, CheckCircle, Hand, Heart, MapPin, Search, Scissors, Smile, Sparkles, Star, Wand2 } from 'lucide-react';
+import { type FormEvent, useMemo, useState } from 'react';
 import SalonCard from '../components/SalonCard';
+import { SALONS, type Salon } from '../data/salons';
 
 const CATEGORIES = [
   { icon: <Scissors size={22} />, label: 'Peluquería' },
@@ -12,93 +14,168 @@ const CATEGORIES = [
 
 const CHIPS = ['Corte de pelo', 'Mechas', 'Manicura', 'Masaje', 'Barba', 'Color'];
 
-const CERCA = [
-  { name: 'Feromi',         location: 'Rubí',      distance: '0.4 km', rating: 4.8, reviews: 132, desde: 18, tags: ['Corte','Color','Mechas'] },
-  { name: 'Lumière Studio', location: 'Barcelona', distance: '6.1 km', rating: 4.9, reviews: 408, desde: 45, tags: ['Balayage','Color','Keratina'] },
-  { name: 'Barbería Marcel', location: 'Terrassa', distance: '8.3 km', rating: 4.7, reviews: 96,  desde: 12, tags: ['Corte','Barba','Navaja'] },
-  { name: 'Nuvo Beauty',    location: 'Sabadell',  distance: '9.0 km', rating: 4.6, reviews: 211, desde: 22, tags: ['Facial','Manicura','Depilación'] },
-];
+interface HomeProps {
+  searchTerm: string;
+  onSearchTermChange: (query: string) => void;
+  onSearch: (query: string) => void;
+  onOpenSalon: (salon: Salon) => void;
+  onSalonSignup: () => void;
+}
 
-const TOP = [
-  { name: 'Lumière Studio', location: 'Barcelona', distance: '6.1 km', rating: 4.9, reviews: 408, desde: 45, tags: ['Balayage','Color','Keratina'] },
-  { name: 'Aura Spa',       location: 'Barcelona', distance: '8.1 km', rating: 4.9, reviews: 312, desde: 40, tags: ['Masaje','Spa','Ritual'] },
-  { name: 'Feromi',         location: 'Rubí',      distance: '0.4 km', rating: 4.8, reviews: 132, desde: 18, tags: ['Corte','Color','Mechas'] },
-  { name: 'Glow Studio',    location: 'Barcelona', distance: '9.5 km', rating: 4.8, reviews: 143, desde: 35, tags: ['Maquillaje','Imagen','Eventos'] },
-];
+function normalize(value: string) {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
 
-export default function Home() {
+function matchesQuery(salon: Salon, query: string, city: string) {
+  const haystack = normalize([salon.name, salon.category, salon.location, salon.tags.join(' ')].join(' '));
+  const normalizedQuery = normalize(query);
+  const normalizedCity = normalize(city);
+
+  return (!normalizedQuery || haystack.includes(normalizedQuery)) &&
+    (!normalizedCity || normalize(salon.location).includes(normalizedCity));
+}
+
+export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenSalon, onSalonSignup }: HomeProps) {
+  const [cityQuery, setCityQuery] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+
+  const filteredSalons = useMemo(() => {
+    const query = category || searchTerm;
+    return SALONS.filter((salon) => matchesQuery(salon, query, cityQuery));
+  }, [category, cityQuery, searchTerm]);
+
+  const topSalons = useMemo(
+    () => [...SALONS].sort((a, b) => b.rating - a.rating || b.reviews - a.reviews).slice(0, 4),
+    [],
+  );
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCategory(null);
+    onSearch(searchTerm.trim());
+  };
+
+  const runQuickSearch = (query: string) => {
+    setCategory(null);
+    onSearch(query);
+  };
+
+  const selectCategory = (label: string) => {
+    setCategory(label);
+    onSearch(label);
+  };
+
+  const clearFilters = () => {
+    setCategory(null);
+    onSearchTermChange('');
+    setCityQuery('');
+    onSearch('');
+  };
+
   return (
     <>
-      {/* HERO */}
-      <section className="hero">
+      <section className="hero" id="buscar">
         <h1>Encuentra tu salón.<br />Reserva en segundos.</h1>
         <p>Más de 500 salones y profesionales en Barcelona y alrededores.<br />Sin llamadas, sin esperas.</p>
 
-        <div className="search-bar">
+        <form className="search-bar" onSubmit={submitSearch}>
           <div className="search-field">
             <Scissors size={18} />
-            <input placeholder="¿Qué servicio buscas?" />
+            <input
+              value={searchTerm}
+              onChange={(event) => {
+                onSearchTermChange(event.target.value);
+                setCategory(null);
+              }}
+              placeholder="¿Qué servicio buscas?"
+              aria-label="Servicio"
+            />
           </div>
           <div className="search-field search-location">
             <MapPin size={18} />
-            <input placeholder="Ciudad o barrio" />
+            <input
+              value={cityQuery}
+              onChange={(event) => setCityQuery(event.target.value)}
+              placeholder="Ciudad o barrio"
+              aria-label="Ciudad o barrio"
+            />
           </div>
-          <button className="search-btn">
+          <button className="search-btn" type="submit">
             <Search size={17} />
             Buscar
           </button>
-        </div>
+        </form>
 
         <div className="search-chips">
-          {CHIPS.map(c => <button key={c} className="chip">{c}</button>)}
+          {CHIPS.map((chip) => (
+            <button key={chip} className="chip" type="button" onClick={() => runQuickSearch(chip)}>
+              {chip}
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* CATEGORIES */}
       <section>
         <div className="container">
           <h2 className="section-title" style={{ marginBottom: 24 }}>¿Qué buscas hoy?</h2>
           <div className="categories-grid">
-            {CATEGORIES.map(c => (
-              <button key={c.label} className="category-pill">
-                <div className="category-icon">{c.icon}</div>
-                <span className="category-label">{c.label}</span>
+            {CATEGORIES.map((item) => (
+              <button
+                key={item.label}
+                className={`category-pill ${category === item.label ? 'active' : ''}`}
+                type="button"
+                onClick={() => selectCategory(item.label)}
+                aria-pressed={category === item.label}
+              >
+                <div className="category-icon">{item.icon}</div>
+                <span className="category-label">{item.label}</span>
               </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CERCA DE TI */}
       <section style={{ paddingTop: 0 }}>
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Cerca de ti</h2>
-            <a href="#" className="see-all">Ver todos →</a>
+            <div>
+              <h2 className="section-title">Resultados</h2>
+              <p className="section-subtitle">{filteredSalons.length} salones disponibles</p>
+            </div>
+            <button className="see-all" type="button" onClick={clearFilters}>Limpiar filtros</button>
           </div>
           <div className="salons-grid">
-            {CERCA.map(s => <SalonCard key={s.name} {...s} />)}
+            {filteredSalons.map((salon) => (
+              <SalonCard key={salon.id} {...salon} onSelect={() => onOpenSalon(salon)} />
+            ))}
           </div>
+          {filteredSalons.length === 0 && (
+            <div className="empty-results">
+              <Search size={22} />
+              <strong>No hay resultados con esos filtros.</strong>
+              <button className="btn btn-primary" type="button" onClick={clearFilters}>Ver todos los salones</button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* MÁS VALORADOS */}
       <section style={{ paddingTop: 0 }}>
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">
               <Star size={20} fill="#F59E0B" color="#F59E0B" /> Más valorados
             </h2>
-            <a href="#" className="see-all">Ver todos →</a>
+            <button className="see-all" type="button" onClick={() => runQuickSearch('')}>Ver todos <ArrowRight size={14} /></button>
           </div>
           <div className="salons-grid">
-            {TOP.map(s => <SalonCard key={s.name + s.location} {...s} />)}
+            {topSalons.map((salon) => (
+              <SalonCard key={salon.id} {...salon} onSelect={() => onOpenSalon(salon)} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="how-section">
+      <section className="how-section" id="como-funciona">
         <div className="container">
           <h2 className="how-title">Reservar es así de fácil</h2>
           <div className="how-steps">
@@ -121,19 +198,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA PARA SALONES */}
-      <section className="cta-section">
+      <section className="pricing-section" id="tarifas">
+        <div className="container pricing-grid">
+          {[
+            ['Marketplace', 'Ficha pública, reservas y reseñas verificadas.'],
+            ['Dashboard', 'Agenda, caja, clientes e inventario conectado.'],
+            ['Equipo', 'Roles, empleados y operaciones para varios profesionales.'],
+          ].map(([plan, description]) => (
+            <article className="pricing-card" key={plan}>
+              <CheckCircle size={20} />
+              <h3>{plan}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="cta-section" id="para-salones">
         <div className="container">
           <div className="cta-banner">
             <div className="cta-text">
               <h2>¿Tienes un salón?<br />Únete a Allop.</h2>
-              <p>Gestiona tu agenda, cobra, fideliza clientes y aparece en el marketplace — todo desde un panel propio.</p>
+              <p>Gestiona tu agenda, cobra, fideliza clientes y aparece en el marketplace, todo desde un panel propio.</p>
             </div>
             <div className="cta-actions">
-              <button className="btn btn-lg btn-outline-white">Saber más</button>
-              <button className="btn btn-lg btn-white">Registra tu salón</button>
+              <a className="btn btn-lg btn-outline-white" href="#tarifas">Saber más</a>
+              <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>Registra tu salón</button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="company-section" id="empresa">
+        <div className="container company-copy">
+          <p className="eyebrow">Origar SL</p>
+          <h2>Allop conecta salones, clientes y equipos en una plataforma única.</h2>
+          <p>La web pública, el dashboard y las apps móviles trabajan juntos para que cada reserva tenga continuidad desde el descubrimiento hasta el cierre de caja.</p>
         </div>
       </section>
     </>
