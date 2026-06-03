@@ -21,16 +21,16 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           <div className="footer-grid footer-business-grid">
             <div className="footer-brand">
               <div className="footer-logo">
-                <img src="/allop-icon.svg" alt="allop bussiness" />
-                allop bussiness
+                <img src="/allop-icon.svg" alt="allop business" />
+                allop business
               </div>
               <p className="footer-desc">Software y marketplace para gestionar salones, reservas, caja, clientes y equipos.</p>
               <p className="footer-copy">© 2026 Origar. Todos los derechos reservados.</p>
             </div>
             <div className="footer-col">
               <h4>Producto</h4>
-              <Link to="/bussiness#operativa">Operativa</Link>
-              <Link to="/bussiness#precios">Precios</Link>
+              <Link to="/business#operativa">Operativa</Link>
+              <Link to="/business#precios">Precios</Link>
               <a href={dashboardUrl}>Dashboard</a>
             </div>
             <div className="footer-col">

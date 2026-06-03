@@ -6,10 +6,11 @@ import Nav from './components/Nav';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Business from './pages/Business';
+import ClientAuth from './pages/ClientAuth';
 import type { Salon } from './data/salons';
 
 const DASHBOARD_URL = 'https://dashboard.allop.es';
-const BUSINESS_URL = '/bussiness';
+const BUSINESS_URL = '/business';
 const SUPPORT_EMAIL = 'soporte@allop.es';
 
 function goTo(url: string) {
@@ -51,6 +52,16 @@ export default function App() {
     window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
+  const openClientLogin = () => {
+    navigate('/login');
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  };
+
+  const openClientRegister = () => {
+    navigate('/register');
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  };
+
   const openSalonProfile = (salon: Salon) => {
     goTo(`https://allop.es/salones/${salon.slug}`);
   };
@@ -60,8 +71,10 @@ export default function App() {
       <HashScroller />
       <Nav
         onSearch={handleSearch}
-        onLogin={() => goTo(DASHBOARD_URL)}
-        onRegister={openBusiness}
+        onLogin={openClientLogin}
+        onRegister={openClientRegister}
+        onBusiness={openBusiness}
+        dashboardUrl={DASHBOARD_URL}
       />
       <main>
         <Routes>
@@ -77,9 +90,11 @@ export default function App() {
               />
             )}
           />
-          <Route path="/bussiness" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
-          <Route path="/buissiness" element={<Navigate to="/bussiness" replace />} />
-          <Route path="/business" element={<Navigate to="/bussiness" replace />} />
+          <Route path="/login" element={<ClientAuth mode="login" />} />
+          <Route path="/register" element={<ClientAuth mode="register" />} />
+          <Route path="/business" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
+          <Route path="/bussiness" element={<Navigate to="/business" replace />} />
+          <Route path="/buissiness" element={<Navigate to="/business" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
