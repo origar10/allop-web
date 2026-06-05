@@ -7,15 +7,13 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Business from './pages/Business';
 import ClientAuth from './pages/ClientAuth';
+import SalonProfile from './pages/SalonProfile';
+import BookingFlow from './pages/BookingFlow';
 import type { Salon } from './data/salons';
 
 const DASHBOARD_URL = 'https://dashboard.allop.es';
 const BUSINESS_URL = '/business';
 const SUPPORT_EMAIL = 'soporte@allop.es';
-
-function goTo(url: string) {
-  window.location.href = url;
-}
 
 function HashScroller() {
   const location = useLocation();
@@ -63,7 +61,8 @@ export default function App() {
   };
 
   const openSalonProfile = (salon: Salon) => {
-    goTo(`https://allop.es/salones/${salon.slug}`);
+    setSelectedSalon(null);
+    navigate(`/salones/${salon.slug}`);
   };
 
   return (
@@ -92,6 +91,8 @@ export default function App() {
           />
           <Route path="/login" element={<ClientAuth key="login" mode="login" />} />
           <Route path="/register" element={<ClientAuth key="register" mode="register" />} />
+          <Route path="/salones/:slug" element={<SalonProfile />} />
+          <Route path="/reservar/:salonSlug" element={<BookingFlow />} />
           <Route path="/business" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
           <Route path="/bussiness" element={<Navigate to="/business" replace />} />
           <Route path="/buissiness" element={<Navigate to="/business" replace />} />

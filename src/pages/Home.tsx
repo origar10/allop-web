@@ -1,7 +1,24 @@
-import { ArrowRight, CalendarDays, CheckCircle, Hand, Heart, MapPin, Search, Scissors, Smile, Sparkles, Star, Wand2 } from 'lucide-react';
-import { type FormEvent, useMemo, useState } from 'react';
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle,
+  Hand,
+  Heart,
+  LocateFixed,
+  Map as MapIcon,
+  MapPin,
+  Search,
+  Scissors,
+  SlidersHorizontal,
+  Smile,
+  Sparkles,
+  Star,
+  Wand2,
+} from 'lucide-react';
+import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from 'react';
 import SalonCard from '../components/SalonCard';
-import { SALONS, type Salon } from '../data/salons';
+import { PROMO_BANNER, RECENT_REVIEWS, SALONS, type Salon } from '../data/salons';
+import { listMarketplaceSalons } from '../lib/salonsApi';
 
 const CATEGORIES = [
   { icon: <Scissors size={22} />, label: 'Peluquería' },
@@ -12,7 +29,30 @@ const CATEGORIES = [
   { icon: <Wand2 size={22} />, label: 'Maquillaje' },
 ];
 
-const CHIPS = ['Corte de pelo', 'Mechas', 'Manicura', 'Masaje', 'Barba', 'Color'];
+const CHIPS = [
+  'Corte de pelo',
+  'Mechas',
+  'Manicura',
+  'Masaje',
+  'Barba',
+  'Color',
+  'Balayage',
+  'Depilación',
+  'Facial',
+  'Keratina',
+];
+
+const POPULAR_CITIES = ['Barcelona', 'Rubí', 'Sabadell', 'Terrassa'];
+const INITIAL_VISIBLE_COUNT = 6;
+
+type AvailabilityFilter = 'all' | 'today' | 'tomorrow' | 'week';
+type SortMode = 'recommended' | 'rating' | 'price' | 'distance' | 'availability';
+type ViewMode = 'grid' | 'map';
+
+interface UserLocation {
+  lat: number;
+  lng: number;
+}
 
 interface HomeProps {
   searchTerm: string;
@@ -26,6 +66,48 @@ function normalize(value: string) {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
+function getDistanceKm(from: UserLocation, salon: Salon) {
+  const earthRadiusKm = 6371;
+  const latDistance = (salon.lat - from.lat) * Math.PI / 180;
+  const lngDistance = (salon.lng - from.lng) * Math.PI / 180;
+  const fromLat = from.lat * Math.PI / 180;
+  const salonLat = salon.lat * Math.PI / 180;
+  const haversine = Math.sin(latDistance / 2) ** 2 +
+    Math.cos(fromLat) * Math.cos(salonLat) * Math.sin(lngDistance / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function getDistanceValue(salon: Salon, userLocation: UserLocation | null = null) {
+  if (userLocation) return getDistanceKm(userLocation, salon);
+  return Number.parseFloat(salon.distance.replace(',', '.')) || Number.POSITIVE_INFINITY;
+}
+
+function withDisplayDistance(salon: Salon, userLocation: UserLocation | null) {
+  if (!userLocation) return salon;
+
+  return {
+    ...salon,
+    distance: `${getDistanceKm(userLocation, salon).toFixed(1)} km`,
+  };
+}
+
+function getAvailabilityGroup(salon: Salon): AvailabilityFilter {
+  const slot = normalize(salon.nextSlot);
+
+  if (slot.includes('hoy')) return 'today';
+  if (slot.includes('manana')) return 'tomorrow';
+  return 'week';
+}
+
+function getAvailabilityRank(salon: Salon) {
+  const group = getAvailabilityGroup(salon);
+
+  if (group === 'today') return 0;
+  if (group === 'tomorrow') return 1;
+  return 2;
+}
+
 function matchesQuery(salon: Salon, query: string, city: string) {
   const haystack = normalize([salon.name, salon.category, salon.location, salon.tags.join(' ')].join(' '));
   const normalizedQuery = normalize(query);
@@ -35,19 +117,134 @@ function matchesQuery(salon: Salon, query: string, city: string) {
     (!normalizedCity || normalize(salon.location).includes(normalizedCity));
 }
 
+function sortSalons(salons: Salon[], sortBy: SortMode, userLocation: UserLocation | null = null) {
+  return [...salons].sort((a, b) => {
+    if (sortBy === 'rating') return b.rating - a.rating || b.reviews - a.reviews;
+    if (sortBy === 'price') return a.desde - b.desde || b.rating - a.rating;
+    if (sortBy === 'distance') return getDistanceValue(a, userLocation) - getDistanceValue(b, userLocation);
+    if (sortBy === 'availability') return getAvailabilityRank(a) - getAvailabilityRank(b) || b.rating - a.rating;
+
+    return Number(b.featured) - Number(a.featured) || b.rating - a.rating || b.reviews - a.reviews;
+  });
+}
+
+function getMapPinStyle(salon: Salon, salons: Salon[]): CSSProperties {
+  const lats = salons.map((item) => item.lat);
+  const lngs = salons.map((item) => item.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const latRange = Math.max(maxLat - minLat, 0.01);
+  const lngRange = Math.max(maxLng - minLng, 0.01);
+
+  return {
+    left: `${12 + ((salon.lng - minLng) / lngRange) * 76}%`,
+    top: `${88 - ((salon.lat - minLat) / latRange) * 76}%`,
+  };
+}
+
 export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenSalon, onSalonSignup }: HomeProps) {
+  const [salons, setSalons] = useState<Salon[]>(SALONS);
   const [cityQuery, setCityQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
+  const [maxPrice, setMaxPrice] = useState(80);
+  const [minRating, setMinRating] = useState(0);
+  const [maxDistance, setMaxDistance] = useState('all');
+  const [availability, setAvailability] = useState<AvailabilityFilter>('all');
+  const [sortBy, setSortBy] = useState<SortMode>('recommended');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [isLoadingSalons, setIsLoadingSalons] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [geoEnabled, setGeoEnabled] = useState(false);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    listMarketplaceSalons(controller.signal)
+      .then((items) => {
+        setSalons(items);
+        setLoadError(null);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        setSalons(SALONS);
+        setLoadError(error instanceof Error ? error.message : 'No se pudieron cargar los salones.');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingSalons(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearchTerm(searchTerm), 250);
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
+
+  const searchSuggestions = useMemo(() => {
+    const query = normalize(debouncedSearchTerm.trim());
+    if (query.length < 2) return [];
+
+    const sources = [
+      ...salons.map((salon) => salon.name),
+      ...salons.map((salon) => salon.category),
+      ...salons.flatMap((salon) => salon.tags),
+      ...CHIPS,
+    ];
+
+    return [...new Set(sources)]
+      .filter((item) => normalize(item).includes(query))
+      .slice(0, 6);
+  }, [debouncedSearchTerm, salons]);
 
   const filteredSalons = useMemo(() => {
-    const query = category || searchTerm;
-    return SALONS.filter((salon) => matchesQuery(salon, query, cityQuery));
-  }, [category, cityQuery, searchTerm]);
+    const query = category || debouncedSearchTerm;
+    const maxDistanceValue = maxDistance === 'all' ? Number.POSITIVE_INFINITY : Number(maxDistance);
+
+    const nextSalons = salons.filter((salon) => {
+      const hasQuery = matchesQuery(salon, query, cityQuery);
+      const hasPrice = salon.desde <= maxPrice;
+      const hasRating = salon.rating >= minRating;
+      const hasDistance = getDistanceValue(salon, userLocation) <= maxDistanceValue;
+      const hasAvailability = availability === 'all' || getAvailabilityGroup(salon) === availability;
+
+      return hasQuery && hasPrice && hasRating && hasDistance && hasAvailability;
+    });
+
+    return sortSalons(nextSalons, sortBy, userLocation).map((salon) => withDisplayDistance(salon, userLocation));
+  }, [availability, category, cityQuery, debouncedSearchTerm, maxDistance, maxPrice, minRating, salons, sortBy, userLocation]);
+
+  const visibleSalons = filteredSalons.slice(0, visibleCount);
+
+  const nearbySalons = useMemo(
+    () => sortSalons(salons, 'distance', userLocation).slice(0, 3).map((salon) => withDisplayDistance(salon, userLocation)),
+    [salons, userLocation],
+  );
 
   const topSalons = useMemo(
-    () => [...SALONS].sort((a, b) => b.rating - a.rating || b.reviews - a.reviews).slice(0, 4),
-    [],
+    () => sortSalons(salons, 'rating').slice(0, 4),
+    [salons],
   );
+
+  useEffect(() => {
+    const startTimer = window.setTimeout(() => {
+      setVisibleCount(INITIAL_VISIBLE_COUNT);
+      setIsFiltering(true);
+    }, 0);
+
+    const endTimer = window.setTimeout(() => setIsFiltering(false), 180);
+
+    return () => {
+      window.clearTimeout(startTimer);
+      window.clearTimeout(endTimer);
+    };
+  }, [availability, category, cityQuery, debouncedSearchTerm, maxDistance, maxPrice, minRating, sortBy, viewMode]);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -65,12 +262,46 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
     onSearch(label);
   };
 
+  const useNearby = () => {
+    if (!navigator.geolocation) {
+      setGeoEnabled(true);
+      setSortBy('distance');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setGeoEnabled(true);
+        setSortBy('distance');
+      },
+      () => {
+        setGeoEnabled(true);
+        setSortBy('distance');
+      },
+      { maximumAge: 60000, timeout: 4000 },
+    );
+  };
+
   const clearFilters = () => {
     setCategory(null);
     onSearchTermChange('');
     setCityQuery('');
+    setMaxPrice(80);
+    setMinRating(0);
+    setMaxDistance('all');
+    setAvailability('all');
+    setSortBy('recommended');
+    setViewMode('grid');
     onSearch('');
   };
+
+  const resultText = isLoadingSalons
+    ? 'Cargando salones...'
+    : filteredSalons.length === 1 ? '1 salón disponible' : `${filteredSalons.length} salones disponibles`;
 
   return (
     <>
@@ -89,7 +320,18 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               }}
               placeholder="¿Qué servicio buscas?"
               aria-label="Servicio"
+              autoComplete="off"
             />
+            {!!searchSuggestions.length && (
+              <div className="search-suggestions">
+                {searchSuggestions.map((suggestion) => (
+                  <button key={suggestion} type="button" onClick={() => runQuickSearch(suggestion)}>
+                    <Search size={14} />
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="search-field search-location">
             <MapPin size={18} />
@@ -135,27 +377,236 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
         </div>
       </section>
 
-      <section style={{ paddingTop: 0 }}>
+      {PROMO_BANNER.enabled && (
+        <section className="promo-section" style={{ paddingTop: 0 }}>
+          <div className="container">
+            <div className="promo-banner">
+              <div>
+                <p className="eyebrow">{PROMO_BANNER.eyebrow}</p>
+                <h2>{PROMO_BANNER.title}</h2>
+                <p>{PROMO_BANNER.text}</p>
+              </div>
+              <button className="btn btn-white" type="button" onClick={() => runQuickSearch(PROMO_BANNER.query)}>
+                {PROMO_BANNER.cta}
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="marketplace-section" style={{ paddingTop: 0 }}>
         <div className="container">
+          <div className="filters-panel">
+            <div className="filters-title">
+              <SlidersHorizontal size={18} />
+              <strong>Filtros</strong>
+            </div>
+            <label>
+              Precio máximo
+              <span>{maxPrice} €</span>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                step="5"
+                value={maxPrice}
+                onChange={(event) => setMaxPrice(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              Valoración mínima
+              <select value={minRating} onChange={(event) => setMinRating(Number(event.target.value))}>
+                <option value={0}>Todas</option>
+                <option value={4}>4.0+</option>
+                <option value={4.5}>4.5+</option>
+                <option value={4.8}>4.8+</option>
+              </select>
+            </label>
+            <label>
+              Distancia
+              <select value={maxDistance} onChange={(event) => setMaxDistance(event.target.value)}>
+                <option value="all">Cualquier distancia</option>
+                <option value="3">Hasta 3 km</option>
+                <option value="8">Hasta 8 km</option>
+                <option value="15">Hasta 15 km</option>
+              </select>
+            </label>
+            <label>
+              Disponibilidad
+              <select value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)}>
+                <option value="all">Cualquier día</option>
+                <option value="today">Hoy</option>
+                <option value="tomorrow">Mañana</option>
+                <option value="week">Esta semana</option>
+              </select>
+            </label>
+            <label>
+              Ordenar
+              <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortMode)}>
+                <option value="recommended">Recomendados</option>
+                <option value="rating">Mejor valorados</option>
+                <option value="price">Precio más bajo</option>
+                <option value="distance">Más cerca</option>
+                <option value="availability">Antes disponible</option>
+              </select>
+            </label>
+          </div>
+
+          {loadError && (
+            <div className="market-alert" role="status">
+              Mostrando datos locales mientras la API pública no responde: {loadError}
+            </div>
+          )}
+
+          <div className="city-shortcuts">
+            {POPULAR_CITIES.map((city) => (
+              <button key={city} type="button" className={cityQuery === city ? 'active' : ''} onClick={() => setCityQuery(city)}>
+                {city}
+              </button>
+            ))}
+            <button type="button" onClick={useNearby}>
+              <LocateFixed size={14} />
+              {geoEnabled ? 'Cerca de ti' : 'Usar ubicación'}
+            </button>
+          </div>
+
           <div className="section-header">
             <div>
               <h2 className="section-title">Resultados</h2>
-              <p className="section-subtitle">{filteredSalons.length} salones disponibles</p>
+              <p className="section-subtitle">{resultText}</p>
             </div>
-            <button className="see-all" type="button" onClick={clearFilters}>Limpiar filtros</button>
+            <div className="results-actions">
+              <div className="view-toggle" aria-label="Cambiar vista">
+                <button type="button" className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}>
+                  <Search size={14} />
+                  Lista
+                </button>
+                <button type="button" className={viewMode === 'map' ? 'active' : ''} onClick={() => setViewMode('map')}>
+                  <MapIcon size={14} />
+                  Mapa
+                </button>
+              </div>
+              <button className="see-all" type="button" onClick={clearFilters}>Limpiar filtros</button>
+            </div>
           </div>
-          <div className="salons-grid">
-            {filteredSalons.map((salon) => (
-              <SalonCard key={salon.id} {...salon} onSelect={() => onOpenSalon(salon)} />
-            ))}
-          </div>
-          {filteredSalons.length === 0 && (
+
+          {isLoadingSalons || isFiltering ? (
+            <div className="salons-grid">
+              {Array.from({ length: Math.min(visibleCount, 4) }).map((_, index) => (
+                <div className="salon-skeleton" key={index}>
+                  <span />
+                  <div>
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="salons-grid">
+              {visibleSalons.map((salon) => (
+                <SalonCard
+                  key={salon.id}
+                  {...salon}
+                  nextSlot={salon.nextSlot}
+                  badges={salon.badges}
+                  onSelect={() => onOpenSalon(salon)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="market-map-layout">
+              <div className="market-map" aria-label="Mapa de salones">
+                {visibleSalons.map((salon) => (
+                  <button
+                    key={salon.id}
+                    className="market-map-pin"
+                    style={getMapPinStyle(salon, visibleSalons)}
+                    type="button"
+                    onClick={() => onOpenSalon(salon)}
+                    aria-label={`Abrir ficha de ${salon.name}`}
+                  >
+                    <MapPin size={16} />
+                    <span>{salon.desde} €</span>
+                  </button>
+                ))}
+              </div>
+              <div className="market-map-list">
+                {visibleSalons.map((salon) => (
+                  <button key={salon.id} type="button" onClick={() => onOpenSalon(salon)}>
+                    <strong>{salon.name}</strong>
+                    <span>{salon.location} · {salon.distance} · {salon.nextSlot}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!isLoadingSalons && !isFiltering && filteredSalons.length === 0 && (
             <div className="empty-results">
               <Search size={22} />
               <strong>No hay resultados con esos filtros.</strong>
+              <p>Prueba otra ciudad, sube el precio máximo o elimina disponibilidad.</p>
               <button className="btn btn-primary" type="button" onClick={clearFilters}>Ver todos los salones</button>
             </div>
           )}
+
+          {!isLoadingSalons && !isFiltering && visibleCount < filteredSalons.length && (
+            <div className="load-more">
+              <button className="btn btn-ghost" type="button" onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_COUNT)}>
+                Cargar más salones
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="nearby-section" style={{ paddingTop: 0 }}>
+        <div className="container">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">
+                <LocateFixed size={20} /> Cerca de ti
+              </h2>
+              <p className="section-subtitle">Ordenados por distancia con los datos disponibles</p>
+            </div>
+            <button className="see-all" type="button" onClick={useNearby}>Ver cercanos <ArrowRight size={14} /></button>
+          </div>
+          <div className="salons-grid compact">
+            {nearbySalons.map((salon) => (
+              <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="reviews-section" style={{ paddingTop: 0 }}>
+        <div className="container">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">
+                <Star size={20} fill="#F59E0B" color="#F59E0B" /> Reseñas recientes
+              </h2>
+              <p className="section-subtitle">Opiniones verificadas de clientes tras su reserva</p>
+            </div>
+          </div>
+          <div className="reviews-grid">
+            {RECENT_REVIEWS.map((review) => (
+              <article className="review-card" key={review.id}>
+                <div className="review-card-top">
+                  <strong>{review.author}</strong>
+                  <span><Star size={13} fill="#F59E0B" color="#F59E0B" /> {review.rating.toFixed(1)}</span>
+                </div>
+                <p>{review.text}</p>
+                <div className="review-card-foot">
+                  <button type="button" onClick={() => runQuickSearch(review.salonName)}>{review.salonName}</button>
+                  <span>{review.service} · {review.date}</span>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -169,7 +620,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
           </div>
           <div className="salons-grid">
             {topSalons.map((salon) => (
-              <SalonCard key={salon.id} {...salon} onSelect={() => onOpenSalon(salon)} />
+              <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
             ))}
           </div>
         </div>

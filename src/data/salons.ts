@@ -13,9 +13,32 @@ export interface Salon {
   featured: boolean;
   phone: string;
   address: string;
+  lat: number;
+  lng: number;
   description: string;
   imageClass: string;
   nextSlot: string;
+  badges?: string[];
+}
+
+export interface RecentReview {
+  id: string;
+  salonSlug: string;
+  salonName: string;
+  author: string;
+  rating: number;
+  text: string;
+  service: string;
+  date: string;
+}
+
+export interface PromoBanner {
+  enabled: boolean;
+  eyebrow: string;
+  title: string;
+  text: string;
+  cta: string;
+  query: string;
 }
 
 export const SALONS: Salon[] = [
@@ -34,9 +57,12 @@ export const SALONS: Salon[] = [
     featured: true,
     phone: '+34931234567',
     address: 'Rubí, Barcelona',
+    lat: 41.4938,
+    lng: 2.0311,
     description: 'Peluquería de barrio con agenda online, coloración, mechas y cortes para toda la familia.',
     imageClass: 'salon-img-feromi',
     nextSlot: 'Hoy 17:30',
+    badges: ['Abre ahora', 'Últimas plazas'],
   },
   {
     id: 'lumiere-studio',
@@ -53,9 +79,12 @@ export const SALONS: Salon[] = [
     featured: true,
     phone: '+34939876543',
     address: 'Eixample, Barcelona',
+    lat: 41.3917,
+    lng: 2.1649,
     description: 'Especialistas en color, balayage y tratamientos capilares de larga duración.',
     imageClass: 'salon-img-lumiere',
     nextSlot: 'Mañana 10:00',
+    badges: ['Abre ahora'],
   },
   {
     id: 'barberia-marcel',
@@ -72,9 +101,12 @@ export const SALONS: Salon[] = [
     featured: false,
     phone: '+34937654321',
     address: 'Terrassa, Barcelona',
+    lat: 41.5632,
+    lng: 2.0089,
     description: 'Barbería clásica con cortes rápidos, arreglo de barba y servicio de navaja.',
     imageClass: 'salon-img-marcel',
     nextSlot: 'Hoy 19:00',
+    badges: ['Últimas plazas'],
   },
   {
     id: 'nuvo-beauty',
@@ -91,9 +123,12 @@ export const SALONS: Salon[] = [
     featured: false,
     phone: '+34935551212',
     address: 'Sabadell, Barcelona',
+    lat: 41.5483,
+    lng: 2.1074,
     description: 'Centro de estética para manicura, faciales y depilación con reserva inmediata.',
     imageClass: 'salon-img-nuvo',
     nextSlot: 'Viernes 12:30',
+    badges: ['Nuevo'],
   },
   {
     id: 'aura-spa',
@@ -110,9 +145,12 @@ export const SALONS: Salon[] = [
     featured: true,
     phone: '+34934445566',
     address: 'Gràcia, Barcelona',
+    lat: 41.4066,
+    lng: 2.1586,
     description: 'Masajes relajantes, rituales spa y tratamientos de bienestar con cabinas privadas.',
     imageClass: 'salon-img-aura',
     nextSlot: 'Mañana 18:00',
+    badges: ['Abre ahora'],
   },
   {
     id: 'glow-studio',
@@ -129,8 +167,53 @@ export const SALONS: Salon[] = [
     featured: true,
     phone: '+34930001122',
     address: 'Sants, Barcelona',
+    lat: 41.3759,
+    lng: 2.1372,
     description: 'Maquillaje social, eventos e imagen personal con profesionales certificados.',
     imageClass: 'salon-img-glow',
     nextSlot: 'Sábado 11:00',
+    badges: ['Nuevo'],
   },
 ];
+
+export const RECENT_REVIEWS: RecentReview[] = [
+  {
+    id: 'review-feromi-1',
+    salonSlug: 'feromi',
+    salonName: 'Feromi',
+    author: 'Laura M.',
+    rating: 5,
+    text: 'Reserva rápida, trato cercano y el color quedó justo como quería.',
+    service: 'Color y corte',
+    date: 'Hace 2 días',
+  },
+  {
+    id: 'review-lumiere-1',
+    salonSlug: 'lumiere-studio',
+    salonName: 'Lumière Studio',
+    author: 'Marta R.',
+    rating: 5,
+    text: 'Muy puntuales y con una explicación clara del tratamiento.',
+    service: 'Balayage',
+    date: 'Hace 4 días',
+  },
+  {
+    id: 'review-marcel-1',
+    salonSlug: 'barberia-marcel',
+    salonName: 'Barbería Marcel',
+    author: 'Carlos P.',
+    rating: 4.8,
+    text: 'Buen corte, buen precio y sin tener que llamar para encontrar hora.',
+    service: 'Corte y barba',
+    date: 'Esta semana',
+  },
+];
+
+export const PROMO_BANNER: PromoBanner = {
+  enabled: true,
+  eyebrow: 'Promoción activa',
+  title: 'Huecos con descuento esta semana',
+  text: 'Encuentra salones con últimas plazas y precios especiales en servicios de corte, color y manicura.',
+  cta: 'Ver ofertas',
+  query: 'Últimas plazas',
+};

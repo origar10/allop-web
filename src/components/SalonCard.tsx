@@ -8,6 +8,8 @@ interface SalonCardProps {
   reviews: number;
   desde: number;
   tags: string[];
+  nextSlot?: string;
+  badges?: string[];
   imageClass?: string;
   verified?: boolean;
   onSelect: () => void;
@@ -21,6 +23,8 @@ export default function SalonCard({
   reviews,
   desde,
   tags,
+  nextSlot,
+  badges = [],
   imageClass = '',
   verified = true,
   onSelect,
@@ -36,6 +40,11 @@ export default function SalonCard({
           {verified && <span className="salon-verified"><BadgeCheck size={15} /></span>}
         </div>
         <div className="salon-loc">{location} · {distance}</div>
+        {!!badges.length && (
+          <div className="salon-badges" aria-label="Estado del salon">
+            {badges.slice(0, 2).map((badge) => <span key={badge}>{badge}</span>)}
+          </div>
+        )}
         <div className="salon-meta">
           <span className="salon-rating">
             <Star size={13} fill="#F59E0B" color="#F59E0B" />
@@ -44,6 +53,7 @@ export default function SalonCard({
           <span style={{ color: 'var(--fg-4)' }}>({reviews})</span>
           <span className="salon-price">Desde {desde} €</span>
         </div>
+        {nextSlot && <div className="salon-slot">Próximo hueco: {nextSlot}</div>}
         <div className="salon-tags">
           {tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
         </div>
