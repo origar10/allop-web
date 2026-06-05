@@ -10,12 +10,14 @@ import {
   UserRound,
   XCircle,
 } from 'lucide-react';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { SALONS } from '../data/salons';
 import { createBooking, listAvailability, type AvailabilityDay, type BookingConfirmation } from '../lib/bookingApi';
+import { addStoredBooking, createLocalBooking } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getAvailableDates, getProfessionals, getServices, TIME_SLOTS } from '../lib/salonDetails';
+import { trackEvent } from '../lib/analytics';
 
 type BookingStep = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -54,6 +56,7 @@ export default function BookingFlow() {
   const [loading, setLoading] = useState(false);
   const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
   const [cancelled, setCancelled] = useState(false);
+  const trackedStart = useRef(false);
 
   useEffect(() => {
     if (!salon) return;
@@ -77,6 +80,12 @@ export default function BookingFlow() {
 
     return () => controller.abort();
   }, [fallbackDates, salon, selectedDate, selectedProfessionalId, selectedServiceId, selectedTime]);
+
+  useEffect(() => {
+    if (!salon || trackedStart.current) return;
+    trackedStart.current = true;
+    trackEvent('booking_started', { salonSlug: salon.slug, source: 'booking_flow' });
+  }, [salon]);
 
   if (!salon) {
     return <Navigate to="/" replace />;
@@ -128,6 +137,22 @@ export default function BookingFlow() {
       idempotencyKey: buildIdempotencyKey(),
     });
 
+    addStoredBooking(createLocalBooking({
+      id: result.id,
+      salonSlug: salon.slug,
+      salonName: salon.name,
+      service: selectedService,
+      date: selectedDate,
+      time: selectedTime,
+      locator: result.locator,
+    }));
+    trackEvent('booking_completed', {
+      salonSlug: salon.slug,
+      serviceId: selectedService.id,
+      professionalId: selectedProfessional.id,
+      status: result.status,
+      guest: !canUseSession,
+    });
     setConfirmation(result);
     setStep(6);
     setLoading(false);
@@ -273,6 +298,11 @@ export default function BookingFlow() {
                 Notas para el salón
                 <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
               </label>
+              <div className="booking-policy-box">
+                <strong>Estado y políticas antes de confirmar</strong>
+                <p>La reserva puede quedar pendiente hasta que el salón confirme disponibilidad. Puedes cancelar desde la confirmación o desde Mi cuenta mientras esté pendiente/confirmada.</p>
+                <p>Si llegas tarde o no acudes, el salón puede aplicar sus reglas internas si fueron comunicadas. Consulta <Link to="/terminos">términos</Link>, <Link to="/privacidad">privacidad</Link> y <Link to="/confianza">confianza</Link>.</p>
+              </div>
               {error && <p className="auth-message err">{error}</p>}
               <div className="booking-nav">
                 <button className="btn btn-ghost btn-lg" type="button" onClick={goBack} disabled={loading}>Atrás</button>
@@ -330,6 +360,7 @@ export default function BookingFlow() {
             </div>
           </dl>
           <p><Phone size={15} /> Confirmación por SMS/email según datos disponibles.</p>
+          <p><ShieldCheck size={15} /> Estado inicial: pendiente hasta confirmación del salón.</p>
         </aside>
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+﻿import { Link, useLocation } from 'react-router-dom';
 
 interface FooterProps {
   dashboardUrl: string;
@@ -21,11 +21,11 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           <div className="footer-grid footer-business-grid">
             <div className="footer-brand">
               <div className="footer-logo">
-                <img src="/allop-icon.svg" alt="allop business" />
+                <img src="/allop-icon.svg" alt="allop business" width="28" height="28" decoding="async" />
                 allop business
               </div>
               <p className="footer-desc">Software y marketplace para gestionar salones, reservas, caja, clientes y equipos.</p>
-              <p className="footer-copy">© 2026 Origar. Todos los derechos reservados.</p>
+              <p className="footer-copy">Â© 2026 Origar. Todos los derechos reservados.</p>
             </div>
             <div className="footer-col">
               <h4>Producto</h4>
@@ -34,14 +34,22 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
               <a href={dashboardUrl}>Dashboard</a>
             </div>
             <div className="footer-col">
-              <h4>Contacto</h4>
-              <a href={`mailto:${supportEmail}?subject=Alta%20de%20salon%20en%20Allop`}>Solicitar información</a>
-              <a href={`mailto:${supportEmail}?subject=Soporte%20Allop%20Bussiness`}>Soporte</a>
+              <h4>Soporte</h4>
+              <Link to="/business#business-contact">Solicitar informaciÃ³n</Link>
+              <Link to="/ayuda">FAQ salones</Link>
+              <Link to="/contacto">Soporte</Link>
               <Link to="/">Marketplace Allop</Link>
+            </div>
+            <div className="footer-col">
+              <h4>Legal</h4>
+              <Link to="/privacidad">Privacidad</Link>
+              <Link to="/terminos">TÃ©rminos</Link>
+              <Link to="/cookies">Cookies</Link>
+              <Link to="/dpa">DPA</Link>
             </div>
           </div>
           <div className="footer-bottom">
-            © 2026 Origar SL · <a href={`mailto:${supportEmail}?subject=Privacidad%20Allop`} style={{ color: 'inherit' }}>Privacidad</a> · <a href={`mailto:${supportEmail}?subject=Terminos%20Allop`} style={{ color: 'inherit' }}>Términos</a>
+            Â© 2026 Origar SL Â· <Link to="/privacidad" style={{ color: 'inherit' }}>Privacidad</Link> Â· <Link to="/terminos" style={{ color: 'inherit' }}>TÃ©rminos</Link>
           </div>
         </div>
       </footer>
@@ -54,22 +62,23 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
         <div className="footer-grid">
           <div className="footer-brand">
             <div className="footer-logo">
-              <img src="/allop-icon.svg" alt="allop" />
+              <img src="/allop-icon.svg" alt="allop" width="28" height="28" decoding="async" />
               allop
             </div>
-            <p className="footer-desc">El marketplace de salones de peluquería y estética más completo de España.</p>
-            <p className="footer-copy">© 2026 Origar. Todos los derechos reservados.</p>
+            <p className="footer-desc">El marketplace de salones de peluquerÃ­a y estÃ©tica mÃ¡s completo de EspaÃ±a.</p>
+            <p className="footer-copy">Â© 2026 Origar. Todos los derechos reservados.</p>
           </div>
           <div className="footer-col">
             <h4>Marketplace</h4>
-            <a href="/#buscar">Buscar salón</a>
-            <a href="/#como-funciona">Cómo funciona</a>
+            <a href="/#buscar">Buscar salÃ³n</a>
+            <a href="/#como-funciona">CÃ³mo funciona</a>
+            <Link to="/confianza">Confianza</Link>
             <Link to={`${signupUrl}#precios`}>Tarifas</Link>
-            <a href={`mailto:${supportEmail}?subject=Ayuda%20Allop`}>Ayuda</a>
+            <Link to="/ayuda">Ayuda</Link>
           </div>
           <div className="footer-col">
             <h4>Para salones</h4>
-            <Link to={signupUrl}>Alta de salón</Link>
+            <Link to={signupUrl}>Alta de salÃ³n</Link>
             <a href={dashboardUrl}>Dashboard</a>
             <Link to={`${signupUrl}#operativa`}>App empleados</Link>
             <Link to={`${signupUrl}#precios`}>Precios</Link>
@@ -77,15 +86,27 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           <div className="footer-col">
             <h4>Empresa</h4>
             <Link to={`${signupUrl}#empresa`}>Sobre nosotros</Link>
-            <a href={`mailto:${supportEmail}?subject=Prensa%20Allop`}>Prensa</a>
+            <Link to="/prensa">Prensa</Link>
+            <Link to="/blog">Blog</Link>
             <a href={`mailto:${supportEmail}?subject=Trabajar%20con%20Allop`}>Trabaja con nosotros</a>
-            <a href={`mailto:${supportEmail}?subject=Contacto%20Allop`}>Contacto</a>
+            <Link to="/contacto">Contacto</Link>
+          </div>
+          <div className="footer-col">
+            <h4>Legal</h4>
+            <Link to="/privacidad">Privacidad</Link>
+            <Link to="/terminos">TÃ©rminos y cond.</Link>
+            <Link to="/cookies">Cookies</Link>
+            <Link to="/rgpd">RGPD</Link>
+            <Link to="/aviso-legal">Aviso legal</Link>
+            <Link to="/dpa">DPA salones</Link>
           </div>
         </div>
         <div className="footer-bottom">
-          © 2026 Origar SL · <a href={`mailto:${supportEmail}?subject=Privacidad%20Allop`} style={{ color: 'inherit' }}>Privacidad</a> · <a href={`mailto:${supportEmail}?subject=Terminos%20Allop`} style={{ color: 'inherit' }}>Términos</a> · <a href={`mailto:${supportEmail}?subject=Cookies%20Allop`} style={{ color: 'inherit' }}>Cookies</a>
+          Â© 2026 Origar SL Â· <Link to="/privacidad" style={{ color: 'inherit' }}>Privacidad</Link> Â· <Link to="/terminos" style={{ color: 'inherit' }}>TÃ©rminos</Link> Â· <Link to="/cookies" style={{ color: 'inherit' }}>Cookies</Link>
         </div>
       </div>
     </footer>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadgeCheck,
   CalendarDays,
   Clock,
@@ -14,35 +14,12 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { RECENT_REVIEWS, SALONS, type RecentReview, type Salon } from '../data/salons';
+import { isFavoriteSalon, toggleFavoriteSalon } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getProfessionals, getServices, TIME_SLOTS, WEEK_DAYS } from '../lib/salonDetails';
+import { clearStructuredData, setSeo, setStructuredData } from '../lib/seo';
 
 const REVIEWS_PAGE_SIZE = 2;
-
-function setMeta(name: string, content: string, property = false) {
-  const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
-  let tag = document.querySelector(selector);
-
-  if (!tag) {
-    tag = document.createElement('meta');
-    tag.setAttribute(property ? 'property' : 'name', name);
-    document.head.appendChild(tag);
-  }
-
-  tag.setAttribute('content', content);
-}
-
-function setCanonical(url: string) {
-  let tag = document.querySelector('link[rel="canonical"]');
-
-  if (!tag) {
-    tag = document.createElement('link');
-    tag.setAttribute('rel', 'canonical');
-    document.head.appendChild(tag);
-  }
-
-  tag.setAttribute('href', url);
-}
 
 function getSalonReviews(salon: Salon): RecentReview[] {
   const ownReviews = RECENT_REVIEWS.filter((review) => review.salonSlug === salon.slug);
@@ -77,7 +54,7 @@ export default function SalonProfile() {
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedTime, setSelectedTime] = useState(salon?.nextSlot || TIME_SLOTS[0]);
   const [reviewsPage, setReviewsPage] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(() => isFavoriteSalon(slug));
   const [shareMessage, setShareMessage] = useState('');
 
   const services = useMemo(() => salon ? getServices(salon) : [], [salon]);
@@ -89,14 +66,86 @@ export default function SalonProfile() {
   useEffect(() => {
     if (!salon) return;
 
-    document.title = `${salon.name} en ${salon.location} | Allop`;
-    setMeta('description', `${salon.description} Reserva ${salon.category.toLowerCase()} desde ${salon.desde} € en Allop.`);
-    setMeta('og:title', `${salon.name} | Allop`, true);
-    setMeta('og:description', salon.description, true);
-    setMeta('og:image', `${window.location.origin}/allop-icon.svg`, true);
-    setMeta('og:type', 'business.business', true);
-    setMeta('og:url', `${window.location.origin}/salones/${salon.slug}`, true);
-    setCanonical(`${window.location.origin}/salones/${salon.slug}`);
+    const salonPath = `/salones/${salon.slug}`;
+    const serviceSlug = salon.category.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    const citySlug = salon.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    const reviews = getSalonReviews(salon);
+    const salonServices = getServices(salon);
+
+    setSeo({
+      title: `${salon.name} en ${salon.location} | Allop`,
+      description: `${salon.description} Reserva ${salon.category.toLowerCase()} desde ${salon.desde} EUR en Allop.`,
+      canonicalPath: salonPath,
+      type: 'business.business',
+    });
+
+    setStructuredData('salon-profile', [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: salon.name,
+        description: salon.description,
+        image: 'https://allop.es/allop-icon.svg',
+        url: `https://allop.es${salonPath}`,
+        telephone: salon.phone,
+        priceRange: `Desde ${salon.desde} EUR`,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: salon.address,
+          addressLocality: salon.location,
+          addressRegion: 'Barcelona',
+          addressCountry: 'ES',
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: salon.lat,
+          longitude: salon.lng,
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: salon.rating,
+          reviewCount: salon.reviews,
+        },
+        review: reviews.slice(0, 3).map((review) => ({
+          '@type': 'Review',
+          author: { '@type': 'Person', name: review.author },
+          reviewRating: { '@type': 'Rating', ratingValue: review.rating, bestRating: 5 },
+          reviewBody: review.text,
+          datePublished: new Date().toISOString().slice(0, 10),
+        })),
+        makesOffer: salonServices.map((service) => ({
+          '@type': 'Product',
+          name: service.name,
+          brand: { '@type': 'Brand', name: salon.name },
+          category: salon.category,
+          offers: {
+            '@type': 'Offer',
+            price: service.price,
+            priceCurrency: 'EUR',
+            availability: 'https://schema.org/InStock',
+            url: `https://allop.es/reservar/${salon.slug}`,
+          },
+        })),
+        openingHoursSpecification: WEEK_DAYS.slice(0, 6).map((day, index) => ({
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: day,
+          opens: index === 5 ? '10:00' : '09:30',
+          closes: index === 5 ? '14:00' : '20:00',
+        })),
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Marketplace', item: 'https://allop.es/' },
+          { '@type': 'ListItem', position: 2, name: salon.category, item: `https://allop.es/servicios/${serviceSlug}` },
+          { '@type': 'ListItem', position: 3, name: salon.location, item: `https://allop.es/ciudad/${citySlug}` },
+          { '@type': 'ListItem', position: 4, name: salon.name, item: `https://allop.es${salonPath}` },
+        ],
+      },
+    ]);
+
+    return () => clearStructuredData('salon-profile');
   }, [salon]);
 
   if (!salon) {
@@ -112,7 +161,7 @@ export default function SalonProfile() {
       return;
     }
 
-    setIsFavorite((value) => !value);
+    setIsFavorite(toggleFavoriteSalon(salon.slug));
   };
 
   const shareSalon = async () => {
@@ -137,19 +186,25 @@ export default function SalonProfile() {
       <section className="salon-profile-hero">
         <div className="container salon-profile-hero-grid">
           <div className="salon-profile-copy">
-            <Link className="breadcrumb-link" to="/">Marketplace</Link>
+                        <nav className="breadcrumb-chain" aria-label="Miga de pan">
+              <Link to="/">Marketplace</Link>
+              <span>/</span>
+              <Link to={`/servicios/${salon.category.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()}`}>{salon.category}</Link>
+              <span>/</span>
+              <Link to={`/ciudad/${salon.location.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()}`}>{salon.location}</Link>
+            </nav>
             <div className="salon-profile-badges">
               {salon.verified && <span><BadgeCheck size={14} /> Verificado</span>}
               {salon.featured && <span>Destacado</span>}
               {salon.badges?.map((badge) => <span key={badge}>{badge}</span>)}
             </div>
-            <p className="eyebrow">{salon.category} · {salon.location}</p>
+            <p className="eyebrow">{salon.category} Â· {salon.location}</p>
             <h1>{salon.name}</h1>
             <p>{salon.description}</p>
             <div className="salon-profile-meta">
-              <span><Star size={16} fill="#F59E0B" color="#F59E0B" /> {salon.rating.toFixed(1)} · {salon.reviews} reseñas</span>
+              <span><Star size={16} fill="#F59E0B" color="#F59E0B" /> {salon.rating.toFixed(1)} Â· {salon.reviews} reseÃ±as</span>
               <span><MapPin size={16} /> {salon.address}</span>
-              <span><CalendarDays size={16} /> Próximo hueco: {salon.nextSlot}</span>
+              <span><CalendarDays size={16} /> PrÃ³ximo hueco: {salon.nextSlot}</span>
             </div>
             <div className="salon-profile-actions">
               <a className="btn btn-primary btn-lg" href="#reservar">
@@ -167,7 +222,7 @@ export default function SalonProfile() {
             </div>
             {shareMessage && <p className="share-message">{shareMessage}</p>}
           </div>
-          <div className="salon-profile-gallery" aria-label="Galería del salón">
+          <div className="salon-profile-gallery" aria-label="GalerÃ­a del salÃ³n">
             <div className={`salon-profile-main-photo ${photos[selectedPhoto]}`} />
             <div className="salon-profile-thumbs">
               {photos.map((photo, index) => (
@@ -193,7 +248,7 @@ export default function SalonProfile() {
               <div className="section-header">
                 <div>
                   <h2 className="section-title">Servicios</h2>
-                  <p className="section-subtitle">Precio desde, duración estimada y reserva rápida</p>
+                  <p className="section-subtitle">Precio desde, duraciÃ³n estimada y reserva rÃ¡pida</p>
                 </div>
               </div>
               <div className="services-list">
@@ -203,7 +258,7 @@ export default function SalonProfile() {
                       <h3>{service.name}</h3>
                       <span><Clock size={14} /> {service.duration}</span>
                     </div>
-                    <strong>{service.price} €</strong>
+                    <strong>{service.price} â‚¬</strong>
                   </article>
                 ))}
               </div>
@@ -218,7 +273,7 @@ export default function SalonProfile() {
               </div>
               <div className="booking-preview">
                 <div className="date-tabs" role="tablist" aria-label="Fechas disponibles">
-                  {['Hoy', 'Mañana', 'Viernes'].map((date, index) => (
+                  {['Hoy', 'MaÃ±ana', 'Viernes'].map((date, index) => (
                     <button
                       key={date}
                       className={selectedDate === index ? 'active' : ''}
@@ -242,7 +297,7 @@ export default function SalonProfile() {
                   ))}
                 </div>
                 <div className="booking-summary">
-                  <span>Selección: {selectedTime}</span>
+                  <span>SelecciÃ³n: {selectedTime}</span>
                   <Link className="btn btn-primary" to={`/reservar/${salon.slug}`}>Continuar reserva</Link>
                 </div>
               </div>
@@ -265,7 +320,7 @@ export default function SalonProfile() {
             <section className="profile-block">
               <div className="section-header">
                 <div>
-                  <h2 className="section-title">Reseñas verificadas</h2>
+                  <h2 className="section-title">ReseÃ±as verificadas</h2>
                   <p className="section-subtitle">Opiniones vinculadas a reservas completadas</p>
                 </div>
               </div>
@@ -277,13 +332,13 @@ export default function SalonProfile() {
                       <span><Star size={13} fill="#F59E0B" color="#F59E0B" /> {review.rating.toFixed(1)}</span>
                     </div>
                     <p>{review.text}</p>
-                    <small>{review.service} · {review.date}</small>
+                    <small>{review.service} Â· {review.date}</small>
                   </article>
                 ))}
               </div>
               {visibleReviews.length < salonReviews.length && (
                 <button className="btn btn-ghost" type="button" onClick={() => setReviewsPage((page) => page + 1)}>
-                  Ver más reseñas
+                  Ver mÃ¡s reseÃ±as
                 </button>
               )}
             </section>
@@ -291,11 +346,11 @@ export default function SalonProfile() {
 
           <aside className="salon-profile-side">
             <section className="profile-side-card">
-              <h2>Ubicación</h2>
+              <h2>UbicaciÃ³n</h2>
               <div className="profile-map" aria-label={`Mapa de ${salon.name}`}>
                 <button className="market-map-pin" style={getMapPinStyle(salon)} type="button" aria-label={salon.address}>
                   <MapPin size={16} />
-                  <span>{salon.desde} €</span>
+                  <span>{salon.desde} â‚¬</span>
                 </button>
               </div>
               <p>{salon.address}</p>
@@ -317,16 +372,24 @@ export default function SalonProfile() {
               <h2>Contacto</h2>
               <div className="contact-list">
                 <a href={`tel:${salon.phone}`}><Phone size={15} /> {salon.phone}</a>
-                <a href={canonicalUrl}><LinkIcon size={15} /> URL canónica</a>
+                <a href={canonicalUrl}><LinkIcon size={15} /> URL canÃ³nica</a>
                 <a href={`https://www.instagram.com/allop.es`}><ExternalLink size={15} /> Instagram</a>
               </div>
             </section>
 
             <section className="profile-side-card">
-              <h2>Categorías</h2>
+              <h2>CategorÃ­as</h2>
               <div className="profile-tags">
                 <span>{salon.category}</span>
                 {salon.tags.map((tag) => <span key={tag}>{tag}</span>)}
+              </div>
+            </section>
+
+            <section className="profile-side-card">
+              <h2>Datos de la ficha</h2>
+              <div className="contact-list">
+                <Link to={`/contacto?motivo=reportar-datos&salon=${salon.slug}`}>Reportar datos incorrectos</Link>
+                <Link to={`/contacto?motivo=reclamar-ficha&salon=${salon.slug}`}>Reclamar o actualizar ficha</Link>
               </div>
             </section>
           </aside>
@@ -335,3 +398,6 @@ export default function SalonProfile() {
     </article>
   );
 }
+
+
+

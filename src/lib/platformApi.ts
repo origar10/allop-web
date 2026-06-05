@@ -100,7 +100,7 @@ export function verifyClientOtp(
 
 export function registerClient(
   slug: string,
-  params: { nombre: string; apellidos?: string; telefono: string; verificationToken: string },
+  params: { nombre: string; apellidos?: string; email?: string; telefono: string; verificationToken: string },
 ) {
   return platformRequest<ClientAuthResponse>(`/salones/${encodeURIComponent(slug)}/auth/cliente/register`, {
     method: 'POST',

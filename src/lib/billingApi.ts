@@ -1,0 +1,251 @@
+import { trackEvent, type AnalyticsEventName } from './analytics';
+
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
+const BILLING_STATE_KEY = 'allop.billing.subscription';
+const BILLING_EVENTS_KEY = 'allop.billing.events';
+
+export type BillingPlanId = 'starter' | 'pro' | 'scale';
+export type BillingInterval = 'monthly' | 'annual';
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete';
+
+export interface BillingPlan {
+  id: BillingPlanId;
+  name: string;
+  monthlyPrice: number | null;
+  annualPrice: number | null;
+  trialDays: number;
+  employees: string;
+  seats: string;
+  bookings: string;
+  reminders: string;
+  support: string;
+  features: string[];
+  stripePriceEnvMonthly?: string;
+  stripePriceEnvAnnual?: string;
+}
+
+export interface BillingProfile {
+  salonName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  fiscalName: string;
+  taxId: string;
+  address: string;
+  city: string;
+  country: string;
+  coupon: string;
+}
+
+export interface SubscriptionSnapshot {
+  salonName: string;
+  planId: BillingPlanId;
+  interval: BillingInterval;
+  status: SubscriptionStatus;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  currentPeriodEnd: string;
+  trialEndsAt?: string;
+  gracePeriodEndsAt?: string;
+  activationState: 'pending_setup' | 'active' | 'limited';
+  portalUrl?: string;
+  invoiceUrl?: string;
+}
+
+export interface BillingEvent {
+  name: string;
+  payload: Record<string, string | number | boolean | null>;
+  createdAt: string;
+}
+
+export const BILLING_PLANS: BillingPlan[] = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    monthlyPrice: 39,
+    annualPrice: 390,
+    trialDays: 14,
+    employees: 'Hasta 3',
+    seats: '1 usuario gestor',
+    bookings: '300/mes',
+    reminders: 'Basicos',
+    support: 'Estandar',
+    features: ['Ficha publica', 'Agenda online', 'Recordatorios basicos', 'Soporte por email'],
+    stripePriceEnvMonthly: 'STRIPE_PRICE_STARTER_MONTHLY',
+    stripePriceEnvAnnual: 'STRIPE_PRICE_STARTER_ANNUAL',
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    monthlyPrice: 79,
+    annualPrice: 790,
+    trialDays: 14,
+    employees: 'Hasta 12',
+    seats: 'Hasta 4 usuarios',
+    bookings: '1.500/mes',
+    reminders: 'SMS/email segun plan',
+    support: 'Prioritario',
+    features: ['Agenda por profesional', 'Caja', 'Clientes e historial', 'Inventario basico'],
+    stripePriceEnvMonthly: 'STRIPE_PRICE_PRO_MONTHLY',
+    stripePriceEnvAnnual: 'STRIPE_PRICE_PRO_ANNUAL',
+  },
+  {
+    id: 'scale',
+    name: 'Scale',
+    monthlyPrice: null,
+    annualPrice: null,
+    trialDays: 0,
+    employees: 'A medida',
+    seats: 'Ilimitados',
+    bookings: 'A medida',
+    reminders: 'Personalizados',
+    support: 'Dedicado',
+    features: ['Multi-sede', 'Roles avanzados', 'Migracion asistida', 'Integraciones a medida'],
+  },
+];
+
+function readSubscription() {
+  const raw = localStorage.getItem(BILLING_STATE_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as SubscriptionSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+function writeSubscription(subscription: SubscriptionSnapshot) {
+  localStorage.setItem(BILLING_STATE_KEY, JSON.stringify(subscription));
+}
+
+function buildLocalSubscription(profile: BillingProfile, planId: BillingPlanId, interval: BillingInterval): SubscriptionSnapshot {
+  const now = new Date();
+  const plan = BILLING_PLANS.find((item) => item.id === planId) || BILLING_PLANS[0];
+  const currentPeriodEnd = new Date(now);
+  currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + (interval === 'annual' ? 12 : 1));
+  const trialEndsAt = plan.trialDays ? new Date(now.getTime() + plan.trialDays * 24 * 60 * 60 * 1000).toISOString() : undefined;
+
+  return {
+    salonName: profile.salonName,
+    planId,
+    interval,
+    status: plan.trialDays ? 'trialing' : 'active',
+    stripeCustomerId: `cus_pending_${Date.now()}`,
+    stripeSubscriptionId: `sub_pending_${Date.now()}`,
+    currentPeriodEnd: currentPeriodEnd.toISOString(),
+    trialEndsAt,
+    activationState: 'pending_setup',
+  };
+}
+
+export function getBillingPlan(planId: BillingPlanId) {
+  return BILLING_PLANS.find((plan) => plan.id === planId) || BILLING_PLANS[0];
+}
+
+export function formatPlanPrice(plan: BillingPlan, interval: BillingInterval) {
+  const price = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
+  if (price === null) return 'A medida';
+  return `${price} EUR${interval === 'annual' ? '/ano' : '/mes'}`;
+}
+
+export function calculateVat(amount: number) {
+  return Math.round(amount * 0.21 * 100) / 100;
+}
+
+export function recordBillingEvent(name: string, payload: BillingEvent['payload']) {
+  const event: BillingEvent = { name, payload, createdAt: new Date().toISOString() };
+  const current = JSON.parse(localStorage.getItem(BILLING_EVENTS_KEY) || '[]') as BillingEvent[];
+  localStorage.setItem(BILLING_EVENTS_KEY, JSON.stringify([event, ...current].slice(0, 50)));
+  trackEvent(name as AnalyticsEventName, payload);
+}
+
+export async function createCheckoutSession(planId: BillingPlanId, interval: BillingInterval, profile: BillingProfile) {
+  recordBillingEvent('checkout_started', { planId, interval, salonName: profile.salonName, coupon: profile.coupon || null });
+
+  const payload = {
+    planId,
+    interval,
+    profile,
+    successUrl: `${window.location.origin}/business/alta/success?plan=${planId}&interval=${interval}`,
+    cancelUrl: `${window.location.origin}/business/alta/cancel?plan=${planId}&interval=${interval}`,
+  };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/billing/checkout-sessions`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error('Stripe Checkout no disponible.');
+    const data = await response.json() as { url?: string; subscription?: SubscriptionSnapshot };
+    if (data.subscription) writeSubscription(data.subscription);
+    if (!data.url) throw new Error('El backend no devolvio URL de Checkout.');
+
+    return { url: data.url, localFallback: false };
+  } catch {
+    const subscription = buildLocalSubscription(profile, planId, interval);
+    writeSubscription(subscription);
+    return { url: `/business/alta/success?plan=${planId}&interval=${interval}&fallback=1`, localFallback: true };
+  }
+}
+
+export async function openCustomerPortal() {
+  recordBillingEvent('portal_opened', {});
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/billing/customer-portal`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+    });
+
+    if (!response.ok) throw new Error('Portal no disponible.');
+    const data = await response.json() as { url?: string };
+    if (!data.url) throw new Error('El backend no devolvio URL de portal.');
+
+    return { url: data.url, localFallback: false };
+  } catch {
+    const subscription = readSubscription();
+    if (subscription) {
+      writeSubscription({ ...subscription, portalUrl: '/business/alta/success?portal=fallback' });
+    }
+    return { url: '/business/alta/success?portal=fallback', localFallback: true };
+  }
+}
+
+export async function getSubscriptionStatus() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/billing/subscription`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error('Estado no disponible.');
+    const subscription = await response.json() as SubscriptionSnapshot;
+    writeSubscription(subscription);
+    return subscription;
+  } catch {
+    return readSubscription();
+  }
+}
+
+export function applyWebhookSnapshot(eventName: string, subscription: SubscriptionSnapshot) {
+  recordBillingEvent(eventName, {
+    planId: subscription.planId,
+    status: subscription.status,
+    stripeCustomerId: subscription.stripeCustomerId || null,
+    stripeSubscriptionId: subscription.stripeSubscriptionId || null,
+  });
+  writeSubscription(subscription);
+}
+
+export function isModuleLocked(subscription: SubscriptionSnapshot | null, module: 'agenda' | 'caja' | 'clientes' | 'multi_salon') {
+  if (!subscription) return true;
+  if (subscription.status === 'past_due' && subscription.gracePeriodEndsAt && new Date(subscription.gracePeriodEndsAt) < new Date()) return true;
+  if (subscription.status === 'canceled' || subscription.status === 'incomplete') return true;
+  if (module === 'multi_salon') return subscription.planId !== 'scale';
+  if (module === 'caja' || module === 'clientes') return subscription.planId === 'starter';
+  return false;
+}

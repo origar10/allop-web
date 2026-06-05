@@ -4,6 +4,7 @@ import {
   CheckCircle,
   Hand,
   Heart,
+  LifeBuoy,
   LocateFixed,
   Map as MapIcon,
   MapPin,
@@ -16,9 +17,12 @@ import {
   Wand2,
 } from 'lucide-react';
 import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import SalonCard from '../components/SalonCard';
 import { PROMO_BANNER, RECENT_REVIEWS, SALONS, type Salon } from '../data/salons';
+import { saveMarketplaceLead, type MarketplaceLead } from '../lib/marketplaceLeads';
 import { listMarketplaceSalons } from '../lib/salonsApi';
+import { setSeo } from '../lib/seo';
 
 const CATEGORIES = [
   { icon: <Scissors size={22} />, label: 'Peluquería' },
@@ -43,6 +47,20 @@ const CHIPS = [
 ];
 
 const POPULAR_CITIES = ['Barcelona', 'Rubí', 'Sabadell', 'Terrassa'];
+const POPULAR_SERVICES = [
+  { label: 'Corte de pelo', slug: 'corte' },
+  { label: 'Peluquería', slug: 'peluqueria' },
+  { label: 'Barbería', slug: 'barberia' },
+  { label: 'Manicura', slug: 'manicura' },
+  { label: 'Masajes', slug: 'masajes' },
+  { label: 'Maquillaje', slug: 'maquillaje' },
+];
+const CITY_LINKS = [
+  { label: 'Barcelona', slug: 'barcelona' },
+  { label: 'Rubí', slug: 'rubi' },
+  { label: 'Sabadell', slug: 'sabadell' },
+  { label: 'Terrassa', slug: 'terrassa' },
+];
 const INITIAL_VISIBLE_COUNT = 6;
 
 type AvailabilityFilter = 'all' | 'today' | 'tomorrow' | 'week';
@@ -161,6 +179,17 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
   const [geoEnabled, setGeoEnabled] = useState(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [leadType, setLeadType] = useState<MarketplaceLead['type'] | null>(null);
+  const [lead, setLead] = useState({ name: '', phone: '', email: '', city: '', message: '' });
+  const [leadMessage, setLeadMessage] = useState('');
+
+  useEffect(() => {
+    setSeo({
+      title: 'Allop | Encuentra salon y reserva en segundos',
+      description: 'Marketplace de salones con reservas verificadas, disponibilidad online, resenas y soporte para clientes y negocios.',
+      canonicalPath: '/',
+    });
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -229,6 +258,16 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
 
   const topSalons = useMemo(
     () => sortSalons(salons, 'rating').slice(0, 4),
+    [salons],
+  );
+
+  const newSalons = useMemo(
+    () => salons.filter((salon) => salon.badges?.includes('Nuevo')).slice(0, 4),
+    [salons],
+  );
+
+  const offerSalons = useMemo(
+    () => salons.filter((salon) => salon.badges?.includes('Últimas plazas')).slice(0, 4),
     [salons],
   );
 
@@ -303,6 +342,24 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
     ? 'Cargando salones...'
     : filteredSalons.length === 1 ? '1 salón disponible' : `${filteredSalons.length} salones disponibles`;
 
+  const submitLead = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!leadType || !lead.name.trim() || !lead.phone.trim()) {
+      setLeadMessage('Indica nombre y teléfono para poder contactarte.');
+      return;
+    }
+
+    saveMarketplaceLead({
+      type: leadType,
+      ...lead,
+      query: debouncedSearchTerm || category || undefined,
+      createdAt: new Date().toISOString(),
+    });
+    setLead({ name: '', phone: '', email: '', city: '', message: '' });
+    setLeadMessage('Recibido. Lo revisaremos y te avisaremos si podemos ayudarte.');
+  };
+
   return (
     <>
       <section className="hero" id="buscar">
@@ -354,6 +411,29 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               {chip}
             </button>
           ))}
+        </div>
+        <div className="trust-strip" aria-label="Confianza Allop">
+          <span><ShieldIcon /> Reservas verificadas</span>
+          <span><CalendarDays size={15} /> Cancelación clara</span>
+          <span><LifeBuoy size={15} /> Soporte si algo falla</span>
+          <span><Heart size={15} /> Privacidad cuidada</span>
+        </div>
+      </section>
+
+      <section className="commercial-links">
+        <div className="container commercial-link-grid">
+          <article>
+            <h2>Servicios populares</h2>
+            <div>
+              {POPULAR_SERVICES.map((service) => <Link key={service.slug} to={`/servicios/${service.slug}`}>{service.label}</Link>)}
+            </div>
+          </article>
+          <article>
+            <h2>Ciudades populares</h2>
+            <div>
+              {CITY_LINKS.map((city) => <Link key={city.slug} to={`/ciudad/${city.slug}`}>{city.label}</Link>)}
+            </div>
+          </article>
         </div>
       </section>
 
@@ -548,8 +628,11 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
             <div className="empty-results">
               <Search size={22} />
               <strong>No hay resultados con esos filtros.</strong>
-              <p>Prueba otra ciudad, sube el precio máximo o elimina disponibilidad.</p>
-              <button className="btn btn-primary" type="button" onClick={clearFilters}>Ver todos los salones</button>
+              <p>Prueba otra ciudad, sube el precio máximo, elimina disponibilidad o deja tu contacto para avisarte.</p>
+              <div className="empty-actions">
+                <button className="btn btn-primary" type="button" onClick={clearFilters}>Ver todos los salones</button>
+                <button className="btn btn-ghost" type="button" onClick={() => setLeadType('no_results')}>Avisadme</button>
+              </div>
             </div>
           )}
 
@@ -562,6 +645,42 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
           )}
         </div>
       </section>
+
+      {!!offerSalons.length && (
+        <section className="offers-section" style={{ paddingTop: 0 }}>
+          <div className="container">
+            <div className="section-header">
+              <div>
+                <h2 className="section-title">Ofertas cerca de ti</h2>
+                <p className="section-subtitle">Promociones y últimas plazas disponibles</p>
+              </div>
+            </div>
+            <div className="salons-grid compact">
+              {offerSalons.map((salon) => (
+                <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!!newSalons.length && (
+        <section style={{ paddingTop: 0 }}>
+          <div className="container">
+            <div className="section-header">
+              <div>
+                <h2 className="section-title">Salones nuevos en Allop</h2>
+                <p className="section-subtitle">Fichas recientes para dar vida al marketplace</p>
+              </div>
+            </div>
+            <div className="salons-grid compact">
+              {newSalons.map((salon) => (
+                <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="nearby-section" style={{ paddingTop: 0 }}>
         <div className="container">
@@ -601,7 +720,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
                 </div>
                 <p>{review.text}</p>
                 <div className="review-card-foot">
-                  <button type="button" onClick={() => runQuickSearch(review.salonName)}>{review.salonName}</button>
+                  <Link to={`/salones/${review.salonSlug}`}>{review.salonName}</Link>
                   <span>{review.service} · {review.date}</span>
                 </div>
               </article>
@@ -649,6 +768,26 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
         </div>
       </section>
 
+      <section className="after-booking-section">
+        <div className="container after-booking-grid">
+          <article>
+            <CalendarDays size={22} />
+            <h3>Tras reservar</h3>
+            <p>Recibes el resumen de la cita y el salón ve la solicitud en su agenda.</p>
+          </article>
+          <article>
+            <CheckCircle size={22} />
+            <h3>Confirmación</h3>
+            <p>La reserva queda pendiente o confirmada según disponibilidad y reglas del salón.</p>
+          </article>
+          <article>
+            <LifeBuoy size={22} />
+            <h3>Cancelar o pedir ayuda</h3>
+            <p>Desde tu cuenta puedes cancelar y contactar si algo no encaja.</p>
+          </article>
+        </div>
+      </section>
+
       <section className="pricing-section" id="tarifas">
         <div className="container pricing-grid">
           {[
@@ -667,7 +806,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
 
       <section className="cta-section" id="para-salones">
         <div className="container">
-          <div className="cta-banner">
+          <div className="cta-banner cta-split">
             <div className="cta-text">
               <h2>¿Tienes un salón?<br />Únete a Allop.</h2>
               <p>Gestiona tu agenda, cobra, fideliza clientes y aparece en el marketplace, todo desde un panel propio.</p>
@@ -677,8 +816,39 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>Alta de salón</button>
             </div>
           </div>
+          <div className="marketplace-ctas">
+            <article>
+              <h3>¿No encuentras tu salón?</h3>
+              <p>Sugiere un negocio y te avisaremos si conseguimos incorporarlo.</p>
+              <button className="btn btn-ghost" type="button" onClick={() => setLeadType('suggest_salon')}>Sugerir salón</button>
+            </article>
+            <article>
+              <h3>¿Es tu ficha?</h3>
+              <p>Si eres propietario, reclama la ficha para actualizar servicios, horarios y equipo.</p>
+              <button className="btn btn-ghost" type="button" onClick={() => setLeadType('claim_listing')}>Reclamar ficha</button>
+            </article>
+          </div>
         </div>
       </section>
+
+      {leadType && (
+        <div className="modal-backdrop" role="presentation" onClick={() => setLeadType(null)}>
+          <form className="market-lead-modal" onSubmit={submitLead} onClick={(event) => event.stopPropagation()}>
+            <h2>{leadType === 'claim_listing' ? 'Reclamar ficha' : leadType === 'suggest_salon' ? 'Sugerir salón' : 'Avisadme'}</h2>
+            <p>Déjanos tus datos y el equipo de Allop revisará la solicitud.</p>
+            <label>Nombre<input value={lead.name} onChange={(event) => setLead({ ...lead, name: event.target.value })} /></label>
+            <label>Teléfono<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
+            <label>Email<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
+            <label>Ciudad<input value={lead.city || cityQuery} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
+            <label>Mensaje<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={3} /></label>
+            {leadMessage && <p className={`auth-message ${leadMessage.startsWith('Indica') ? 'err' : 'ok'}`}>{leadMessage}</p>}
+            <div className="booking-nav">
+              <button className="btn btn-ghost" type="button" onClick={() => setLeadType(null)}>Cerrar</button>
+              <button className="btn btn-primary" type="submit">Enviar</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <section className="company-section" id="empresa">
         <div className="container company-copy">
@@ -689,4 +859,8 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
       </section>
     </>
   );
+}
+
+function ShieldIcon() {
+  return <CheckCircle size={15} />;
 }

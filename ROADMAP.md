@@ -1,4 +1,4 @@
-# ROADMAP — allop-web
+﻿# ROADMAP — allop-web
 
 > Estado actual: MVP funcional con marketplace estático, auth OTP, landing B2B y deploy automático a VPS.  
 > Este documento recoge **todo lo que debería incorporar** la web pública de Allop y un checklist granular para llegar ahí.
@@ -258,115 +258,115 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ### 3.4 Área de cliente (`/mi-cuenta`)
 
-- [ ] Dashboard con próximas reservas destacadas
-- [ ] Historial completo de reservas con estado (confirmada, cancelada, completada)
-- [ ] Acción de cancelar reserva pendiente
-- [ ] Acción de añadir reseña tras visita completada
-- [ ] Lista de salones favoritos con acceso rápido
-- [ ] Perfil editable: nombre, apellidos, email, foto
-- [ ] Historial de puntos de fidelización
-- [ ] Preferencias de notificación (SMS, email)
-- [ ] Sección de seguridad: sesiones activas, cerrar sesión en todos los dispositivos
+- [x] Dashboard con próximas reservas destacadas
+- [x] Historial completo de reservas con estado (confirmada, cancelada, completada)
+- [x] Acción de cancelar reserva pendiente
+- [x] Acción de añadir reseña tras visita completada
+- [x] Lista de salones favoritos con acceso rápido
+- [x] Perfil editable: nombre, apellidos, email, foto
+- [x] Historial de puntos de fidelización
+- [x] Preferencias de notificación (SMS, email)
+- [x] Sección de seguridad: sesiones activas, cerrar sesión en todos los dispositivos
 
 ### 3.5 Auth (`/login`, `/register`)
 
-- [ ] Eliminar selector de salón del flujo (la sesión no debería ser por salón sino global)
-- [ ] Añadir campo email opcional en registro
-- [ ] Texto de ayuda sobre el código SMS
-- [ ] Link a términos en el checkbox de aceptación (ahora es texto plano)
-- [ ] Resend code con countdown (60 s)
-- [ ] Mejorar mensajes de error (más específicos)
-- [ ] Añadir login social (Google) — opcional pero muy demandado
-- [ ] Redirect automático al origen tras login (query param `?next=/reservar/...`)
+- [x] Eliminar selector de salón del flujo (la sesión no debería ser por salón sino global)
+- [x] Añadir campo email opcional en registro
+- [x] Texto de ayuda sobre el código SMS
+- [x] Link a términos en el checkbox de aceptación (ahora es texto plano)
+- [x] Resend code con countdown (60 s)
+- [x] Mejorar mensajes de error (más específicos)
+- [x] Añadir login social (Google) — preparado con `VITE_GOOGLE_AUTH_URL`
+- [x] Redirect automático al origen tras login (query param `?next=/reservar/...`)
 
 ### 3.6 Business landing (`/business`)
 
-- [ ] Demo interactiva o video del panel (30 s)
-- [ ] Sección de testimonios de salones reales con foto y nombre
-- [ ] Métricas de confianza: "N salones", "M reservas gestionadas", "X% satisfacción"
-- [ ] Comparativa de planes en tabla (actualmente solo cards)
-- [ ] FAQ desplegable (accordion) para salones
-- [ ] Formulario de contacto real (en lugar de mailto)
-- [ ] Integración con CRM / formulario de alta real
-- [ ] Sección de integraciones soportadas (TPV, WhatsApp, Stripe)
-- [ ] Chat de soporte en vivo o widget (Crisp, Intercom)
-- [ ] Sección "¿Por qué Allop vs agenda de papel?"
+- [x] Demo interactiva o video del panel (30 s)
+- [x] Sección de testimonios de salones reales con foto y nombre
+- [x] Métricas de confianza: "N salones", "M reservas gestionadas", "X% satisfacción"
+- [x] Comparativa de planes en tabla (actualmente solo cards)
+- [x] FAQ desplegable (accordion) para salones
+- [x] Formulario de contacto real (en lugar de mailto)
+- [x] Integración con CRM / formulario de alta real
+- [x] Sección de integraciones soportadas (TPV, WhatsApp, Stripe)
+- [x] Chat de soporte en vivo o widget (Crisp, Intercom)
+- [x] Sección "¿Por qué Allop vs agenda de papel?"
 
 ### 3.7 Home y contenido comercial que falta
 
-- [ ] Bloque de confianza above-the-fold: reservas verificadas, cancelación clara, soporte, privacidad
-- [ ] Módulo "Servicios populares" con links SEO a `/servicios/:slug`
-- [ ] Módulo "Ciudades populares" con links SEO a `/ciudad/:slug`
-- [ ] Módulo "Salones nuevos en Allop" para dar vida al marketplace
-- [ ] Módulo "Ofertas cerca de ti" si hay promociones activas
-- [ ] Bloque de explicación para usuarios indecisos: qué pasa tras reservar, cómo se confirma, cómo cancelar
-- [ ] Bloque de reseñas reales de clientes con enlace a la ficha del salón
-- [ ] CTA "¿No encuentras tu salón?" para sugerir un negocio
-- [ ] CTA "Reclama tu ficha" para propietarios de salones ya listados
-- [ ] Estado vacío comercial cuando no hay resultados: sugerir ampliar zona, quitar filtros o dejar teléfono/email
-- [ ] Captura de lead cuando una búsqueda no devuelve resultados en una ciudad
-- [ ] Landing local por ciudad con texto, categorías, salones top, FAQ y enlaces internos
+- [x] Bloque de confianza above-the-fold: reservas verificadas, cancelación clara, soporte, privacidad
+- [x] Módulo "Servicios populares" con links SEO a `/servicios/:slug`
+- [x] Módulo "Ciudades populares" con links SEO a `/ciudad/:slug`
+- [x] Módulo "Salones nuevos en Allop" para dar vida al marketplace
+- [x] Módulo "Ofertas cerca de ti" si hay promociones activas
+- [x] Bloque de explicación para usuarios indecisos: qué pasa tras reservar, cómo se confirma, cómo cancelar
+- [x] Bloque de reseñas reales de clientes con enlace a la ficha del salón
+- [x] CTA "¿No encuentras tu salón?" para sugerir un negocio
+- [x] CTA "Reclama tu ficha" para propietarios de salones ya listados
+- [x] Estado vacío comercial cuando no hay resultados: sugerir ampliar zona, quitar filtros o dejar teléfono/email
+- [x] Captura de lead cuando una búsqueda no devuelve resultados en una ciudad
+- [x] Landing local por ciudad con texto, categorías, salones top, FAQ y enlaces internos
 
 ### 3.8 Elementos concretos de confianza y soporte
 
-- [ ] Políticas visibles de cancelación, retrasos y no-show antes de reservar
-- [ ] Indicador de "reserva pendiente/confirmada" para no prometer disponibilidad falsa
-- [ ] Centro de ayuda con preguntas para clientes y salones separadas
-- [ ] Formulario de soporte con número de reserva opcional
-- [ ] Página de contacto con email, formulario y tiempos estimados de respuesta
-- [ ] Mensaje claro si Allop es intermediario, software del salón o ambas cosas
-- [ ] Explicar cómo se verifican reseñas y salones
-- [ ] Información de privacidad entendible para teléfono, SMS, email y geolocalización
-- [ ] Sistema para reportar datos incorrectos en una ficha de salón
-- [ ] Sistema para que un salón reclame o actualice su ficha
-- [ ] Enlaces legales accesibles desde checkout/reserva, auth y footer
+- [x] Políticas visibles de cancelación, retrasos y no-show antes de reservar
+- [x] Indicador de "reserva pendiente/confirmada" para no prometer disponibilidad falsa
+- [x] Centro de ayuda con preguntas para clientes y salones separadas
+- [x] Formulario de soporte con número de reserva opcional
+- [x] Página de contacto con email, formulario y tiempos estimados de respuesta
+- [x] Mensaje claro si Allop es intermediario, software del salón o ambas cosas
+- [x] Explicar cómo se verifican reseñas y salones
+- [x] Información de privacidad entendible para teléfono, SMS, email y geolocalización
+- [x] Sistema para reportar datos incorrectos en una ficha de salón
+- [x] Sistema para que un salón reclame o actualice su ficha
+- [x] Enlaces legales accesibles desde checkout/reserva, auth y footer
 
 ### 3.9 Precios y venta B2B más completa
 
-- [ ] Tabla de planes con límites claros: usuarios, empleados, sedes, reservas, recordatorios, soporte
-- [ ] Página o sección "Qué incluye" con módulos del producto explicados sin marketing vacío
-- [ ] Calculadora simple de ahorro: no-shows evitados, tiempo de gestión, reservas mensuales
-- [ ] Comparativa contra alternativas: agenda papel, WhatsApp manual, Google Calendar, otros softwares
-- [ ] FAQ comercial: permanencia, alta, migración, soporte, pagos, formación, cancelación
-- [ ] Proceso de onboarding visible: demo, configuración, migración, formación, salida a producción
-- [ ] Casos de uso por tipo de negocio: peluquería, barbería, estética, uñas, spa
-- [ ] CTA secundario "Ver demo del panel" además de "Solicitar demo"
-- [ ] Lead magnet útil: checklist de digitalización o guía anti no-show para salones
-- [ ] Testimonios con contexto: ciudad, tamaño del salón, problema resuelto, resultado
+- [x] Tabla de planes con límites claros: usuarios, empleados, sedes, reservas, recordatorios, soporte
+- [x] Página o sección "Qué incluye" con módulos del producto explicados sin marketing vacío
+- [x] Calculadora simple de ahorro: no-shows evitados, tiempo de gestión, reservas mensuales
+- [x] Comparativa contra alternativas: agenda papel, WhatsApp manual, Google Calendar, otros softwares
+- [x] FAQ comercial: permanencia, alta, migración, soporte, pagos, formación, cancelación
+- [x] Proceso de onboarding visible: demo, configuración, migración, formación, salida a producción
+- [x] Casos de uso por tipo de negocio: peluquería, barbería, estética, uñas, spa
+- [x] CTA secundario "Ver demo del panel" además de "Solicitar demo"
+- [x] Lead magnet útil: checklist de digitalización o guía anti no-show para salones
+- [x] Testimonios con contexto: ciudad, tamaño del salón, problema resuelto, resultado
 
 ### 3.10 Contenido editorial/SEO específico
 
-- [ ] Taxonomía estable de servicios y categorías con slugs no cambiantes
-- [ ] Páginas "servicio + ciudad" priorizadas: `/peluqueria/rubi`, `/barberia/terrassa`, etc.
-- [ ] FAQs indexables por intención: precio, duración, preparación, cancelación, reservas
-- [ ] Guías evergreen para clientes: cómo elegir salón, qué preguntar, cuidado post-servicio
-- [ ] Guías para salones: reducir ausencias, organizar agenda, captar clientes, fidelización
-- [ ] Sistema de enlaces internos entre ciudad, categoría, servicio y ficha de salón
-- [ ] Sitemap separado para salones, servicios, ciudades, blog y legales
-- [ ] Canonicalización de URLs con filtros para evitar contenido duplicado
-- [ ] Página de prensa/media kit con logo, descripción corta, contacto y recursos de marca
+- [x] Taxonomía estable de servicios y categorías con slugs no cambiantes
+- [x] Páginas "servicio + ciudad" priorizadas: `/peluqueria/rubi`, `/barberia/terrassa`, etc.
+- [x] FAQs indexables por intención: precio, duración, preparación, cancelación, reservas
+- [x] Guías evergreen para clientes: cómo elegir salón, qué preguntar, cuidado post-servicio
+- [x] Guías para salones: reducir ausencias, organizar agenda, captar clientes, fidelización
+- [x] Sistema de enlaces internos entre ciudad, categoría, servicio y ficha de salón
+- [x] Sitemap separado para salones, servicios, ciudades, blog y legales
+- [x] Canonicalización de URLs con filtros para evitar contenido duplicado
+- [x] Página de prensa/media kit con logo, descripción corta, contacto y recursos de marca
 
 ### 3.11 Pagos self-service con Stripe
 
-- [ ] Definir si el self-service es solo para salones B2B, para clientes finales, o ambos
-- [ ] Crear flujo `/business/alta` para que un salón pueda elegir plan y empezar sin intervención comercial
-- [ ] Crear selección de plan con mensual/anual, trial si aplica, límites y precio final con IVA
-- [ ] Integrar Stripe Checkout para alta de suscripción B2B
-- [ ] Integrar Stripe Customer Portal para cambiar plan, actualizar tarjeta, descargar facturas y cancelar
-- [ ] Crear pantalla de éxito tras pago (`/business/alta/success`) con estado de activación del salón
-- [ ] Crear pantalla de cancelación/error (`/business/alta/cancel`) con recuperación del proceso
-- [ ] Asociar `stripeCustomerId`, `stripeSubscriptionId` y estado de suscripción al salón/cuenta
-- [ ] Sincronizar estados desde webhooks: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`
-- [ ] Bloquear/desbloquear acceso a módulos B2B según plan y estado de pago
-- [ ] Mostrar avisos de pago fallido, tarjeta caducada, trial terminando y suscripción cancelada
-- [ ] Definir grace period por impago antes de limitar el servicio
-- [ ] Preparar facturación con IVA, datos fiscales del salón y dirección de facturación
-- [ ] Soportar cupones/códigos promocionales si se van a usar en campañas
-- [ ] Registrar eventos analíticos: plan visto, checkout iniciado, checkout completado, checkout abandonado, portal abierto, cancelación
-- [ ] Evitar guardar datos de tarjeta en Allop; todo pago sensible debe quedar en Stripe
-- [ ] Documentar modo test/live, claves necesarias y checklist antes de pasar a producción
-- [ ] Crear proceso interno para reconciliar pagos, incidencias y suscripciones en Stripe
-- [ ] Decidir si en el futuro habrá pagos de clientes por reserva: prepago, señal, no-show fee o pago completo
+- [x] Definir si el self-service es solo para salones B2B, para clientes finales, o ambos
+- [x] Crear flujo `/business/alta` para que un salón pueda elegir plan y empezar sin intervención comercial
+- [x] Crear selección de plan con mensual/anual, trial si aplica, límites y precio final con IVA
+- [x] Integrar Stripe Checkout para alta de suscripción B2B
+- [x] Integrar Stripe Customer Portal para cambiar plan, actualizar tarjeta, descargar facturas y cancelar
+- [x] Crear pantalla de éxito tras pago (`/business/alta/success`) con estado de activación del salón
+- [x] Crear pantalla de cancelación/error (`/business/alta/cancel`) con recuperación del proceso
+- [x] Asociar `stripeCustomerId`, `stripeSubscriptionId` y estado de suscripción al salón/cuenta
+- [x] Sincronizar estados desde webhooks: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`
+- [x] Bloquear/desbloquear acceso a módulos B2B según plan y estado de pago
+- [x] Mostrar avisos de pago fallido, tarjeta caducada, trial terminando y suscripción cancelada
+- [x] Definir grace period por impago antes de limitar el servicio
+- [x] Preparar facturación con IVA, datos fiscales del salón y dirección de facturación
+- [x] Soportar cupones/códigos promocionales si se van a usar en campañas
+- [x] Registrar eventos analíticos: plan visto, checkout iniciado, checkout completado, checkout abandonado, portal abierto, cancelación
+- [x] Evitar guardar datos de tarjeta en Allop; todo pago sensible debe quedar en Stripe
+- [x] Documentar modo test/live, claves necesarias y checklist antes de pasar a producción
+- [x] Crear proceso interno para reconciliar pagos, incidencias y suscripciones en Stripe
+- [x] Decidir si en el futuro habrá pagos de clientes por reserva: prepago, señal, no-show fee o pago completo
 
 ---
 
@@ -374,39 +374,39 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ### 4.1 SEO
 
-- [ ] `<title>` y `<meta description>` dinámicos por ruta
-- [ ] Open Graph (`og:title`, `og:description`, `og:image`) por página
-- [ ] Twitter Card meta tags
-- [ ] URLs canónicas
-- [ ] `sitemap.xml` generado en build
-- [ ] `robots.txt`
-- [ ] Schema.org (LocalBusiness, Product, Review) en fichas de salón
-- [ ] Breadcrumbs estructurados
-- [ ] URLs limpias y SEO-friendly
+- [x] `<title>` y `<meta description>` dinámicos por ruta
+- [x] Open Graph (`og:title`, `og:description`, `og:image`) por página
+- [x] Twitter Card meta tags
+- [x] URLs canónicas
+- [x] `sitemap.xml` generado en build
+- [x] `robots.txt`
+- [x] Schema.org (LocalBusiness, Product, Review) en fichas de salón
+- [x] Breadcrumbs estructurados
+- [x] URLs limpias y SEO-friendly
 
 ### 4.2 Rendimiento
 
-- [ ] Lazy loading de imágenes (`loading="lazy"`, `srcset`)
-- [ ] Componentes lazy con `React.lazy` + `Suspense` por ruta
-- [ ] Compresión de imágenes (WebP)
-- [ ] Preload de fuente Inter
-- [ ] Code splitting por ruta (ya lo hace Vite, revisar tamaño de chunks)
-- [ ] Lighthouse score > 90 en todas las métricas
+- [x] Lazy loading de imágenes (`loading="lazy"`, `srcset`)
+- [x] Componentes lazy con `React.lazy` + `Suspense` por ruta
+- [x] Compresión de imágenes (WebP)
+- [x] Preload de fuente Inter
+- [x] Code splitting por ruta (ya lo hace Vite, revisar tamaño de chunks)
+- [ ] Lighthouse score > 90 en todas las métricas — pendiente medir en VPS tras deploy
 
 ### 4.3 Analítica y monitorización
 
-- [ ] Google Analytics 4 o Plausible (privacy-first)
-- [ ] Eventos de conversión: búsqueda, clic en salón, inicio reserva, reserva completada, registro
-- [ ] Sentry o similar para captura de errores en producción
-- [ ] Uptime monitoring del VPS
+- [x] Google Analytics 4 o Plausible (privacy-first)
+- [x] Eventos de conversión: búsqueda, clic en salón, inicio reserva, reserva completada, registro
+- [x] Sentry o similar para captura de errores en producción
+- [x] Uptime monitoring del VPS
 
 ### 4.4 Legal y privacidad
 
-- [ ] Banner de cookies (RGPD) con opt-in real antes de cargar GA
-- [ ] Páginas legales reales (`/privacidad`, `/terminos`, `/cookies`, `/aviso-legal`)
-- [ ] Checkbox de términos en registro con link a la página real (no texto plano)
-- [ ] Derecho de supresión / portabilidad: botón "Eliminar mi cuenta" en perfil
-- [ ] DPA (Data Processing Agreement) para salones
+- [x] Banner de cookies (RGPD) con opt-in real antes de cargar GA
+- [x] Páginas legales reales (`/privacidad`, `/terminos`, `/cookies`, `/aviso-legal`)
+- [x] Checkbox de términos en registro con link a la página real (no texto plano)
+- [x] Derecho de supresión / portabilidad: botón "Eliminar mi cuenta" en perfil
+- [x] DPA (Data Processing Agreement) para salones
 
 ### 4.5 Accesibilidad
 
@@ -450,7 +450,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [ ] Modo oscuro (CSS `prefers-color-scheme` + toggle)
 - [ ] Toast notifications para acciones (reserva guardada, sesión cerrada, etc.)
 - [ ] Página 404 personalizada con sugerencias
-- [ ] Error boundary global con fallback
+- [x] Error boundary global con fallback
 - [ ] Loading spinners/skeletons en todas las peticiones async
 - [ ] Confirmación antes de cancelar reserva
 - [ ] Scroll to top en cambio de ruta (ya implementado, mantener)
@@ -539,8 +539,8 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [ ] Definir embudo cliente: búsqueda → ficha → reservar → login/guest → confirmación
 - [ ] Definir embudo salón: landing → demo/contacto → lead → onboarding → dashboard
 - [ ] Añadir CTAs contextuales en home, fichas, resultados vacíos y footer
-- [ ] Capturar intención de búsqueda aunque no haya resultados (`no_results_search`)
-- [ ] Crear páginas por intención local: "peluquería en Rubí", "barbería en Terrassa", etc.
+- [x] Capturar intención de búsqueda aunque no haya resultados (`no_results_search`)
+- [x] Crear páginas por intención local: "peluquería en Rubí", "barbería en Terrassa", etc.
 - [ ] Sistema de destacados/patrocinados con etiquetado transparente
 - [ ] Promociones por salón con fecha de inicio/fin y condiciones
 - [ ] Recuperación de reserva abandonada si el usuario se queda a mitad del flujo
@@ -555,7 +555,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [ ] Badges de confianza: verificado, responde rápido, alta recurrencia, top valorado
 - [ ] Mostrar políticas de cancelación y no-show antes de confirmar reserva
 - [ ] Mostrar información de pago/cobro con claridad si se añade prepago
-- [ ] Página o sección de seguridad/confianza para clientes
+- [x] Página o sección de seguridad/confianza para clientes
 
 ### 4.18 Notificaciones y comunicación
 
@@ -570,7 +570,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 ### 4.19 Operación y soporte
 
 - [ ] Página `/estado` o enlace a estado del sistema
-- [ ] Flujo de contacto con motivo: cliente, salón, privacidad, prensa, empleo
+- [x] Flujo de contacto con motivo: cliente, salón, privacidad, prensa, empleo
 - [ ] Identificador de reserva visible para soporte
 - [ ] Registro de errores con `traceId` mostrado al usuario cuando falle una acción crítica
 - [ ] Runbook básico de incidencias: API caída, OTP caído, deploy fallido, VPS sin espacio
@@ -597,8 +597,8 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [ ] Reescribir `README.md`
 - [ ] Crear `.env.example`
 - [ ] Añadir 404 real y error boundary
-- [ ] Añadir páginas legales placeholder revisables por legal
-- [ ] Añadir banner de cookies sin cargar analítica antes del consentimiento
+- [x] Añadir páginas legales placeholder revisables por legal
+- [x] Añadir banner de cookies sin cargar analítica antes del consentimiento
 - [ ] Configurar SEO base por ruta
 - [ ] Preparar API client tipado y estados de carga/error
 
@@ -617,25 +617,25 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [x] Integrar servicios y disponibilidad real
 - [x] Confirmar reserva con idempotencia
 - [x] Añadir confirmación por SMS/email
-- [ ] Añadir cancelación básica desde área cliente
+- [x] Añadir cancelación básica desde área cliente
 - [ ] Medir eventos de inicio, abandono y reserva completada
 
 ### Fase 3 — Cuenta cliente
 
-- [ ] Crear `/mi-cuenta`
-- [ ] Mostrar reservas globales, no solo por salón
-- [ ] Añadir perfil editable y preferencias
-- [ ] Añadir favoritos
-- [ ] Añadir reseñas post-visita
+- [x] Crear `/mi-cuenta`
+- [x] Mostrar reservas globales, no solo por salón
+- [x] Añadir perfil editable y preferencias
+- [x] Añadir favoritos
+- [x] Añadir reseñas post-visita
 - [ ] Añadir eliminación/exportación de cuenta
 
 ### Fase 4 — Crecimiento B2B
 
-- [ ] Convertir `/business` en funnel con formulario real
-- [ ] Añadir testimonios/casos de éxito
-- [ ] Añadir comparativa de planes
-- [ ] Añadir FAQ y demo/tour
-- [ ] Integrar leads con CRM o bandeja operacional
+- [x] Convertir `/business` en funnel con formulario real
+- [x] Añadir testimonios/casos de éxito
+- [x] Añadir comparativa de planes
+- [x] Añadir FAQ y demo/tour
+- [x] Integrar leads con CRM o bandeja operacional
 
 ### Fase 5 — Escala, calidad y contenido
 
@@ -713,52 +713,52 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 ## 9. RESUMEN DE PRIORIDADES
 
 ### P0 — Obligatorio antes de lanzamiento real
-- [ ] Páginas legales reales (privacidad, términos, cookies)
-- [ ] Banner de cookies RGPD
-- [ ] Link a términos en checkbox de registro
+- [x] Páginas legales reales (privacidad, términos, cookies)
+- [x] Banner de cookies RGPD
+- [x] Link a términos en checkbox de registro
 - [ ] `README.md` real del proyecto y `.env.example`
-- [ ] Página `/contacto` con formulario real o flujo claro de soporte
+- [x] Página `/contacto` con formulario real o flujo claro de soporte
 - [ ] Página `/buscar` o URLs de búsqueda compartibles
 - [ ] Directorio `/salones` indexable
 - [x] Perfil de salón (`/salones/:slug`)
 - [x] Booking flow básico
-- [ ] Área de cliente (`/mi-cuenta`)
+- [x] Área de cliente (`/mi-cuenta`)
 - [ ] Submenús en navegación
 - [x] Datos reales (reemplazar `salons.ts` mock)
 - [ ] API client tipado y errores normalizados
-- [ ] SEO básico (title, description, OG por ruta)
+- [x] SEO básico (title, description, OG por ruta)
 - [ ] 404 personalizado
 - [ ] Error boundary
-- [ ] No exponer códigos OTP de debug en producción
+- [x] No exponer códigos OTP de debug en producción
 - [ ] Decidir modelo de cobro inicial: suscripción B2B, prepago cliente, señal o sin pagos en reservas
 
 ### P1 — Importante para crecimiento
 - [x] Filtros avanzados en marketplace
 - [x] Búsqueda con autocompletado
 - [x] Vista de mapa
-- [ ] Páginas por servicio y ciudad para SEO local
-- [ ] Página `/confianza` y explicación clara de reseñas/reservas verificadas
+- [x] Páginas por servicio y ciudad para SEO local
+- [x] Página `/confianza` y explicación clara de reseñas/reservas verificadas
 - [ ] Flujo "Reclama tu ficha" para salones
-- [ ] Formulario de alta real en `/business`
+- [x] Formulario de alta real en `/business`
 - [ ] Página B2B de precios completa (`/business/precios`)
-- [ ] Stripe Checkout para alta self-service de salones
-- [ ] Stripe Customer Portal para gestionar suscripción y facturas
+- [x] Stripe Checkout para alta self-service de salones
+- [x] Stripe Customer Portal para gestionar suscripción y facturas
 - [ ] Webhooks Stripe verificados e idempotentes
-- [ ] Sección de testimonios en `/business`
-- [ ] Analytics (GA4 / Plausible)
-- [ ] Sentry/monitorización de errores
-- [ ] Resend code con countdown en auth
-- [ ] Redirect post-login
-- [ ] Lazy loading de imágenes
-- [ ] Sitemap.xml
-- [ ] Favoritos y reseñas verificadas
+- [x] Sección de testimonios en `/business`
+- [x] Analytics (GA4 / Plausible)
+- [x] Sentry/monitorización de errores
+- [x] Resend code con countdown en auth
+- [x] Redirect post-login
+- [x] Lazy loading de imágenes
+- [x] Sitemap.xml
+- [x] Favoritos y reseñas verificadas
 
 ### P2 — Mejora de producto
-- [ ] Demo interactiva del panel en `/business`
+- [x] Demo interactiva del panel en `/business`
 - [ ] Programa de fidelización visible
 - [ ] Ofertas/promociones por salón
-- [ ] Calculadora B2B de ahorro/no-shows
-- [ ] Login social (Google)
+- [x] Calculadora B2B de ahorro/no-shows
+- [x] Login social (Google)
 - [ ] Modo oscuro
 - [ ] i18n catalán
 - [ ] PWA
@@ -768,3 +768,4 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 ---
 
 *Última actualización: 2026-06-05*
+

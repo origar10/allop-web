@@ -1,6 +1,6 @@
-import { CheckCircle, LogIn, LogOut, RotateCcw, ShieldCheck, UserPlus } from 'lucide-react';
+﻿import { CheckCircle, LogIn, LogOut, RotateCcw, ShieldCheck, UserPlus } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SALONS } from '../data/salons';
 import {
   getClientBookings,
@@ -19,6 +19,7 @@ import {
   saveClientSession,
   type ClientSession,
 } from '../lib/clientSession';
+import { trackEvent } from '../lib/analytics';
 
 interface ClientAuthProps {
   mode: 'login' | 'register';
@@ -38,6 +39,12 @@ const FALLBACK_SALONS: SalonOption[] = SALONS.map((salon) => ({
   city: salon.location,
 }));
 const INITIAL_SALON_SLUG = FALLBACK_SALONS[0]?.slug || '';
+const RESEND_SECONDS = 60;
+
+function getSafeNext(value: string | null) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/mi-cuenta';
+  return value;
+}
 
 function normalizePhone(value: string) {
   const trimmed = value.trim();
@@ -62,21 +69,25 @@ function formatBookingDate(value?: string) {
 
 export default function ClientAuth({ mode }: ClientAuthProps) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isRegister = mode === 'register';
   const purpose: ClientAuthPurpose = isRegister ? 'REGISTER' : 'LOGIN';
+  const nextPath = getSafeNext(searchParams.get('next'));
   const [salons, setSalons] = useState<SalonOption[]>(FALLBACK_SALONS);
   const [salonSlug, setSalonSlug] = useState(INITIAL_SALON_SLUG);
-  const [step, setStep] = useState<AuthStep>(() => (loadClientSession(INITIAL_SALON_SLUG) ? 'done' : 'phone'));
+  const [step, setStep] = useState<AuthStep>(() => (loadClientSession() ? 'done' : 'phone'));
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [challengeId, setChallengeId] = useState<number | null>(null);
   const [debugCode, setDebugCode] = useState('');
+  const [resendCountdown, setResendCountdown] = useState(0);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState<ClientSession | null>(() => loadClientSession(INITIAL_SALON_SLUG));
+  const [session, setSession] = useState<ClientSession | null>(() => loadClientSession());
   const [bookings, setBookings] = useState<ClientBooking[]>([]);
 
   const selectedSalon = useMemo(
@@ -87,8 +98,8 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const title = isRegister ? 'Crea tu cuenta de cliente' : 'Accede a tu cuenta';
   const Icon = isRegister ? UserPlus : LogIn;
   const subtitle = isRegister
-    ? 'Registra tu cuenta por teléfono para reservar más rápido en tu salón.'
-    : 'Entra con código SMS para ver tus reservas y continuar como cliente.';
+    ? 'Registra tu cuenta global por telÃ©fono para reservar mÃ¡s rÃ¡pido en Allop.'
+    : 'Entra con cÃ³digo SMS para ver tus reservas y continuar como cliente.';
 
   async function refreshSession(currentSession: ClientSession) {
     const [profile, nextBookings] = await Promise.all([
@@ -100,20 +111,6 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     saveClientSession(updatedSession);
     setSession(updatedSession);
     setBookings(nextBookings);
-  }
-
-  function syncStoredSession(slug: string) {
-    const storedSession = loadClientSession(slug);
-    setSession(storedSession);
-
-    if (!storedSession) {
-      setBookings([]);
-      setStep('phone');
-      return;
-    }
-
-    setStep('done');
-    refreshSession(storedSession).catch(() => undefined);
   }
 
   useEffect(() => {
@@ -130,6 +127,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
         if (!options.length) return;
 
         setSalons(options);
+        setSalonSlug((current) => current || options[0].slug);
       })
       .catch(() => undefined);
 
@@ -138,16 +136,45 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (resendCountdown <= 0) return undefined;
+
+    const timer = window.setInterval(() => {
+      setResendCountdown((value) => Math.max(0, value - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendCountdown]);
+
+  function authErrorText(error: unknown, fallback: string) {
+    const text = error instanceof Error ? error.message : fallback;
+    const normalized = text.toLowerCase();
+
+    if (normalized.includes('otp') || normalized.includes('code') || normalized.includes('cÃ³digo')) {
+      return 'El cÃ³digo no es correcto o ha caducado. Revisa el SMS o solicita uno nuevo.';
+    }
+
+    if (normalized.includes('phone') || normalized.includes('tel')) {
+      return 'El telÃ©fono no parece vÃ¡lido. Usa prefijo si estÃ¡s fuera de EspaÃ±a.';
+    }
+
+    if (normalized.includes('network') || normalized.includes('fetch')) {
+      return 'No hay conexiÃ³n con Allop ahora mismo. IntÃ©ntalo de nuevo en unos segundos.';
+    }
+
+    return text || fallback;
+  }
+
   const requestCode = async () => {
     const telefono = normalizePhone(phone);
 
     if (!selectedSalon) {
-      setMessage({ ok: false, text: 'Selecciona un salón.' });
+      setMessage({ ok: false, text: 'Selecciona un salÃ³n.' });
       return;
     }
 
     if (telefono.length < 8) {
-      setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
+      setMessage({ ok: false, text: 'Introduce un telÃ©fono vÃ¡lido.' });
       return;
     }
 
@@ -157,7 +184,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     }
 
     if (isRegister && !acceptedTerms) {
-      setMessage({ ok: false, text: 'Acepta el tratamiento de datos para crear la cuenta.' });
+      setMessage({ ok: false, text: 'Acepta los tÃ©rminos y la polÃ­tica de privacidad para crear la cuenta.' });
       return;
     }
 
@@ -168,17 +195,18 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       const response = await requestClientOtp(selectedSalon.slug, telefono, purpose);
       setPhone(telefono);
       setChallengeId(response.challengeId);
-      setDebugCode(response.debugCode || '');
-      setCode(response.debugCode || '');
+      setDebugCode(import.meta.env.DEV ? response.debugCode || '' : '');
+      setCode(import.meta.env.DEV ? response.debugCode || '' : '');
       setStep('code');
+      setResendCountdown(RESEND_SECONDS);
       setMessage({
         ok: true,
-        text: response.debugCode
-          ? `Código generado para pruebas: ${response.debugCode}`
-          : 'Te hemos enviado un código por SMS.',
+        text: import.meta.env.DEV && response.debugCode
+          ? `CÃ³digo generado para pruebas: ${response.debugCode}`
+          : 'Te hemos enviado un cÃ³digo por SMS. Puede tardar unos segundos.',
       });
     } catch (error) {
-      setMessage({ ok: false, text: error instanceof Error ? error.message : 'No se pudo enviar el código.' });
+      setMessage({ ok: false, text: authErrorText(error, 'No se pudo enviar el cÃ³digo.') });
     } finally {
       setLoading(false);
     }
@@ -186,12 +214,12 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const completeAuth = async () => {
     if (!selectedSalon || !challengeId) {
-      setMessage({ ok: false, text: 'Vuelve a solicitar el código.' });
+      setMessage({ ok: false, text: 'Vuelve a solicitar el cÃ³digo.' });
       return;
     }
 
     if (code.trim().length < 4) {
-      setMessage({ ok: false, text: 'Introduce el código recibido.' });
+      setMessage({ ok: false, text: 'Introduce el cÃ³digo recibido.' });
       return;
     }
 
@@ -210,6 +238,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
         ? await registerClient(selectedSalon.slug, {
           nombre: name.trim(),
           apellidos: lastName.trim() || undefined,
+          email: email.trim() || undefined,
           telefono: phone,
           verificationToken: verified.verificationToken,
         })
@@ -228,10 +257,14 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       saveClientSession(nextSession);
       setSession(nextSession);
       setStep('done');
-      setMessage({ ok: true, text: `Sesión iniciada como ${auth.cliente.nombre}.` });
+      setMessage({ ok: true, text: `SesiÃ³n iniciada como ${auth.cliente.nombre}.` });
+      if (isRegister) {
+        trackEvent('registration_completed', { salonSlug: selectedSalon.slug, hasEmail: Boolean(email.trim()) });
+      }
       await refreshSession(nextSession);
+      navigate(nextPath, { replace: true });
     } catch (error) {
-      setMessage({ ok: false, text: error instanceof Error ? error.message : 'No se pudo iniciar la sesión.' });
+      setMessage({ ok: false, text: authErrorText(error, 'No se pudo iniciar la sesiÃ³n.') });
     } finally {
       setLoading(false);
     }
@@ -251,10 +284,25 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const logout = () => {
     clearClientSession(salonSlug);
+    clearClientSession();
     setSession(null);
     setBookings([]);
     setStep('phone');
-    setMessage({ ok: true, text: 'Sesión cerrada.' });
+    setMessage({ ok: true, text: 'SesiÃ³n cerrada.' });
+  };
+
+  const startGoogleLogin = () => {
+    const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined;
+
+    if (!googleAuthUrl) {
+      setMessage({
+        ok: false,
+        text: 'Login con Google preparado. Falta configurar VITE_GOOGLE_AUTH_URL para activar OAuth.',
+      });
+      return;
+    }
+
+    window.location.href = `${googleAuthUrl}?next=${encodeURIComponent(nextPath)}`;
   };
 
   return (
@@ -265,33 +313,19 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="client-auth-points">
-            <span><CheckCircle size={16} /> Reservas más rápidas</span>
-            <span><ShieldCheck size={16} /> Acceso con código SMS</span>
-            <span><CheckCircle size={16} /> Historial por salón</span>
+            <span><CheckCircle size={16} /> Reservas mÃ¡s rÃ¡pidas</span>
+            <span><ShieldCheck size={16} /> Acceso con cÃ³digo SMS</span>
+            <span><CheckCircle size={16} /> Historial global</span>
           </div>
         </div>
 
         <form className="client-auth-card" onSubmit={submit}>
           <div className="client-auth-icon"><Icon size={22} /></div>
-          <h2>{isRegister ? 'Registro cliente' : 'Inicio de sesión'}</h2>
-
-          <label>
-            Salón
-            <select
-              value={salonSlug}
-              onChange={(event) => {
-                setSalonSlug(event.target.value);
-                syncStoredSession(event.target.value);
-              }}
-              disabled={loading}
-            >
-              {salons.map((salon) => (
-                <option value={salon.slug} key={salon.slug}>
-                  {salon.name}{salon.city ? ` - ${salon.city}` : ''}
-                </option>
-              ))}
-            </select>
-          </label>
+          <h2>{isRegister ? 'Registro cliente' : 'Inicio de sesiÃ³n'}</h2>
+          <button className="btn btn-ghost btn-lg auth-google" type="button" onClick={startGoogleLogin} disabled={loading}>
+            <span>G</span>
+            Continuar con Google
+          </button>
 
           {step !== 'done' && (
             <>
@@ -308,9 +342,17 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 </div>
               )}
 
+              {isRegister && (
+                <label>
+                  Email opcional
+                  <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" disabled={loading || step === 'code'} />
+                </label>
+              )}
+
               <label>
-                Teléfono
+                TelÃ©fono
                 <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
+                <span className="auth-help">Usaremos este nÃºmero para enviarte un cÃ³digo SMS de un solo uso.</span>
               </label>
 
               {isRegister && step === 'phone' && (
@@ -321,14 +363,17 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                     type="checkbox"
                     disabled={loading}
                   />
-                  Acepto el tratamiento de mis datos para gestionar reservas.
+                  <span>
+                    Acepto los <Link to="/terminos">tÃ©rminos</Link> y la <Link to="/privacidad">polÃ­tica de privacidad</Link>.
+                  </span>
                 </label>
               )}
 
               {step === 'code' && (
                 <label>
-                  Código SMS
+                  CÃ³digo SMS
                   <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" disabled={loading} />
+                  <span className="auth-help">Introduce el cÃ³digo recibido por SMS. Caduca por seguridad.</span>
                 </label>
               )}
             </>
@@ -343,9 +388,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 <strong>Reservas</strong>
                 {bookings.length ? bookings.slice(0, 3).map((booking) => (
                   <p key={booking.id}>
-                    {booking.servicio?.nombre || 'Reserva'} · {formatBookingDate(booking.fecha_hora_inicio)} · {booking.estado || 'pendiente'}
+                    {booking.servicio?.nombre || 'Reserva'} Â· {formatBookingDate(booking.fecha_hora_inicio)} Â· {booking.estado || 'pendiente'}
                   </p>
-                )) : <p>Aún no tienes reservas en este salón.</p>}
+                )) : <p>AÃºn no tienes reservas en este salÃ³n.</p>}
               </div>
             </div>
           )}
@@ -354,7 +399,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
           {step === 'phone' && (
             <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
-              {loading ? 'Enviando...' : 'Enviar código'}
+              {loading ? 'Enviando...' : 'Enviar cÃ³digo'}
             </button>
           )}
 
@@ -365,7 +410,10 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={() => setStep('phone')} disabled={loading}>
                 <RotateCcw size={16} />
-                Cambiar teléfono
+                Cambiar telÃ©fono
+              </button>
+              <button className="btn btn-ghost btn-lg" type="button" onClick={requestCode} disabled={loading || resendCountdown > 0}>
+                {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : 'Reenviar cÃ³digo'}
               </button>
             </div>
           )}
@@ -375,21 +423,25 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
               <button className="btn btn-primary btn-lg" type="button" onClick={() => navigate('/')}>
                 Ir al marketplace
               </button>
+              <button className="btn btn-ghost btn-lg" type="button" onClick={() => navigate('/mi-cuenta')}>
+                Mi cuenta
+              </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={logout}>
                 <LogOut size={16} />
-                Cerrar sesión
+                Cerrar sesiÃ³n
               </button>
             </div>
           )}
 
-          {debugCode && step === 'code' && <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>}
+          {import.meta.env.DEV && debugCode && step === 'code' && <p className="auth-debug">CÃ³digo de entorno de pruebas: {debugCode}</p>}
 
           <p className="auth-switch">
-            {isRegister ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'}{' '}
-            <Link to={isRegister ? '/login' : '/register'}>{isRegister ? 'Inicia sesión' : 'Regístrate'}</Link>
+            {isRegister ? 'Â¿Ya tienes cuenta?' : 'Â¿AÃºn no tienes cuenta?'}{' '}
+            <Link to={isRegister ? '/login' : '/register'}>{isRegister ? 'Inicia sesiÃ³n' : 'RegÃ­strate'}</Link>
           </p>
         </form>
       </div>
     </section>
   );
 }
+
