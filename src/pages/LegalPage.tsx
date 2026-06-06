@@ -78,7 +78,7 @@ export default function LegalPage() {
   const { slug = '' } = useParams();
   const content = LEGAL_CONTENT[slug];
 
-  if (!content) return <Navigate to="/" replace />;
+  if (!content) return <Navigate to="/404" replace />;
 
   return (
     <section className="legal-page">

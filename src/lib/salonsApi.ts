@@ -1,6 +1,6 @@
 import { SALONS, type Salon } from '../data/salons';
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
+import { apiGet } from '../shared/apiClient';
+import { cachedRequest } from '../shared/requestCache';
 
 type PublicSalonPayload = Partial<{
   id: string | number;
@@ -80,16 +80,9 @@ function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
 }
 
 export async function listMarketplaceSalons(signal?: AbortSignal): Promise<Salon[]> {
-  const response = await fetch(`${API_BASE_URL}/salones`, {
-    headers: { Accept: 'application/json' },
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error('No se pudieron cargar los salones.');
-  }
-
-  const payload = await response.json() as unknown;
+  const payload = signal
+    ? await apiGet<unknown>('/salones', { signal })
+    : await cachedRequest('marketplace:salons', () => apiGet<unknown>('/salones'));
   const items: PublicSalonPayload[] = Array.isArray(payload)
     ? payload as PublicSalonPayload[]
     : typeof payload === 'object' && payload !== null && 'items' in payload && Array.isArray(payload.items)

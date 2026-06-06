@@ -1,5 +1,5 @@
 import { CalendarDays, ExternalLink, Phone, X } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './index.css';
 import Nav from './components/Nav';
@@ -9,6 +9,8 @@ import { SALONS, type Salon } from './data/salons';
 import { setSeo } from './lib/seo';
 import { CITIES, SERVICES } from './lib/taxonomy';
 import { trackEvent, trackPageView } from './lib/analytics';
+import { useFocusTrap } from './hooks/useFocusTrap';
+import { useI18n } from './lib/useI18n';
 
 const Home = lazy(() => import('./pages/Home'));
 const Business = lazy(() => import('./pages/Business'));
@@ -25,6 +27,7 @@ const Guides = lazy(() => import('./pages/Guides'));
 const Press = lazy(() => import('./pages/Press'));
 const BusinessSignup = lazy(() => import('./pages/BusinessSignup'));
 const BusinessBillingResult = lazy(() => import('./pages/BusinessBillingResult'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const DASHBOARD_URL = 'https://dashboard.allop.es';
 const BUSINESS_URL = '/business';
@@ -135,9 +138,11 @@ function RouteSeo() {
 }
 
 function RouteFallback() {
+  const { t } = useI18n();
+
   return (
     <div className="route-fallback" role="status" aria-live="polite">
-      Cargando...
+      {t('common.loading')}
     </div>
   );
 }
@@ -146,6 +151,11 @@ export default function App() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+  const salonModalRef = useRef<HTMLElement>(null);
+  const { t } = useI18n();
+
+  const closeSalonPreview = useCallback(() => setSelectedSalon(null), []);
+  useFocusTrap(salonModalRef, Boolean(selectedSalon), closeSalonPreview);
 
   const handleSearch = (query: string) => {
     setSearchTerm(query);
@@ -186,6 +196,7 @@ export default function App() {
     <div>
       <HashScroller />
       <RouteSeo />
+      <a className="skip-link" href="#main-content">{t('skip.main')}</a>
       <Nav
         onSearch={handleSearch}
         onLogin={openClientLogin}
@@ -193,7 +204,7 @@ export default function App() {
         onBusiness={openBusiness}
         dashboardUrl={DASHBOARD_URL}
       />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route
@@ -230,8 +241,9 @@ export default function App() {
             <Route path="/business/alta/cancel" element={<BusinessBillingResult mode="cancel" />} />
             <Route path="/bussiness" element={<Navigate to="/business" replace />} />
             <Route path="/buissiness" element={<Navigate to="/business" replace />} />
+            <Route path="/404" element={<NotFound />} />
             <Route path="/:slug" element={<LegalPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </main>
@@ -239,15 +251,17 @@ export default function App() {
       <CookieBanner />
 
       {selectedSalon && (
-        <div className="modal-backdrop" role="presentation" onClick={() => setSelectedSalon(null)}>
+        <div className="modal-backdrop" role="presentation" onClick={closeSalonPreview}>
           <section
+            ref={salonModalRef}
             className="salon-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="salon-modal-title"
+            tabIndex={-1}
             onClick={(event) => event.stopPropagation()}
           >
-            <button className="modal-close" type="button" aria-label="Cerrar ficha" onClick={() => setSelectedSalon(null)}>
+            <button className="modal-close" type="button" aria-label="Cerrar ficha" onClick={closeSalonPreview}>
               <X size={18} />
             </button>
             <div className={`salon-modal-media ${selectedSalon.imageClass}`} />

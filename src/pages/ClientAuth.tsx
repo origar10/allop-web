@@ -20,6 +20,9 @@ import {
   type ClientSession,
 } from '../lib/clientSession';
 import { trackEvent } from '../lib/analytics';
+import { formatBookingDate } from '../lib/dateFormat';
+import { useToast } from '../lib/useToast';
+import { normalizePhone } from '../shared/formatters';
 
 interface ClientAuthProps {
   mode: 'login' | 'register';
@@ -46,27 +49,6 @@ function getSafeNext(value: string | null) {
   return value;
 }
 
-function normalizePhone(value: string) {
-  const trimmed = value.trim();
-  if (trimmed.startsWith('+')) {
-    return `+${trimmed.slice(1).replace(/\D/g, '')}`;
-  }
-
-  return trimmed.replace(/\D/g, '');
-}
-
-function formatBookingDate(value?: string) {
-  if (!value) return 'Fecha pendiente';
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-}
-
 export default function ClientAuth({ mode }: ClientAuthProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -89,6 +71,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<ClientSession | null>(() => loadClientSession());
   const [bookings, setBookings] = useState<ClientBooking[]>([]);
+  const { notify } = useToast();
 
   const selectedSalon = useMemo(
     () => salons.find((salon) => salon.slug === salonSlug) || salons[0],
@@ -115,8 +98,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
 
-    listPublicSalons()
+    listPublicSalons(controller.signal)
       .then((items) => {
         if (!mounted || !items.length) return;
 
@@ -133,6 +117,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
     return () => {
       mounted = false;
+      controller.abort();
     };
   }, []);
 
@@ -289,6 +274,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     setBookings([]);
     setStep('phone');
     setMessage({ ok: true, text: 'SesiÃ³n cerrada.' });
+    notify('Sesión cerrada.', 'success');
   };
 
   const startGoogleLogin = () => {
@@ -395,10 +381,19 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </div>
           )}
 
-          {message && <p className={`auth-message ${message.ok ? 'ok' : 'err'}`}>{message.text}</p>}
+          {message && (
+            <p
+              className={`auth-message ${message.ok ? 'ok' : 'err'}`}
+              role={message.ok ? 'status' : 'alert'}
+              aria-live={message.ok ? 'polite' : 'assertive'}
+            >
+              {message.text}
+            </p>
+          )}
 
           {step === 'phone' && (
             <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
+              {loading && <span className="inline-spinner" aria-hidden="true" />}
               {loading ? 'Enviando...' : 'Enviar cÃ³digo'}
             </button>
           )}
@@ -406,6 +401,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           {step === 'code' && (
             <div className="auth-actions">
               <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
+                {loading && <span className="inline-spinner" aria-hidden="true" />}
                 {loading ? 'Verificando...' : isRegister ? 'Crear cuenta' : 'Entrar'}
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={() => setStep('phone')} disabled={loading}>

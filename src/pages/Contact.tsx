@@ -61,7 +61,15 @@ export default function Contact({ supportEmail }: { supportEmail: string }) {
           </div>
           <label>Número de reserva opcional<input value={form.bookingLocator} onChange={(event) => setForm({ ...form, bookingLocator: event.target.value })} placeholder="ALP-..." /></label>
           <label>Mensaje<textarea value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} rows={5} /></label>
-          {message && <p className={`auth-message ${message.startsWith('Indica') ? 'err' : 'ok'}`}>{message}</p>}
+          {message && (
+            <p
+              className={`auth-message ${message.startsWith('Indica') ? 'err' : 'ok'}`}
+              role={message.startsWith('Indica') ? 'alert' : 'status'}
+              aria-live={message.startsWith('Indica') ? 'assertive' : 'polite'}
+            >
+              {message}
+            </p>
+          )}
           <button className="btn btn-primary btn-lg" type="submit">Enviar solicitud</button>
         </form>
       </div>

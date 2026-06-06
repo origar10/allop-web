@@ -1,0 +1,41 @@
+{
+  "name": "Allop",
+  "short_name": "Allop",
+  "description": "Marketplace de salones con reserva online y gestion para negocios de belleza.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#1E1B4B",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "categories": ["beauty", "business", "lifestyle"],
+  "icons": [
+    {
+      "src": "/allop-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar salon",
+      "short_name": "Buscar",
+      "url": "/#buscar",
+      "description": "Buscar salones y servicios disponibles"
+    },
+    {
+      "name": "Para salones",
+      "short_name": "Business",
+      "url": "/business",
+      "description": "Ver Allop Business para salones"
+    }
+  ]
+}

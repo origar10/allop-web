@@ -34,6 +34,9 @@ import {
 } from '../lib/accountStore';
 import { clearClientSession, loadClientSession } from '../lib/clientSession';
 import { getClientBookings } from '../lib/platformApi';
+import { useToast } from '../lib/useToast';
+import { statusFromItems, type AsyncStatus } from '../shared/asyncState';
+import { formatDateTime } from '../shared/formatters';
 
 type AccountView = 'dashboard' | 'reservas' | 'favoritos' | 'perfil' | 'puntos';
 
@@ -44,16 +47,6 @@ const ACCOUNT_NAV: { view: AccountView; label: string }[] = [
   { view: 'perfil', label: 'Perfil' },
   { view: 'puntos', label: 'Puntos' },
 ];
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-}
 
 function getView(pathname: string): AccountView {
   if (pathname.includes('/reservas')) return 'reservas';
@@ -85,14 +78,16 @@ export default function Account() {
   const [reviewText, setReviewText] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
   const reviews = loadReviews();
+  const { notify } = useToast();
 
   useEffect(() => {
     if (!session) return;
 
     let mounted = true;
+    const controller = new AbortController();
     const stored = loadStoredBookings();
 
-    getClientBookings(session.salonSlug, session.token)
+    getClientBookings(session.salonSlug, session.token, controller.signal)
       .then((items) => {
         if (!mounted) return;
         const apiBookings = items.map((item) => bookingFromApi(item, session.salonSlug, session.salonName));
@@ -100,7 +95,7 @@ export default function Account() {
         setBookings(next.length ? next : fallbackBookings());
       })
       .catch((error) => {
-        if (!mounted) return;
+        if (!mounted || controller.signal.aborted) return;
         setBookingError(error instanceof Error ? error.message : 'No se pudo cargar el historial remoto.');
         setBookings(stored.length ? stored : fallbackBookings());
       })
@@ -110,6 +105,7 @@ export default function Account() {
 
     return () => {
       mounted = false;
+      controller.abort();
     };
   }, [session]);
 
@@ -121,6 +117,7 @@ export default function Account() {
   const upcomingBookings = bookings.filter((booking) => booking.status === 'confirmada' || booking.status === 'pendiente');
   const completedBookings = bookings.filter((booking) => booking.status === 'completada');
   const points = session?.cliente.puntosFidelizacion ?? Math.max(120, completedBookings.length * 75);
+  const bookingStatus = statusFromItems(bookings, loadingBookings, bookingError);
 
   if (!session || !profile) {
     return (
@@ -136,16 +133,20 @@ export default function Account() {
   }
 
   const cancelBooking = (id: string) => {
+    if (!window.confirm('Cancelar esta reserva?')) return;
+
     const next = cancelStoredBooking(id);
     setBookings(next.length ? next : bookings.map((booking) => (
       booking.id === id ? { ...booking, status: 'cancelada' as const } : booking
     )));
+    notify('Reserva cancelada.', 'success');
   };
 
   const submitProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     saveProfileDraft(profile);
     setProfileMessage('Perfil guardado.');
+    notify('Perfil guardado.', 'success');
     window.setTimeout(() => setProfileMessage(''), 1800);
   };
 
@@ -167,11 +168,13 @@ export default function Account() {
     setReviewBookingId('');
     setReviewText('');
     setReviewRating(5);
+    notify('Reseña guardada.', 'success');
   };
 
   const logoutEverywhere = () => {
     clearClientSession(session.salonSlug);
     clearClientSession();
+    notify('Sesión cerrada.', 'success');
     navigate('/login');
   };
 
@@ -185,6 +188,7 @@ export default function Account() {
     link.click();
     URL.revokeObjectURL(url);
     setPrivacyMessage('Datos exportados en JSON.');
+    notify('Datos exportados.', 'success');
   };
 
   const deleteData = () => {
@@ -193,6 +197,7 @@ export default function Account() {
     deleteAccountData();
     clearClientSession(session.salonSlug);
     clearClientSession();
+    notify('Datos locales eliminados.', 'success');
     navigate('/login');
   };
 
@@ -201,7 +206,18 @@ export default function Account() {
       <div className="container account-layout">
         <aside className="account-sidebar">
           <div className="account-user">
-            <div className="account-avatar">{profile.photoUrl ? <img src={profile.photoUrl} alt="" loading="lazy" decoding="async" /> : <UserRound size={24} />}</div>
+            <div className="account-avatar">
+              {profile.photoUrl ? (
+                <img
+                  src={profile.photoUrl}
+                  alt={`Foto de perfil de ${profile.nombre} ${profile.apellidos}`.trim()}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <UserRound size={24} />
+              )}
+            </div>
             <strong>{profile.nombre} {profile.apellidos}</strong>
             <span>{profile.telefono}</span>
           </div>
@@ -253,8 +269,8 @@ export default function Account() {
                   <p className="section-subtitle">Historial completo con estado y acciones disponibles</p>
                 </div>
               </div>
-              {bookingError && <p className="market-alert">Mostrando reservas locales: {bookingError}</p>}
-              <BookingList bookings={bookings} loading={loadingBookings} onCancel={cancelBooking} />
+              {bookingError && <p className="market-alert" role="status" aria-live="polite">Mostrando reservas locales: {bookingError}</p>}
+              <BookingList bookings={bookings} loading={loadingBookings} status={bookingStatus} onCancel={cancelBooking} />
               <form className="review-form" onSubmit={submitReview}>
                 <h3><MessageSquare size={18} /> Añadir reseña</h3>
                 <select value={reviewBookingId} onChange={(event) => setReviewBookingId(event.target.value)}>
@@ -299,7 +315,7 @@ export default function Account() {
                   <label>Teléfono<input value={profile.telefono} onChange={(event) => setProfile({ ...profile, telefono: event.target.value })} type="tel" /></label>
                 </div>
                 <label>Foto de perfil<input value={profile.photoUrl} onChange={(event) => setProfile({ ...profile, photoUrl: event.target.value })} placeholder="URL de imagen" /></label>
-                {profileMessage && <p className="auth-message ok">{profileMessage}</p>}
+                {profileMessage && <p className="auth-message ok" role="status" aria-live="polite">{profileMessage}</p>}
                 <button className="btn btn-primary btn-lg" type="submit">Guardar perfil</button>
               </form>
 
@@ -314,7 +330,7 @@ export default function Account() {
               <section className="account-card">
                 <h2 className="section-title"><ShieldCheck size={20} /> Seguridad</h2>
                 <div className="security-list">
-                  <span>Sesión activa desde {formatDate(session.createdAt)}</span>
+                  <span>Sesión activa desde {formatDateTime(session.createdAt)}</span>
                   <span>Salón de origen: {session.salonName}</span>
                 </div>
                 <button className="btn btn-ghost btn-lg" type="button" onClick={logoutEverywhere}>
@@ -326,7 +342,7 @@ export default function Account() {
               <section className="account-card">
                 <h2 className="section-title"><Trash2 size={20} /> Privacidad y derechos RGPD</h2>
                 <p className="section-subtitle">Puedes exportar tus datos locales o eliminar la informacion guardada en este navegador. Para supresion completa en backend, contacta con soporte.</p>
-                {privacyMessage && <p className="auth-message ok">{privacyMessage}</p>}
+                {privacyMessage && <p className="auth-message ok" role="status" aria-live="polite">{privacyMessage}</p>}
                 <div className="privacy-actions">
                   <button className="btn btn-ghost btn-lg" type="button" onClick={exportData}>Exportar mis datos</button>
                   <button className="btn btn-ghost btn-lg danger" type="button" onClick={deleteData}>
@@ -362,10 +378,16 @@ export default function Account() {
 function BookingList({ bookings, loading, onCancel }: {
   bookings: AccountBooking[];
   loading: boolean;
+  status?: AsyncStatus;
   onCancel: (id: string) => void;
 }) {
   if (loading) {
-    return <div className="account-loading">Cargando reservas...</div>;
+    return (
+      <div className="account-loading account-loading-skeleton" role="status" aria-live="polite">
+        <span className="inline-spinner" aria-hidden="true" />
+        Cargando reservas...
+      </div>
+    );
   }
 
   if (!bookings.length) {
@@ -373,12 +395,12 @@ function BookingList({ bookings, loading, onCancel }: {
   }
 
   return (
-    <div className="account-bookings">
+    <div className="account-bookings" data-state={status || statusFromItems(bookings, loading)}>
       {bookings.map((booking) => (
         <article key={booking.id}>
           <div>
             <strong>{booking.serviceName}</strong>
-            <span>{booking.salonName} · {formatDate(booking.startsAt)}</span>
+            <span>{booking.salonName} · {formatDateTime(booking.startsAt)}</span>
             <small>{booking.locator}</small>
           </div>
           <div className="booking-row-actions">

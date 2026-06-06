@@ -18,6 +18,7 @@ import { isFavoriteSalon, toggleFavoriteSalon } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getProfessionals, getServices, TIME_SLOTS, WEEK_DAYS } from '../lib/salonDetails';
 import { clearStructuredData, setSeo, setStructuredData } from '../lib/seo';
+import { useToast } from '../lib/useToast';
 
 const REVIEWS_PAGE_SIZE = 2;
 
@@ -56,6 +57,7 @@ export default function SalonProfile() {
   const [reviewsPage, setReviewsPage] = useState(1);
   const [isFavorite, setIsFavorite] = useState(() => isFavoriteSalon(slug));
   const [shareMessage, setShareMessage] = useState('');
+  const { notify } = useToast();
 
   const services = useMemo(() => salon ? getServices(salon) : [], [salon]);
   const professionals = useMemo(() => salon ? getProfessionals(salon) : [], [salon]);
@@ -149,7 +151,7 @@ export default function SalonProfile() {
   }, [salon]);
 
   if (!salon) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/404" replace />;
   }
 
   const photos = [salon.imageClass, 'salon-gallery-detail', 'salon-gallery-work'];
@@ -161,7 +163,9 @@ export default function SalonProfile() {
       return;
     }
 
-    setIsFavorite(toggleFavoriteSalon(salon.slug));
+    const next = toggleFavoriteSalon(salon.slug);
+    setIsFavorite(next);
+    notify(next ? 'Salón guardado.' : 'Salón quitado de favoritos.', 'success');
   };
 
   const shareSalon = async () => {
@@ -173,11 +177,13 @@ export default function SalonProfile() {
 
     if (navigator.share) {
       await navigator.share(shareData).catch(() => undefined);
+      notify('Ficha compartida.', 'success');
       return;
     }
 
     await navigator.clipboard?.writeText(canonicalUrl).catch(() => undefined);
     setShareMessage('Enlace copiado');
+    notify('Enlace copiado.', 'success');
     window.setTimeout(() => setShareMessage(''), 1800);
   };
 

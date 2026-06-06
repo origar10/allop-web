@@ -52,7 +52,7 @@ export default function SalonCard({
             src={buildImageUrl(imageUrl, 360)}
             srcSet={`${buildImageUrl(imageUrl, 240)} 240w, ${buildImageUrl(imageUrl, 360)} 360w, ${buildImageUrl(imageUrl, 520)} 520w`}
             sizes="(max-width: 720px) 118px, (max-width: 1100px) 33vw, 25vw"
-            alt=""
+            alt={`Imagen de ${name}`}
             loading="lazy"
             decoding="async"
           />

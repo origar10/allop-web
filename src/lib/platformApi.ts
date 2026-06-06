@@ -1,3 +1,6 @@
+import { apiGet, apiPost } from '../shared/apiClient';
+import { cachedRequest } from '../shared/requestCache';
+
 export type ClientAuthPurpose = 'LOGIN' | 'REGISTER';
 
 export interface PublicSalon {
@@ -45,80 +48,37 @@ export interface ClientBooking {
   };
 }
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
-
-async function platformRequest<T>(
-  path: string,
-  options: { method?: string; body?: unknown; token?: string } = {},
-): Promise<T> {
-  const headers: HeadersInit = { Accept: 'application/json' };
-
-  if (options.body) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  if (options.token) {
-    headers.Authorization = `Bearer ${options.token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method || 'GET',
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-
-  const payload = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const data = payload as { message?: string; error?: string };
-    throw new Error(data.message || data.error || 'No se pudo completar la solicitud.');
-  }
-
-  return payload as T;
-}
-
-export function listPublicSalons() {
-  return platformRequest<PublicSalon[]>('/salones');
+export function listPublicSalons(signal?: AbortSignal) {
+  if (signal) return apiGet<PublicSalon[]>('/salones', { signal });
+  return cachedRequest('platform:public-salons', () => apiGet<PublicSalon[]>('/salones'));
 }
 
 export function requestClientOtp(slug: string, telefono: string, purpose: ClientAuthPurpose) {
-  return platformRequest<ClientOtpRequest>(`/salones/${encodeURIComponent(slug)}/auth/cliente/otp/request`, {
-    method: 'POST',
-    body: { telefono, purpose },
-  });
+  return apiPost<ClientOtpRequest>(`/salones/${encodeURIComponent(slug)}/auth/cliente/otp/request`, { telefono, purpose });
 }
 
 export function verifyClientOtp(
   slug: string,
   params: { challengeId: number; telefono: string; code: string; purpose: ClientAuthPurpose },
 ) {
-  return platformRequest<ClientOtpVerification>(`/salones/${encodeURIComponent(slug)}/auth/cliente/otp/verify`, {
-    method: 'POST',
-    body: params,
-  });
+  return apiPost<ClientOtpVerification>(`/salones/${encodeURIComponent(slug)}/auth/cliente/otp/verify`, params);
 }
 
 export function registerClient(
   slug: string,
   params: { nombre: string; apellidos?: string; email?: string; telefono: string; verificationToken: string },
 ) {
-  return platformRequest<ClientAuthResponse>(`/salones/${encodeURIComponent(slug)}/auth/cliente/register`, {
-    method: 'POST',
-    body: { ...params, consentimientoRGPD: true },
-  });
+  return apiPost<ClientAuthResponse>(`/salones/${encodeURIComponent(slug)}/auth/cliente/register`, { ...params, consentimientoRGPD: true });
 }
 
 export function loginClient(slug: string, params: { telefono: string; verificationToken: string }) {
-  return platformRequest<ClientAuthResponse>(`/salones/${encodeURIComponent(slug)}/auth/cliente/login`, {
-    method: 'POST',
-    body: params,
-  });
+  return apiPost<ClientAuthResponse>(`/salones/${encodeURIComponent(slug)}/auth/cliente/login`, params);
 }
 
-export function getClientMe(slug: string, token: string) {
-  return platformRequest<ClientProfile>(`/salones/${encodeURIComponent(slug)}/auth/cliente/me`, { token });
+export function getClientMe(slug: string, token: string, signal?: AbortSignal) {
+  return apiGet<ClientProfile>(`/salones/${encodeURIComponent(slug)}/auth/cliente/me`, { token, signal });
 }
 
-export function getClientBookings(slug: string, token: string) {
-  return platformRequest<ClientBooking[]>(`/salones/${encodeURIComponent(slug)}/clientes/me/reservas`, { token });
+export function getClientBookings(slug: string, token: string, signal?: AbortSignal) {
+  return apiGet<ClientBooking[]>(`/salones/${encodeURIComponent(slug)}/clientes/me/reservas`, { token, signal });
 }

@@ -153,9 +153,18 @@ export default function BusinessSignup() {
             <label>Cupon<input value={profile.coupon} onChange={(event) => setProfile({ ...profile, coupon: event.target.value })} placeholder="Opcional" /></label>
           </div>
 
-          {message && <p className={`auth-message ${message.startsWith('Indica') ? 'err' : 'ok'}`}>{message}</p>}
+          {message && (
+            <p
+              className={`auth-message ${message.startsWith('Indica') ? 'err' : 'ok'}`}
+              role={message.startsWith('Indica') ? 'alert' : 'status'}
+              aria-live={message.startsWith('Indica') ? 'assertive' : 'polite'}
+            >
+              {message}
+            </p>
+          )}
 
           <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
+            {submitting && <span className="inline-spinner" aria-hidden="true" />}
             <CreditCard size={16} />
             {submitting ? 'Preparando checkout...' : planId === 'scale' ? 'Solicitar propuesta' : 'Ir a Stripe Checkout'}
           </button>

@@ -1,6 +1,6 @@
 import type { ProfessionalItem, ServiceItem } from './salonDetails';
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
+import { apiGet, apiPost } from '../shared/apiClient';
+import { cachedRequest } from '../shared/requestCache';
 
 export interface BookingRequest {
   salonSlug: string;
@@ -43,21 +43,10 @@ function localConfirmation(params: BookingRequest): BookingConfirmation {
 }
 
 export async function createBooking(params: BookingRequest): Promise<BookingConfirmation> {
-  const headers: HeadersInit = {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-    'Idempotency-Key': params.idempotencyKey,
-  };
-
-  if (params.token) {
-    headers.Authorization = `Bearer ${params.token}`;
-  }
-
   try {
-    const response = await fetch(`${API_BASE_URL}/reservas`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
+    const payload = await apiPost<Partial<BookingConfirmation>>(
+      '/reservas',
+      {
         salonSlug: params.salonSlug,
         serviceId: params.service.id,
         professionalId: params.professional.id === 'any' ? null : params.professional.id,
@@ -67,14 +56,12 @@ export async function createBooking(params: BookingRequest): Promise<BookingConf
         phone: params.phone,
         email: params.email,
         notes: params.notes,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Backend de reservas no disponible.');
-    }
-
-    const payload = await response.json().catch(() => ({})) as Partial<BookingConfirmation>;
+      },
+      {
+        token: params.token,
+        headers: { 'Idempotency-Key': params.idempotencyKey },
+      },
+    );
 
     return {
       id: payload.id || params.idempotencyKey,
@@ -100,14 +87,10 @@ export async function listAvailability(
   if (params.professionalId && params.professionalId !== 'any') query.set('professionalId', params.professionalId);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/salones/${encodeURIComponent(salonSlug)}/disponibilidad?${query.toString()}`, {
-      headers: { Accept: 'application/json' },
-      signal,
-    });
-
-    if (!response.ok) throw new Error('Disponibilidad no disponible.');
-
-    const payload = await response.json() as unknown;
+    const path = `/salones/${encodeURIComponent(salonSlug)}/disponibilidad?${query.toString()}`;
+    const payload = signal
+      ? await apiGet<unknown>(path, { signal })
+      : await cachedRequest(`booking:availability:${path}`, () => apiGet<unknown>(path), 30000);
     const items = Array.isArray(payload)
       ? payload
       : typeof payload === 'object' && payload !== null && 'items' in payload && Array.isArray(payload.items)

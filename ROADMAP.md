@@ -410,64 +410,64 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ### 4.5 Accesibilidad
 
-- [ ] Skip link al contenido principal
-- [ ] Focus trap en modales (actualmente sin gestión de foco)
-- [ ] Focus visible en todos los elementos interactivos
-- [ ] Orden de tabulación lógico en formularios
-- [ ] Contraste de color AAA en textos pequeños
-- [ ] `alt` descriptivos en todas las imágenes reales
-- [ ] `aria-live` en mensajes de error/éxito de formularios
-- [ ] Auditoría con axe-core o Lighthouse Accessibility
+- [x] Skip link al contenido principal
+- [x] Focus trap en modales
+- [x] Focus visible en todos los elementos interactivos
+- [x] Orden de tabulación lógico en formularios
+- [x] Contraste de color AAA en textos pequeños
+- [x] `alt` descriptivos en todas las imágenes reales
+- [x] `aria-live` en mensajes de error/éxito de formularios
+- [ ] Auditoría con axe-core o Lighthouse Accessibility — pendiente medir en VPS tras deploy
 
 ### 4.6 Testing
 
-- [ ] Tests unitarios de utilidades (`normalize`, `matchesQuery`, `formatBookingDate`)
-- [ ] Tests de componentes clave con Vitest + Testing Library
-- [ ] Tests e2e del booking flow con Playwright
-- [ ] Tests de regresión visual (Chromatic o Percy) — opcional
+- [x] Tests unitarios de utilidades (`normalize`, `matchesQuery`, `formatBookingDate`)
+- [x] Tests de componentes clave con Vitest + Testing Library
+- [x] Tests e2e del booking flow con Playwright
+- [ ] Tests de regresión visual (Chromatic o Percy) — opcional, pendiente si se decide versionar snapshots o contratar servicio externo
 
 ### 4.7 Internacionalización
 
-- [ ] Separar strings en fichero de traducciones (i18n)
-- [ ] Soporte catalán (`ca`) como segunda lengua
-- [ ] Selector de idioma en Nav
+- [x] Separar strings en fichero de traducciones (i18n)
+- [x] Soporte catalán (`ca`) como segunda lengua
+- [x] Selector de idioma en Nav
 
 ### 4.8 CI/CD y entornos
 
-- [ ] Variable de entorno `VITE_API_URL` documentada con `.env.example`
-- [ ] Entorno de staging separado del de producción
-- [ ] Preview deploys por PR (Vercel o Netlify si se migra, o rama `staging` en VPS)
-- [ ] Health check de la API antes del deploy
+- [x] Variable de entorno `VITE_API_URL` documentada con `.env.example`
+- [x] Entorno de staging separado del de producción
+- [x] Preview deploys por PR (Vercel o Netlify si se migra, o rama `staging` en VPS) — cubierto con rama `staging` desplegada a ruta separada del VPS
+- [x] Health check de la API antes del deploy
 
 ### 4.9 PWA
 
-- [ ] `manifest.webmanifest` con nombre, colores, iconos
-- [ ] Service worker básico (offline fallback)
-- [ ] Instalable en móvil ("Añadir a pantalla de inicio")
+- [x] `manifest.webmanifest` con nombre, colores, iconos
+- [x] Service worker básico (offline fallback)
+- [x] Instalable en móvil ("Añadir a pantalla de inicio")
 
 ### 4.10 UX general
 
-- [ ] Modo oscuro (CSS `prefers-color-scheme` + toggle)
-- [ ] Toast notifications para acciones (reserva guardada, sesión cerrada, etc.)
-- [ ] Página 404 personalizada con sugerencias
+- [x] Modo oscuro (CSS `prefers-color-scheme` + toggle)
+- [x] Toast notifications para acciones (reserva guardada, sesión cerrada, etc.)
+- [x] Página 404 personalizada con sugerencias
 - [x] Error boundary global con fallback
-- [ ] Loading spinners/skeletons en todas las peticiones async
-- [ ] Confirmación antes de cancelar reserva
-- [ ] Scroll to top en cambio de ruta (ya implementado, mantener)
-- [ ] Breadcrumb en páginas internas (`Home > Peluquería > Feromi`)
+- [x] Loading spinners/skeletons en todas las peticiones async
+- [x] Confirmación antes de cancelar reserva
+- [x] Scroll to top en cambio de ruta (ya implementado, mantener)
+- [x] Breadcrumb en páginas internas (`Home > Peluquería > Feromi`)
 
 ### 4.11 Arquitectura frontend
 
-- [ ] Definir estructura estable por dominios: `marketplace`, `auth`, `booking`, `account`, `business`, `legal`, `shared`
-- [ ] Separar componentes de página, componentes reutilizables, hooks y llamadas API
-- [ ] Crear capa de cliente API tipada (`apiClient`) con timeout, errores normalizados y manejo de sesión
-- [ ] Usar `AbortController` en búsquedas, disponibilidad y peticiones cancelables
-- [ ] Añadir cache de datos para consultas repetidas (TanStack Query o patrón local equivalente)
-- [ ] Definir estados estándar: `idle`, `loading`, `success`, `empty`, `error`
-- [ ] Centralizar formateadores: moneda, duración, distancia, fechas, teléfonos
+- [x] Definir estructura estable por dominios: `marketplace`, `auth`, `booking`, `account`, `business`, `legal`, `shared`
+- [x] Separar componentes de página, componentes reutilizables, hooks y llamadas API
+- [x] Crear capa de cliente API tipada (`apiClient`) con timeout, errores normalizados y manejo de sesión
+- [x] Usar `AbortController` en búsquedas, disponibilidad y peticiones cancelables
+- [x] Añadir cache de datos para consultas repetidas (TanStack Query o patrón local equivalente)
+- [x] Definir estados estándar: `idle`, `loading`, `success`, `empty`, `error`
+- [x] Centralizar formateadores: moneda, duración, distancia, fechas, teléfonos
 - [x] Evitar navegación externa para perfiles (`goTo('https://allop.es/...')`) y usar rutas internas
-- [ ] Sustituir redirects comodín a `/` por una ruta 404 real
-- [ ] Documentar convenciones de nombres, rutas y ownership de módulos
+- [x] Sustituir redirects comodín a `/` por una ruta 404 real
+- [x] Documentar convenciones de nombres, rutas y ownership de módulos
 
 ### 4.12 Contratos de API y backend
 
@@ -596,7 +596,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [ ] Corregir encoding/mojibake en textos visibles del código fuente si aparece en navegador o build
 - [ ] Reescribir `README.md`
 - [ ] Crear `.env.example`
-- [ ] Añadir 404 real y error boundary
+- [x] Añadir 404 real y error boundary
 - [x] Añadir páginas legales placeholder revisables por legal
 - [x] Añadir banner de cookies sin cargar analítica antes del consentimiento
 - [ ] Configurar SEO base por ruta
@@ -727,7 +727,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [x] Datos reales (reemplazar `salons.ts` mock)
 - [ ] API client tipado y errores normalizados
 - [x] SEO básico (title, description, OG por ruta)
-- [ ] 404 personalizado
+- [x] 404 personalizado
 - [ ] Error boundary
 - [x] No exponer códigos OTP de debug en producción
 - [ ] Decidir modelo de cobro inicial: suscripción B2B, prepago cliente, señal o sin pagos en reservas

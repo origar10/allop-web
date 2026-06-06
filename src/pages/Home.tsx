@@ -16,13 +16,17 @@ import {
   Star,
   Wand2,
 } from 'lucide-react';
-import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SalonCard from '../components/SalonCard';
 import { PROMO_BANNER, RECENT_REVIEWS, SALONS, type Salon } from '../data/salons';
 import { saveMarketplaceLead, type MarketplaceLead } from '../lib/marketplaceLeads';
 import { listMarketplaceSalons } from '../lib/salonsApi';
 import { setSeo } from '../lib/seo';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import { matchesQuery, normalize } from '../lib/searchUtils';
+import { statusFromItems } from '../shared/asyncState';
+import { formatDistanceKm } from '../shared/formatters';
 
 const CATEGORIES = [
   { icon: <Scissors size={22} />, label: 'Peluquería' },
@@ -80,10 +84,6 @@ interface HomeProps {
   onSalonSignup: () => void;
 }
 
-function normalize(value: string) {
-  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-}
-
 function getDistanceKm(from: UserLocation, salon: Salon) {
   const earthRadiusKm = 6371;
   const latDistance = (salon.lat - from.lat) * Math.PI / 180;
@@ -106,7 +106,7 @@ function withDisplayDistance(salon: Salon, userLocation: UserLocation | null) {
 
   return {
     ...salon,
-    distance: `${getDistanceKm(userLocation, salon).toFixed(1)} km`,
+    distance: formatDistanceKm(getDistanceKm(userLocation, salon)),
   };
 }
 
@@ -124,15 +124,6 @@ function getAvailabilityRank(salon: Salon) {
   if (group === 'today') return 0;
   if (group === 'tomorrow') return 1;
   return 2;
-}
-
-function matchesQuery(salon: Salon, query: string, city: string) {
-  const haystack = normalize([salon.name, salon.category, salon.location, salon.tags.join(' ')].join(' '));
-  const normalizedQuery = normalize(query);
-  const normalizedCity = normalize(city);
-
-  return (!normalizedQuery || haystack.includes(normalizedQuery)) &&
-    (!normalizedCity || normalize(salon.location).includes(normalizedCity));
 }
 
 function sortSalons(salons: Salon[], sortBy: SortMode, userLocation: UserLocation | null = null) {
@@ -182,6 +173,10 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
   const [leadType, setLeadType] = useState<MarketplaceLead['type'] | null>(null);
   const [lead, setLead] = useState({ name: '', phone: '', email: '', city: '', message: '' });
   const [leadMessage, setLeadMessage] = useState('');
+  const leadModalRef = useRef<HTMLFormElement>(null);
+
+  const closeLeadModal = useCallback(() => setLeadType(null), []);
+  useFocusTrap(leadModalRef, Boolean(leadType), closeLeadModal);
 
   useEffect(() => {
     setSeo({
@@ -341,6 +336,8 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
   const resultText = isLoadingSalons
     ? 'Cargando salones...'
     : filteredSalons.length === 1 ? '1 salón disponible' : `${filteredSalons.length} salones disponibles`;
+
+  const resultsStatus = statusFromItems(filteredSalons, isLoadingSalons || isFiltering, loadError);
 
   const submitLead = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -572,7 +569,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
           </div>
 
           {isLoadingSalons || isFiltering ? (
-            <div className="salons-grid">
+            <div className="salons-grid" data-state={resultsStatus}>
               {Array.from({ length: Math.min(visibleCount, 4) }).map((_, index) => (
                 <div className="salon-skeleton" key={index}>
                   <span />
@@ -585,7 +582,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               ))}
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="salons-grid">
+            <div className="salons-grid" data-state={resultsStatus}>
               {visibleSalons.map((salon) => (
                 <SalonCard
                   key={salon.id}
@@ -832,18 +829,35 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
       </section>
 
       {leadType && (
-        <div className="modal-backdrop" role="presentation" onClick={() => setLeadType(null)}>
-          <form className="market-lead-modal" onSubmit={submitLead} onClick={(event) => event.stopPropagation()}>
-            <h2>{leadType === 'claim_listing' ? 'Reclamar ficha' : leadType === 'suggest_salon' ? 'Sugerir salón' : 'Avisadme'}</h2>
+        <div className="modal-backdrop" role="presentation" onClick={closeLeadModal}>
+          <form
+            ref={leadModalRef}
+            className="market-lead-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="market-lead-title"
+            tabIndex={-1}
+            onSubmit={submitLead}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="market-lead-title">{leadType === 'claim_listing' ? 'Reclamar ficha' : leadType === 'suggest_salon' ? 'Sugerir salón' : 'Avisadme'}</h2>
             <p>Déjanos tus datos y el equipo de Allop revisará la solicitud.</p>
             <label>Nombre<input value={lead.name} onChange={(event) => setLead({ ...lead, name: event.target.value })} /></label>
             <label>Teléfono<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
             <label>Email<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
             <label>Ciudad<input value={lead.city || cityQuery} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
             <label>Mensaje<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={3} /></label>
-            {leadMessage && <p className={`auth-message ${leadMessage.startsWith('Indica') ? 'err' : 'ok'}`}>{leadMessage}</p>}
+            {leadMessage && (
+              <p
+                className={`auth-message ${leadMessage.startsWith('Indica') ? 'err' : 'ok'}`}
+                role={leadMessage.startsWith('Indica') ? 'alert' : 'status'}
+                aria-live={leadMessage.startsWith('Indica') ? 'assertive' : 'polite'}
+              >
+                {leadMessage}
+              </p>
+            )}
             <div className="booking-nav">
-              <button className="btn btn-ghost" type="button" onClick={() => setLeadType(null)}>Cerrar</button>
+              <button className="btn btn-ghost" type="button" onClick={closeLeadModal}>Cerrar</button>
               <button className="btn btn-primary" type="submit">Enviar</button>
             </div>
           </form>

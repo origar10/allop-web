@@ -1,5 +1,402 @@
 # Progreso allop-web
 
+## 2026-06-06 - Arquitectura frontend, ROADMAP 4.11
+
+### Hecho
+- Creada capa compartida `apiClient` con:
+  - `API_BASE_URL` centralizado,
+  - timeout por defecto,
+  - `ApiError` normalizado,
+  - soporte de `AbortSignal`,
+  - headers de sesion/token,
+  - helpers `apiGet`, `apiPost` y `apiRequest`.
+- Anadido cache local de consultas repetidas con `cachedRequest` y limpieza con `clearRequestCache`.
+- Definido vocabulario estandar de estados async:
+  - `idle`,
+  - `loading`,
+  - `success`,
+  - `empty`,
+  - `error`.
+- Centralizados formateadores compartidos:
+  - moneda,
+  - duracion,
+  - distancia,
+  - fechas,
+  - telefonos.
+- Refactorizadas llamadas API para pasar por la capa compartida:
+  - plataforma/auth cliente,
+  - marketplace de salones,
+  - reservas y disponibilidad,
+  - leads B2B,
+  - billing/Stripe.
+- Mantenidos fallbacks locales en reservas, billing, leads y marketplace para no degradar la experiencia si backend/Stripe no responden.
+- Anadido `AbortController` a cargas cancelables de salones y reservas de cuenta.
+- Usados estados estandar en Home y cuenta de cliente mediante `statusFromItems`.
+- Creada estructura documentada de dominios en `src/domains`:
+  - `marketplace`,
+  - `auth`,
+  - `booking`,
+  - `account`,
+  - `business`,
+  - `legal`,
+  - `shared`.
+- Documentadas convenciones de ownership, nombres, rutas, API, cache, estados y formateadores en `docs/frontend-architecture.md`.
+- Actualizado `ROADMAP.md`: punto 4.11 completo.
+
+### Archivos modificados/anadidos
+- `src/shared/apiClient.ts`
+- `src/shared/requestCache.ts`
+- `src/shared/asyncState.ts`
+- `src/shared/formatters.ts`
+- `src/shared/formatters.test.ts`
+- `src/shared/requestCache.test.ts`
+- `src/shared/asyncState.test.ts`
+- `src/domains/README.md`
+- `src/domains/marketplace/README.md`
+- `src/domains/auth/README.md`
+- `src/domains/booking/README.md`
+- `src/domains/account/README.md`
+- `src/domains/business/README.md`
+- `src/domains/legal/README.md`
+- `src/domains/shared/README.md`
+- `docs/frontend-architecture.md`
+- `src/lib/platformApi.ts`
+- `src/lib/salonsApi.ts`
+- `src/lib/businessLeads.ts`
+- `src/lib/bookingApi.ts`
+- `src/lib/billingApi.ts`
+- `src/lib/dateFormat.ts`
+- `src/pages/Home.tsx`
+- `src/pages/Account.tsx`
+- `src/pages/ClientAuth.tsx`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run test:unit` OK: 8 archivos, 16 tests.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+
+## 2026-06-06 - UX general, ROADMAP 4.10
+
+### Hecho
+- Anadido modo oscuro con:
+  - `prefers-color-scheme`,
+  - persistencia en `localStorage` bajo `allop.theme`,
+  - `ThemeProvider`,
+  - hook `useTheme`,
+  - toggle claro/oscuro en Nav normal y Business.
+- Anadido sistema global de toasts:
+  - `ToastProvider`,
+  - hook `useToast`,
+  - region accesible `aria-live`,
+  - variantes `success`, `error`, `info`.
+- Conectados toasts en acciones comunes:
+  - reserva guardada,
+  - reserva cancelada,
+  - sesion cerrada,
+  - perfil guardado,
+  - datos exportados/eliminados,
+  - resena guardada,
+  - favorito guardado/eliminado,
+  - enlace/ficha compartida.
+- Creada pagina 404 personalizada con sugerencias:
+  - buscar salones,
+  - centro de ayuda,
+  - Allop Business,
+  - contacto.
+- Sustituido wildcard de rutas por 404 real y redireccion de fichas/rutas invalidas a `/404`.
+- Anadidos spinners de carga:
+  - fallback de rutas,
+  - botones async de reserva, auth, lead B2B y checkout,
+  - carga de reservas en cuenta.
+- Anadida confirmacion antes de cancelar reserva:
+  - desde area cliente,
+  - desde pantalla de confirmacion de reserva.
+- Mantenido scroll to top/hash en cambio de ruta.
+- Anadido breadcrumb real en booking flow y mantenido breadcrumb de ficha de salon.
+- Actualizado `ROADMAP.md`: punto 4.10 completo y checks relacionados de 404 sincronizados.
+
+### Archivos modificados/anadidos
+- `src/lib/theme.tsx`
+- `src/lib/themeContext.ts`
+- `src/lib/useTheme.ts`
+- `src/components/ToastProvider.tsx`
+- `src/lib/toastContext.ts`
+- `src/lib/useToast.ts`
+- `src/pages/NotFound.tsx`
+- `src/main.tsx`
+- `src/App.tsx`
+- `src/components/Nav.tsx`
+- `src/pages/Account.tsx`
+- `src/pages/BookingFlow.tsx`
+- `src/pages/ClientAuth.tsx`
+- `src/pages/Business.tsx`
+- `src/pages/BusinessSignup.tsx`
+- `src/pages/SalonProfile.tsx`
+- `src/pages/LegalPage.tsx`
+- `src/lib/translations.ts`
+- `src/test/setup.ts`
+- `src/components/Nav.test.tsx`
+- `src/index.css`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run test:unit` OK: 5 archivos, 10 tests.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+
+## 2026-06-06 - PWA, ROADMAP 4.9
+
+### Hecho
+- Creado `public/manifest.webmanifest` con:
+  - nombre y nombre corto,
+  - descripcion,
+  - `start_url`, `scope` y `display: standalone`,
+  - `theme_color` y `background_color`,
+  - iconos reutilizando `allop-icon.svg` y `favicon.svg`,
+  - shortcuts a busqueda y Allop Business.
+- Anadidos metadatos PWA en `index.html`:
+  - `manifest`,
+  - `theme-color`,
+  - soporte `mobile-web-app-capable`,
+  - soporte Apple web app.
+- Creado `public/offline.html` como fallback offline basico.
+- Creado `public/sw.js` con:
+  - cache de app shell,
+  - limpieza de caches antiguos,
+  - fallback offline para navegacion,
+  - cache runtime de assets same-origin.
+- Creado `src/lib/pwa.ts` para registrar el service worker solo en produccion.
+- Conectado registro PWA en `src/main.tsx`.
+- Confirmado que `manifest.webmanifest`, `offline.html` y `sw.js` salen en `dist/`.
+- Actualizado `ROADMAP.md`: punto 4.9 completo.
+
+### Archivos modificados/anadidos
+- `public/manifest.webmanifest`
+- `public/offline.html`
+- `public/sw.js`
+- `src/lib/pwa.ts`
+- `src/main.tsx`
+- `index.html`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- Manifest JSON OK.
+- `npm.cmd run lint` OK.
+- `npm.cmd run test:unit` OK: 5 archivos, 10 tests.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+- Nota: la comprobacion final de instalabilidad conviene hacerla con Lighthouse/PWA en el VPS tras deploy, porque el service worker solo se registra en build de produccion.
+
+## 2026-06-06 - CI/CD y entornos, ROADMAP 4.8
+
+### Hecho
+- Creado `.env.example` con variables publicas necesarias:
+  - `VITE_API_URL`,
+  - `VITE_HEALTH_CHECK_URL`,
+  - `VITE_PLAUSIBLE_DOMAIN`,
+  - `VITE_MONITORING_ENDPOINT`,
+  - `VITE_SENTRY_DSN`,
+  - `VITE_GOOGLE_AUTH_URL`.
+- Anadido script `predeploy:health` en `package.json`.
+- Creado `scripts/predeploy-health-check.mjs`:
+  - usa `VITE_HEALTH_CHECK_URL` si existe,
+  - si no, comprueba `${VITE_API_URL}/health`,
+  - falla el deploy si la API no devuelve HTTP 2xx.
+- Rehecho workflow `.github/workflows/deploy.yml`:
+  - `pull_request` ejecuta calidad sin deploy,
+  - `push` en `main`/`master` despliega produccion,
+  - `push` en `staging` despliega entorno staging,
+  - `workflow_dispatch` permite ejecucion manual,
+  - calidad ejecuta `npm ci`, `lint`, `test:unit` y `build`,
+  - deploy ejecuta build y health check antes de copiar `dist/` al VPS.
+- Separados valores de entorno para produccion y staging mediante GitHub Actions `vars`/`secrets`.
+- Anadidas rutas de deploy separadas:
+  - produccion: `/opt/allop/platform/web`,
+  - staging: `/opt/allop/platform/web-staging`.
+- Documentado el proceso en `docs/cicd-entornos.md`, incluyendo ramas, variables, secrets, health check y uso local.
+- Actualizado `ROADMAP.md`: punto 4.8 completo.
+
+### Archivos modificados/anadidos
+- `.env.example`
+- `.github/workflows/deploy.yml`
+- `scripts/predeploy-health-check.mjs`
+- `docs/cicd-entornos.md`
+- `package.json`
+- `package-lock.json`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run predeploy:health` OK usando `VITE_HEALTH_CHECK_URL=https://example.com`.
+- `npm.cmd run lint` OK.
+- `npm.cmd run test:unit` OK: 5 archivos, 10 tests.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+- Nota: en GitHub Actions hay que configurar las variables/secrets documentadas antes de depender del deploy de staging/produccion.
+
+## 2026-06-06 - Internacionalizacion, ROADMAP 4.7
+
+### Hecho
+- Creado sistema i18n ligero sin dependencias externas:
+  - `src/lib/translations.ts` con diccionarios `es` y `ca`,
+  - `src/lib/i18n.tsx` con `I18nProvider`,
+  - `src/lib/i18nContext.ts`,
+  - `src/lib/useI18n.ts`.
+- Separadas cadenas comunes de UI en fichero de traducciones:
+  - carga y skip link,
+  - Nav,
+  - selector de idioma,
+  - Footer cliente y business,
+  - banner de cookies.
+- Anadido soporte catalan (`ca`) como segunda lengua para esas cadenas transversales.
+- Anadida persistencia de idioma en `localStorage` bajo `allop.locale`.
+- Anadida deteccion inicial por navegador: si `navigator.language` empieza por `ca`, se usa catalan; si no, espanol.
+- Anadida actualizacion de `document.documentElement.lang` al cambiar idioma.
+- Anadido selector de idioma en Nav normal y Nav business.
+- Ajustados estilos del selector para desktop/mobile sin romper la composicion actual.
+- Actualizados tests del banner de cookies con `I18nProvider`.
+- Anadido test de `Nav` que cambia a catalan y valida:
+  - strings traducidas,
+  - persistencia en `localStorage`,
+  - atributo `lang="ca"` en HTML.
+- Actualizado `ROADMAP.md`: punto 4.7 completo.
+
+### Archivos modificados/anadidos
+- `src/lib/translations.ts`
+- `src/lib/i18n.tsx`
+- `src/lib/i18nContext.ts`
+- `src/lib/useI18n.ts`
+- `src/main.tsx`
+- `src/App.tsx`
+- `src/components/Nav.tsx`
+- `src/components/Footer.tsx`
+- `src/components/CookieBanner.tsx`
+- `src/components/CookieBanner.test.tsx`
+- `src/components/Nav.test.tsx`
+- `src/index.css`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run test:unit` OK: 5 archivos, 10 tests.
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+- Nota: el alcance inicial traduce componentes comunes/transversales; las paginas completas quedan preparadas para migrarse progresivamente al diccionario.
+
+## 2026-06-06 - Testing, ROADMAP 4.6
+
+### Hecho
+- Anadida infraestructura de testing unitario/componentes con Vitest, jsdom y Testing Library.
+- Anadidos scripts:
+  - `npm.cmd run test`,
+  - `npm.cmd run test:unit`,
+  - `npm.cmd run test:watch`,
+  - `npm.cmd run test:e2e`.
+- Configurado `vite.config.ts` para tests en jsdom con setup de `@testing-library/jest-dom`.
+- Ajustado ESLint para globals de Vitest y configuraciones Node.
+- Excluidos tests del `tsc -b` de produccion en `tsconfig.app.json`.
+- Extraidas utilidades testeables:
+  - `src/lib/searchUtils.ts` con `normalize` y `matchesQuery`,
+  - `src/lib/dateFormat.ts` con `formatBookingDate`.
+- Anadidos tests unitarios de utilidades:
+  - normalizacion de acentos y mayusculas,
+  - matching por texto/ciudad,
+  - formateo de fecha de reserva.
+- Anadidos tests de componentes clave:
+  - `SalonCard` renderiza datos, `alt` accesible y dispara seleccion,
+  - `CookieBanner` guarda consentimiento y se oculta correctamente.
+- Anadida infraestructura e2e con Playwright:
+  - `playwright.config.ts`,
+  - test del booking flow como invitado en `/reservar/feromi`,
+  - API interceptada para validar fallback local sin depender del backend.
+- Instalado navegador Chromium de Playwright para poder ejecutar e2e localmente.
+- Anadidos `playwright-report` y `test-results` a `.gitignore`.
+- Actualizado `ROADMAP.md`: punto 4.6 completo salvo regresion visual opcional.
+
+### Archivos modificados/anadidos
+- `package.json`
+- `package-lock.json`
+- `vite.config.ts`
+- `eslint.config.js`
+- `tsconfig.app.json`
+- `.gitignore`
+- `playwright.config.ts`
+- `src/test/setup.ts`
+- `src/lib/searchUtils.ts`
+- `src/lib/searchUtils.test.ts`
+- `src/lib/dateFormat.ts`
+- `src/lib/dateFormat.test.ts`
+- `src/pages/Home.tsx`
+- `src/pages/ClientAuth.tsx`
+- `src/components/SalonCard.test.tsx`
+- `src/components/CookieBanner.test.tsx`
+- `tests/e2e/booking-flow.spec.ts`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run test:unit` OK: 4 archivos, 9 tests.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- Nota: regresion visual con Chromatic/Percy queda como opcional no activada.
+
+## 2026-06-06 - Accesibilidad, ROADMAP 4.5
+
+### Hecho
+- Anadido skip link al contenido principal y objetivo `main#main-content`.
+- Creado hook reutilizable `useFocusTrap` para modales:
+  - mueve el foco al abrir,
+  - encierra Tab/Shift+Tab dentro del dialogo,
+  - permite cerrar con Escape,
+  - devuelve el foco al elemento anterior al cerrar.
+- Aplicado focus trap al modal de ficha de salon y al modal de leads del marketplace.
+- Anadida semantica de dialogo accesible en el modal de leads: `role="dialog"`, `aria-modal`, `aria-labelledby`.
+- Anadido foco visible global para enlaces, botones, inputs, selects, textareas y elementos con `tabindex`.
+- Revisado orden de tabulacion de formularios y modales sin introducir `tabindex` positivo.
+- Mejorado contraste de textos pequenos:
+  - tokens secundarios `--fg-3` y `--fg-4`,
+  - textos sobre hero, banners, CTA y footer.
+- Anadidos `alt` descriptivos a imagenes reales de tarjetas de salon y avatar de cuenta.
+- Anadidos `aria-live`/`role` en mensajes de error y exito de formularios:
+  - booking,
+  - auth cliente,
+  - contacto,
+  - business lead,
+  - alta self-service,
+  - portal billing,
+  - cuenta cliente,
+  - leads marketplace.
+- Actualizado `ROADMAP.md`: punto 4.5 marcado completo salvo auditoria automatica pendiente de medir en VPS tras deploy.
+
+### Archivos modificados/anadidos
+- `src/hooks/useFocusTrap.ts`
+- `src/App.tsx`
+- `src/pages/Home.tsx`
+- `src/pages/BookingFlow.tsx`
+- `src/pages/Business.tsx`
+- `src/pages/BusinessSignup.tsx`
+- `src/pages/BusinessBillingResult.tsx`
+- `src/pages/ClientAuth.tsx`
+- `src/pages/Contact.tsx`
+- `src/pages/Account.tsx`
+- `src/components/SalonCard.tsx`
+- `src/index.css`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- Nota: no se ha ejecutado axe-core/Lighthouse Accessibility porque se validara en el VPS tras deploy.
+
 ## 2026-06-05 - Legal y privacidad, ROADMAP 4.4
 
 ### Hecho

@@ -1,4 +1,5 @@
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
+import { apiPost } from '../shared/apiClient';
+
 const LEADS_KEY = 'allop.business.leads';
 
 export interface BusinessLead {
@@ -20,17 +21,7 @@ function storeLead(lead: BusinessLead) {
 
 export async function submitBusinessLead(lead: BusinessLead) {
   try {
-    const response = await fetch(`${API_BASE_URL}/leads/b2b`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(lead),
-    });
-
-    if (!response.ok) throw new Error('CRM no disponible.');
-
+    await apiPost('/leads/b2b', lead);
     return { storedLocally: false };
   } catch {
     storeLead(lead);

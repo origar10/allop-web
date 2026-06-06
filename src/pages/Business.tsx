@@ -568,8 +568,17 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
               </select></label>
             </div>
             <label>Mensaje<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={4} /></label>
-            {leadMessage && <p className={`auth-message ${leadMessage.includes('Indica') ? 'err' : 'ok'}`}>{leadMessage}</p>}
+            {leadMessage && (
+              <p
+                className={`auth-message ${leadMessage.includes('Indica') ? 'err' : 'ok'}`}
+                role={leadMessage.includes('Indica') ? 'alert' : 'status'}
+                aria-live={leadMessage.includes('Indica') ? 'assertive' : 'polite'}
+              >
+                {leadMessage}
+              </p>
+            )}
             <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
+              {submitting && <span className="inline-spinner" aria-hidden="true" />}
               {submitting ? 'Enviando...' : 'Solicitar demo'}
             </button>
             <a className="business-email-link" href={`mailto:${supportEmail}`}>También puedes escribir a {supportEmail}</a>

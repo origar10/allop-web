@@ -1,7 +1,6 @@
 import {
   CalendarDays,
   CheckCircle,
-  ChevronLeft,
   Clock,
   LogIn,
   Phone,
@@ -18,6 +17,7 @@ import { addStoredBooking, createLocalBooking } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getAvailableDates, getProfessionals, getServices, TIME_SLOTS } from '../lib/salonDetails';
 import { trackEvent } from '../lib/analytics';
+import { useToast } from '../lib/useToast';
 
 type BookingStep = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -57,6 +57,7 @@ export default function BookingFlow() {
   const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
   const [cancelled, setCancelled] = useState(false);
   const trackedStart = useRef(false);
+  const { notify } = useToast();
 
   useEffect(() => {
     if (!salon) return;
@@ -88,7 +89,7 @@ export default function BookingFlow() {
   }, [salon]);
 
   if (!salon) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/404" replace />;
   }
 
   const selectedService = services.find((service) => service.id === selectedServiceId) || services[0];
@@ -156,16 +157,26 @@ export default function BookingFlow() {
     setConfirmation(result);
     setStep(6);
     setLoading(false);
+    notify('Reserva guardada.', 'success');
+  };
+
+  const cancelFromConfirmation = () => {
+    if (!window.confirm('Cancelar esta reserva?')) return;
+    setCancelled(true);
+    notify('Reserva cancelada.', 'success');
   };
 
   return (
     <section className="booking-flow">
       <div className="container booking-layout">
         <div className="booking-main">
-          <Link className="breadcrumb-link" to={`/salones/${salon.slug}`}>
-            <ChevronLeft size={15} />
-            Volver a {salon.name}
-          </Link>
+          <nav className="breadcrumb-chain" aria-label="Miga de pan">
+            <Link to="/">Marketplace</Link>
+            <span>/</span>
+            <Link to={`/salones/${salon.slug}`}>{salon.name}</Link>
+            <span>/</span>
+            <span>Reserva</span>
+          </nav>
           <div className="booking-heading">
             <p className="eyebrow">Reserva en Allop</p>
             <h1>{salon.name}</h1>
@@ -303,10 +314,11 @@ export default function BookingFlow() {
                 <p>La reserva puede quedar pendiente hasta que el salón confirme disponibilidad. Puedes cancelar desde la confirmación o desde Mi cuenta mientras esté pendiente/confirmada.</p>
                 <p>Si llegas tarde o no acudes, el salón puede aplicar sus reglas internas si fueron comunicadas. Consulta <Link to="/terminos">términos</Link>, <Link to="/privacidad">privacidad</Link> y <Link to="/confianza">confianza</Link>.</p>
               </div>
-              {error && <p className="auth-message err">{error}</p>}
+              {error && <p className="auth-message err" role="alert" aria-live="assertive">{error}</p>}
               <div className="booking-nav">
                 <button className="btn btn-ghost btn-lg" type="button" onClick={goBack} disabled={loading}>Atrás</button>
                 <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
+                  {loading && <span className="inline-spinner" aria-hidden="true" />}
                   {loading ? 'Confirmando...' : 'Confirmar reserva'}
                 </button>
               </div>
@@ -327,7 +339,7 @@ export default function BookingFlow() {
               <div className="booking-nav">
                 <Link className="btn btn-primary btn-lg" to={`/salones/${salon.slug}`}>Volver al salón</Link>
                 {!cancelled && (
-                  <button className="btn btn-ghost btn-lg" type="button" onClick={() => setCancelled(true)}>Cancelar reserva</button>
+                  <button className="btn btn-ghost btn-lg" type="button" onClick={cancelFromConfirmation}>Cancelar reserva</button>
                 )}
               </div>
             </div>

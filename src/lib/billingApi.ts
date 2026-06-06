@@ -1,6 +1,6 @@
 import { trackEvent, type AnalyticsEventName } from './analytics';
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
+import { apiGet, apiPost } from '../shared/apiClient';
+import { formatCurrency } from '../shared/formatters';
 const BILLING_STATE_KEY = 'allop.billing.subscription';
 const BILLING_EVENTS_KEY = 'allop.billing.events';
 
@@ -146,7 +146,7 @@ export function getBillingPlan(planId: BillingPlanId) {
 export function formatPlanPrice(plan: BillingPlan, interval: BillingInterval) {
   const price = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
   if (price === null) return 'A medida';
-  return `${price} EUR${interval === 'annual' ? '/ano' : '/mes'}`;
+  return `${formatCurrency(price)}${interval === 'annual' ? '/ano' : '/mes'}`;
 }
 
 export function calculateVat(amount: number) {
@@ -172,17 +172,7 @@ export async function createCheckoutSession(planId: BillingPlanId, interval: Bil
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/billing/checkout-sessions`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) throw new Error('Stripe Checkout no disponible.');
-    const data = await response.json() as { url?: string; subscription?: SubscriptionSnapshot };
+    const data = await apiPost<{ url?: string; subscription?: SubscriptionSnapshot }>('/billing/checkout-sessions', payload);
     if (data.subscription) writeSubscription(data.subscription);
     if (!data.url) throw new Error('El backend no devolvio URL de Checkout.');
 
@@ -198,13 +188,7 @@ export async function openCustomerPortal() {
   recordBillingEvent('portal_opened', {});
 
   try {
-    const response = await fetch(`${API_BASE_URL}/billing/customer-portal`, {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-    });
-
-    if (!response.ok) throw new Error('Portal no disponible.');
-    const data = await response.json() as { url?: string };
+    const data = await apiPost<{ url?: string }>('/billing/customer-portal');
     if (!data.url) throw new Error('El backend no devolvio URL de portal.');
 
     return { url: data.url, localFallback: false };
@@ -219,11 +203,7 @@ export async function openCustomerPortal() {
 
 export async function getSubscriptionStatus() {
   try {
-    const response = await fetch(`${API_BASE_URL}/billing/subscription`, {
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error('Estado no disponible.');
-    const subscription = await response.json() as SubscriptionSnapshot;
+    const subscription = await apiGet<SubscriptionSnapshot>('/billing/subscription');
     writeSubscription(subscription);
     return subscription;
   } catch {

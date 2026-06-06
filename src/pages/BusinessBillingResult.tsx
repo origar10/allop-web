@@ -68,7 +68,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
           <span>Trial terminando: aviso 3 dias antes de la primera factura.</span>
           <span>Suscripcion cancelada: acceso limitado al finalizar periodo vigente.</span>
         </div>
-        {portalMessage && <p className="auth-message ok">{portalMessage}</p>}
+        {portalMessage && <p className="auth-message ok" role="status" aria-live="polite">{portalMessage}</p>}
         <div className="billing-result-actions">
           <button className="btn btn-primary btn-lg" type="button" onClick={openPortal}>
             <CreditCard size={16} />
