@@ -289,8 +289,12 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const nextQuery = searchTerm.trim();
+
     setCategory(null);
-    onSearch(searchTerm.trim());
+    setDebouncedSearchTerm(nextQuery);
+    onSearchTermChange(nextQuery);
+    onSearch(nextQuery);
   };
 
   const runQuickSearch = (query: string) => {
@@ -485,7 +489,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
         </section>
       )}
 
-      <section className="marketplace-section" style={{ paddingTop: 0 }}>
+      <section className="marketplace-section" id="marketplace-results" style={{ paddingTop: 0 }}>
         <div className="container">
           <div className="filters-panel">
             <div className="filters-title">

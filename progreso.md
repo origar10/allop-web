@@ -1,5 +1,20 @@
 # Progreso allop-web
 
+## 2026-06-06 - Correccion de busqueda en home
+
+### Hecho
+- Corregido el submit de busqueda del marketplace:
+  - al pulsar "Buscar" ahora baja a la seccion de resultados,
+  - si se lanza desde la barra superior tambien espera a que la home este renderizada,
+  - el termino se normaliza con `trim()` y se aplica inmediatamente al filtro visible.
+- Anclada la seccion de resultados con `id="marketplace-results"`.
+
+### Archivos modificados
+- `src/App.tsx`
+- `src/pages/Home.tsx`
+- `tests/e2e/marketplace-search.spec.ts`
+- `progreso.md`
+
 ## 2026-06-06 - Apple Maps MapKit JS embebido
 
 ### Hecho
