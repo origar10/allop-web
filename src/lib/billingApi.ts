@@ -66,7 +66,7 @@ export const BILLING_PLANS: BillingPlan[] = [
     id: 'basic',
     name: 'Básico',
     monthlyPrice: 39,
-    annualPrice: 390,
+    annualPrice: 350,
     trialDays: 0,
     employees: 'Hasta 7',
     seats: 'Gestor + cuentas de empleados',
