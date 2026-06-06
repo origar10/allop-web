@@ -17,7 +17,7 @@ ssh allop-vps "pm2 status"
 ssh allop-vps "pm2 logs allop-backend --lines 100"
 
 # Ping directo al endpoint
-curl -I https://api.allop.es/api/health
+curl -I https://api.allop.es/health
 ```
 
 **Pasos de recuperación**

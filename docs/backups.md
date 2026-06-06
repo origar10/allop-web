@@ -76,7 +76,7 @@ psql -U postgres -c "ALTER DATABASE allop_restore RENAME TO allop_prod;"
 ```bash
 pm2 start allop-backend
 # Verificar que la API responde
-curl https://api.allop.es/api/health
+curl https://api.allop.es/health
 ```
 
 ### 4. Eliminar la BD antigua

@@ -1,7 +1,26 @@
 const explicitHealthUrl = process.env.VITE_HEALTH_CHECK_URL || process.env.HEALTH_CHECK_URL;
 const apiUrl = process.env.VITE_API_URL || 'https://api.allop.es/api';
-const healthUrl = explicitHealthUrl || `${apiUrl.replace(/\/$/, '')}/health`;
 const timeoutMs = Number(process.env.HEALTH_CHECK_TIMEOUT_MS || 8000);
+
+function buildHealthUrl(baseUrl) {
+  try {
+    const parsed = new URL(baseUrl);
+    const pathname = parsed.pathname.replace(/\/$/, '');
+
+    if (pathname === '/api' || pathname === '/api/v1' || pathname === '/api/health' || pathname === '/api/v1/health') {
+      parsed.pathname = '/health';
+      parsed.search = '';
+      parsed.hash = '';
+      return parsed.toString();
+    }
+  } catch {
+    // Fall back to the historical behavior for non-URL values.
+  }
+
+  return `${baseUrl.replace(/\/$/, '')}/health`;
+}
+
+const healthUrl = explicitHealthUrl ? buildHealthUrl(explicitHealthUrl) : buildHealthUrl(apiUrl);
 
 const controller = new AbortController();
 const timeout = setTimeout(() => controller.abort(), timeoutMs);

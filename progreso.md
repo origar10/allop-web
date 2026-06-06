@@ -1,5 +1,33 @@
 # Progreso allop-web
 
+## 2026-06-06 - Correccion deploy GitHub Actions health check
+
+### Hecho
+- Reproducido el fallo del job `deploy`: `npm run predeploy:health` fallaba con HTTP 404 en `https://api.allop.es/api/health`.
+- Verificado que el endpoint operativo responde en `https://api.allop.es/health`.
+- Ajustado `scripts/predeploy-health-check.mjs`:
+  - si `VITE_API_URL` termina en `/api` o `/api/v1`, comprueba `/health` en el origen,
+  - si una variable explicita viene con `/api/health` o `/api/v1/health`, la normaliza a `/health`.
+- Actualizados defaults del workflow de GitHub Actions a:
+  - produccion: `https://api.allop.es/health`,
+  - staging: `https://staging-api.allop.es/health`.
+- Actualizados `.env.example` y documentacion relacionada para evitar volver a copiar la URL antigua.
+
+### Archivos modificados
+- `.github/workflows/deploy.yml`
+- `.env.example`
+- `scripts/predeploy-health-check.mjs`
+- `docs/cicd-entornos.md`
+- `docs/backups.md`
+- `docs/monitoring.md`
+- `docs/release-checklist.md`
+- `docs/runbook.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run predeploy:health` OK con fallback automatico a `https://api.allop.es/health`.
+- `VITE_HEALTH_CHECK_URL=https://api.allop.es/api/health npm.cmd run predeploy:health` OK, normalizado a `/health`.
+
 ## 2026-06-06 - Cambio de tiers B2B: Basico y A medida
 
 ### Hecho

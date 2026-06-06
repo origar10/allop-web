@@ -58,7 +58,7 @@
 
 ### Verificación inmediata (primeros 5 min)
 - [ ] `curl https://allop.es` devuelve 200
-- [ ] `curl https://api.allop.es/api/health` devuelve 200
+- [ ] `curl https://api.allop.es/health` devuelve 200
 - [ ] Home carga correctamente en navegador
 - [ ] Búsqueda de salones funciona
 - [ ] Login OTP funciona (si no está en modo test)

@@ -37,7 +37,7 @@
 - Checks minimos:
   - `https://allop.es/`
   - `https://allop.es/sitemap.xml`
-  - `https://api.allop.es/api/health` cuando exista endpoint backend.
+  - `https://api.allop.es/health` cuando exista endpoint backend.
 - Frecuencia recomendada: cada 1-5 minutos.
 - Alertas:
   - email del equipo,

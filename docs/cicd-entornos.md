@@ -15,8 +15,8 @@ Configurar en GitHub Actions como repository/environment variables:
 |---|---|---|---|
 | `VITE_API_URL_PRODUCTION` | `https://api.allop.es/api` | - | API publica para build de produccion |
 | `VITE_API_URL_STAGING` | - | `https://staging-api.allop.es/api` | API publica para build de staging |
-| `VITE_HEALTH_CHECK_URL_PRODUCTION` | `https://api.allop.es/api/health` | - | Health check antes de desplegar produccion |
-| `VITE_HEALTH_CHECK_URL_STAGING` | - | `https://staging-api.allop.es/api/health` | Health check antes de desplegar staging |
+| `VITE_HEALTH_CHECK_URL_PRODUCTION` | `https://api.allop.es/health` | - | Health check antes de desplegar produccion |
+| `VITE_HEALTH_CHECK_URL_STAGING` | - | `https://staging-api.allop.es/health` | Health check antes de desplegar staging |
 | `VITE_PLAUSIBLE_DOMAIN_PRODUCTION` | `allop.es` | - | Analitica Plausible en produccion |
 | `VITE_PLAUSIBLE_DOMAIN_STAGING` | - | `staging.allop.es` | Analitica de staging si se quiere separar |
 | `VITE_MONITORING_ENDPOINT_PRODUCTION` | opcional | - | Endpoint frontend de errores |
@@ -40,7 +40,7 @@ Configurar como secrets:
 El paso `npm run predeploy:health` ejecuta `scripts/predeploy-health-check.mjs`.
 
 - Usa `VITE_HEALTH_CHECK_URL` si esta definida.
-- Si no esta definida, comprueba `${VITE_API_URL}/health`.
+- Si no esta definida, comprueba `/health` en el origen de `VITE_API_URL` cuando la API publica usa `/api`; en otros casos comprueba `${VITE_API_URL}/health`.
 - Falla el deploy si el endpoint no responde con HTTP 2xx antes de copiar `dist/` al VPS.
 
 ## Desarrollo local
