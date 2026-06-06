@@ -5,8 +5,15 @@
 ### Hecho
 - Detectado que `https://api.allop.es/api/mapkit/token` devolvia 404 porque el endpoint se habia preparado en `allop-platform`, pero la API desplegada del VPS sale del repo `Allop`.
 - Portado el endpoint publico `GET /api/mapkit/token` al backend real `Allop/backend`, montado antes del `tenantMiddleware`.
+- Desplegado tambien el endpoint en `allop-platform/platform-backend`, que es el servicio que atiende `api.allop.es`.
 - Configurado el VPS con la `.p8` en `/opt/allop/secrets/AuthKey_A7H4DZK8HT.p8` y variables Apple en `/opt/allop/repo/.env`.
 - Actualizado `docker-compose.yml` de `Allop` para pasar variables MapKit al contenedor y montar `/opt/allop/secrets` como `/app/secrets`.
+- Corregido `allop-platform/nginx/allop-web.conf`:
+  - `/salones/*` vuelve a `/index.html` para evitar el ciclo 500 de Nginx,
+  - CSP permite `cdn.apple-mapkit.com`, `*.apple-mapkit.com` y `worker-src blob:`.
+- Verificado en produccion con Playwright:
+  - ficha `/salones/feromi`: AppleMap `ready=1`, fallback oculto, sin errores CSP,
+  - marketplace en vista "Mapa": AppleMap `ready=1`, fallback oculto, sin errores CSP.
 
 ### Archivos modificados
 - `Allop/backend/src/services/MapKitService.ts`
@@ -16,6 +23,9 @@
 - `Allop/docker-compose.yml`
 - `Allop/.env.example`
 - `Allop/.gitignore`
+- `allop-platform/docker-compose-vps.yml`
+- `allop-platform/nginx/allop-web.conf`
+- `allop-web/docs/nginx-security-headers.md`
 - `allop-web/progreso.md`
 
 ## 2026-06-06 - Correccion de busqueda en home

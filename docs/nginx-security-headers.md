@@ -27,6 +27,7 @@ add_header Permissions-Policy "camera=(self), geolocation=(self), microphone=()"
 add_header Content-Security-Policy "
   default-src 'self';
   script-src  'self' 'unsafe-inline' https://plausible.io https://cdn.apple-mapkit.com;
+  worker-src  'self' blob:;
   style-src   'self' 'unsafe-inline';
   img-src     'self' data: https://res.cloudinary.com https://*.apple-mapkit.com;
   font-src    'self';
@@ -44,6 +45,7 @@ add_header Content-Security-Policy "
 | Directiva | Razón |
 |-----------|-------|
 | `script-src 'unsafe-inline'` | Vite inyecta scripts inline en el bundle; eliminar cuando se configure nonce-based CSP en el server |
+| `worker-src blob:` | MapKit JS crea workers blob para renderizar el mapa |
 | `connect-src … sentry.io` | Eliminar si Sentry no se activa en este entorno |
 | `img-src … cloudinary.com` | Fotos de salones se sirven desde Cloudinary; ajustar al dominio real del bucket |
 | `*.apple-mapkit.com` | Necesario para MapKit JS y teselas de Apple Maps |
