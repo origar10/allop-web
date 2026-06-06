@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'allop-pwa-v1';
+const CACHE_VERSION = 'allop-pwa-v2';
 const APP_SHELL = [
   '/',
   '/offline.html',
@@ -6,6 +6,10 @@ const APP_SHELL = [
   '/allop-icon.svg',
   '/favicon.svg',
 ];
+
+function isSameOrigin(request) {
+  return new URL(request.url).origin === self.location.origin;
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -48,7 +52,7 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
 
       return fetch(request).then((response) => {
-        if (response.ok && new URL(request.url).origin === self.location.origin) {
+        if (response.ok && isSameOrigin(request)) {
           const copy = response.clone();
           caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
         }

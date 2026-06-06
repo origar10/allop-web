@@ -1,5 +1,16 @@
 # Progreso allop-web
 
+## 2026-06-06 - Refresco de cache PWA para MapKit
+
+### Hecho
+- Detectado que el service worker `allop-pwa-v1` podia mantener assets antiguos con el fallback del mapa.
+- Subida la version de cache a `allop-pwa-v2` para borrar cache vieja al activarse.
+- Mantiene cache solo para recursos del mismo origen mediante helper `isSameOrigin`.
+
+### Archivos modificados
+- `public/sw.js`
+- `progreso.md`
+
 ## 2026-06-06 - Correccion despliegue MapKit en API real
 
 ### Hecho
