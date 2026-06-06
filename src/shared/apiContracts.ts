@@ -416,3 +416,12 @@ export type StripeWebhookEventType =
   | 'customer.subscription.deleted'
   | 'invoice.paid'
   | 'invoice.payment_failed';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAPKIT / APPLE MAPS
+// GET /v1/mapkit/token
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface MapKitTokenResponse {
+  token: string;
+}

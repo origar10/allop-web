@@ -700,7 +700,7 @@ Estado actualizado: 2026-06-06.
 - [x] Catalán: incluido como segunda lengua (`ca`) desde el lanzamiento.
 - [x] Blog/contenido inicial: estático en frontend mediante `/guias`, `/blog` y taxonomía local; no CMS por ahora.
 - [x] Auth cliente: cuenta global Allop para clientes, separada de los salones Tier 2. El frontend intenta endpoints globales (`/clientes/me`) y conserva fallback temporal por salón mientras backend se adapta.
-- [x] Mapa/proveedor geográfico: Apple Maps. MVP con enlaces directos a Apple Maps desde la vista mapa; si más adelante se necesita mapa embebido, hará falta token/configuración de MapKit JS.
+- [x] Mapa/proveedor geográfico: Apple Maps. MapKit JS integrado con token backend y fallback visual propio; los enlaces externos a Apple Maps se mantienen como respaldo.
 - [x] Proveedor SMS/WhatsApp/email: usar el mismo proveedor/proceso que ya funciona en Tier 2 con la Raspberry Pi.
 - [x] Revisión legal: no bloquea esta fase; las páginas quedan como están y se revisarán más adelante.
 

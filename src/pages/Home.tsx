@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { type CSSProperties, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import AppleMap from '../components/AppleMap';
 import SalonCard from '../components/SalonCard';
 import { PROMO_BANNER, RECENT_REVIEWS, SALONS, type Salon } from '../data/salons';
 import { saveMarketplaceLead, type MarketplaceLead } from '../lib/marketplaceLeads';
@@ -607,21 +608,12 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
             </div>
           ) : (
             <div className="market-map-layout">
-              <div className="market-map" aria-label="Mapa de salones">
-                {visibleSalons.map((salon) => (
-                  <button
-                    key={salon.id}
-                    className="market-map-pin"
-                    style={getMapPinStyle(salon, visibleSalons)}
-                    type="button"
-                    onClick={() => onOpenSalon(salon)}
-                    aria-label={`Abrir ficha de ${salon.name}`}
-                  >
-                    <MapPin size={16} />
-                    <span>{salon.desde} €</span>
-                  </button>
-                ))}
-              </div>
+              <AppleMap
+                salons={visibleSalons}
+                ariaLabel="Mapa de salones"
+                onOpenSalon={onOpenSalon}
+                getFallbackPinStyle={getMapPinStyle}
+              />
               <div className="market-map-list">
                 {visibleSalons.map((salon) => (
                   <article key={salon.id}>

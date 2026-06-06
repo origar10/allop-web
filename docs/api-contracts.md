@@ -572,7 +572,28 @@ Recibe eventos de Stripe. **Solo para uso interno backend.**
 
 ---
 
-## 8. Versionado y compatibilidad
+## 8. MapKit / Apple Maps
+
+### `GET /v1/mapkit/token`
+
+Devuelve un JWT temporal firmado en backend para inicializar MapKit JS. La clave `.p8` nunca debe exponerse en el frontend.
+
+**Response 200**
+```json
+{ "token": "eyJhbGciOiJFUzI1NiIsImtpZCI6IkE3SDREWks4SFQifQ..." }
+```
+
+**Variables backend necesarias**
+
+- `APPLE_MAPKIT_TEAM_ID`
+- `APPLE_MAPKIT_KEY_ID`
+- `APPLE_MAPKIT_MAPS_ID`
+- `APPLE_MAPKIT_PRIVATE_KEY_PATH` o `APPLE_MAPKIT_PRIVATE_KEY`
+- `APPLE_MAPKIT_ORIGIN`
+
+---
+
+## 9. Versionado y compatibilidad
 
 ### Política de versiones
 
@@ -609,7 +630,7 @@ Estas rutas existen en la API actual y el frontend las consume con fallback:
 
 ---
 
-## 9. Seguridad
+## 10. Seguridad
 
 - **OTP rate limit**: máx. 3 solicitudes por teléfono/hora. Respuesta `429` con `Retry-After`.
 - **Token JWT**: incluye `exp`, `sub` (clienteId o salonId), `scope` (`cliente` | `salon`).

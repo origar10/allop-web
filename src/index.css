@@ -571,6 +571,12 @@ section[id] { scroll-margin-top: 84px; }
 .profile-map { position: relative; min-height: 220px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: linear-gradient(135deg, #EEF0FF, #F8FAFC 48%, #E0F2FE); margin-bottom: 12px; }
 .profile-map::before, .profile-map::after { content: ''; position: absolute; inset: 28% -20% auto; height: 2px; background: rgba(79,70,229,.15); transform: rotate(-12deg); }
 .profile-map::after { inset: auto -10% 28%; transform: rotate(16deg); }
+.apple-map-shell { position: relative; isolation: isolate; }
+.apple-map-canvas { position: absolute; inset: 0; z-index: 1; opacity: 0; transition: opacity .2s ease; }
+.apple-map-shell.is-ready .apple-map-canvas { opacity: 1; }
+.apple-map-shell.is-ready::before, .apple-map-shell.is-ready::after { display: none; }
+.apple-map-fallback { position: absolute; inset: 0; z-index: 2; }
+.apple-map-shell.is-ready .apple-map-fallback { display: none; }
 .profile-side-card p { color: var(--fg-3); font-size: 13px; line-height: 1.55; }
 .hours-list { display: grid; gap: 9px; }
 .hours-list div { display: flex; justify-content: space-between; gap: 12px; color: var(--fg-3); font-size: 13px; }

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import AppleMap from '../components/AppleMap';
 import { RECENT_REVIEWS, SALONS, type Promotion, type RecentReview, type Salon } from '../data/salons';
 import { isFavoriteSalon, toggleFavoriteSalon } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
@@ -51,6 +52,11 @@ function getMapPinStyle(salon: Salon) {
     left: `${12 + ((salon.lng - minLng) / Math.max(maxLng - minLng, 0.01)) * 76}%`,
     top: `${88 - ((salon.lat - minLat) / Math.max(maxLat - minLat, 0.01)) * 76}%`,
   };
+}
+
+function getAppleMapsUrl(salon: Salon) {
+  const query = encodeURIComponent(`${salon.name}, ${salon.address || salon.location}`);
+  return `https://maps.apple.com/?q=${query}&ll=${salon.lat},${salon.lng}`;
 }
 
 // Returns counts for [5★, 4★, 3★, 2★, 1★] approximated from aggregate rating+total
@@ -494,13 +500,18 @@ export default function SalonProfile() {
           <aside className="salon-profile-side">
             <section className="profile-side-card">
               <h2>Ubicación</h2>
-              <div className="profile-map" aria-label={`Mapa de ${salon.name}`}>
-                <button className="market-map-pin" style={getMapPinStyle(salon)} type="button" aria-label={salon.address}>
-                  <MapPin size={16} />
-                  <span>{salon.desde} €</span>
-                </button>
-              </div>
+              <AppleMap
+                salons={[salon]}
+                className="profile-map"
+                ariaLabel={`Mapa de ${salon.name}`}
+                onOpenSalon={() => window.open(getAppleMapsUrl(salon), '_blank', 'noopener,noreferrer')}
+                getFallbackPinStyle={(item) => getMapPinStyle(item)}
+              />
               <p>{salon.address}</p>
+              <a className="business-email-link" href={getAppleMapsUrl(salon)} target="_blank" rel="noreferrer">
+                <MapPin size={13} />
+                Abrir en Apple Maps
+              </a>
             </section>
 
             {/* Promotions sidebar */}

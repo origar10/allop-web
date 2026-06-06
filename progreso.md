@@ -1,11 +1,62 @@
 # Progreso allop-web
 
+## 2026-06-06 - Apple Maps MapKit JS embebido
+
+### Hecho
+- Preparado backend `allop-platform` para generar tokens temporales MapKit JS:
+  - nuevo endpoint `GET /api/mapkit/token`,
+  - firma ES256 con `APPLE_MAPKIT_TEAM_ID`, `APPLE_MAPKIT_KEY_ID`, `APPLE_MAPKIT_MAPS_ID` y `.p8` por ruta o secret multilinea,
+  - verificado localmente que genera un JWT valido usando la `.p8` de `origar` sin copiarla al repo.
+- Integrado frontend `allop-web`:
+  - nuevo `AppleMap` que carga MapKit JS desde Apple,
+  - mapa embebido en la vista mapa de resultados,
+  - mapa embebido en la ficha de salon,
+  - fallback visual propio con pins si falla token/script,
+  - enlaces "Abrir en Apple Maps" mantenidos como respaldo.
+- Actualizada documentacion:
+  - contrato `GET /v1/mapkit/token`,
+  - CSP para permitir `cdn.apple-mapkit.com` y `*.apple-mapkit.com`,
+  - `ROADMAP.md` marca MapKit JS como integrado.
+- Protegido `allop-platform/backend/.gitignore` con `*.p8`.
+
+### Datos Apple configurados
+- Key ID: `A7H4DZK8HT`
+- Team ID: `Y354LVE6F8`
+- Maps ID: `maps.com.allop`
+
+### Archivos modificados
+- `allop-platform/backend/src/services/MapKitService.ts`
+- `allop-platform/backend/src/controllers/MapKitController.ts`
+- `allop-platform/backend/src/routes/mapkit.routes.ts`
+- `allop-platform/backend/src/routes/index.ts`
+- `allop-platform/backend/.env.example`
+- `allop-platform/backend/.gitignore`
+- `allop-web/src/components/AppleMap.tsx`
+- `allop-web/src/lib/mapkitApi.ts`
+- `allop-web/src/pages/Home.tsx`
+- `allop-web/src/pages/SalonProfile.tsx`
+- `allop-web/src/index.css`
+- `allop-web/src/shared/apiContracts.ts`
+- `allop-web/docs/api-contracts.md`
+- `allop-web/docs/nginx-security-headers.md`
+- `allop-web/ROADMAP.md`
+- `allop-web/progreso.md`
+
+### Pendiente de deploy
+- Copiar la `.p8` al VPS, por ejemplo `/opt/allop/secrets/AuthKey_A7H4DZK8HT.p8`, con permisos restrictivos.
+- Configurar en el backend del VPS:
+  - `APPLE_MAPKIT_TEAM_ID=Y354LVE6F8`,
+  - `APPLE_MAPKIT_KEY_ID=A7H4DZK8HT`,
+  - `APPLE_MAPKIT_MAPS_ID=maps.com.allop`,
+  - `APPLE_MAPKIT_ORIGIN=https://allop.es`,
+  - `APPLE_MAPKIT_PRIVATE_KEY_PATH=/opt/allop/secrets/AuthKey_A7H4DZK8HT.p8`.
+
 ## 2026-06-06 - Correccion precio plan Basico
 
 ### Hecho
 - Corregido Basico para que tenga precio cerrado:
   - mensual: 39 EUR/mes,
-  - anual: 390 EUR/año.
+  - anual: 350 EUR/año.
 - Ajustados limites de Basico:
   - hasta 7 empleados,
   - sin limite de reservas,
