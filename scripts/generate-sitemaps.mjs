@@ -7,6 +7,7 @@ const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 
 const salons = ['feromi', 'lumiere-studio', 'barberia-marcel', 'nuvo-beauty', 'aura-spa', 'glow-studio'];
 const services = ['peluqueria', 'barberia', 'estetica', 'unas', 'masajes', 'maquillaje', 'manicura', 'corte'];
+const categories = ['cabello', 'belleza', 'bienestar'];
 const cities = ['barcelona', 'rubi', 'sabadell', 'terrassa'];
 const serviceCities = ['peluqueria/rubi', 'barberia/terrassa', 'estetica/sabadell', 'manicura/barcelona', 'masajes/barcelona'];
 const blog = [
@@ -43,13 +44,15 @@ write('sitemap.xml', xml([
   '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
   '  <sitemap><loc>https://allop.es/sitemap-salones.xml</loc></sitemap>',
   '  <sitemap><loc>https://allop.es/sitemap-servicios.xml</loc></sitemap>',
+  '  <sitemap><loc>https://allop.es/sitemap-categorias.xml</loc></sitemap>',
   '  <sitemap><loc>https://allop.es/sitemap-ciudades.xml</loc></sitemap>',
   '  <sitemap><loc>https://allop.es/sitemap-blog.xml</loc></sitemap>',
   '  <sitemap><loc>https://allop.es/sitemap-legales.xml</loc></sitemap>',
   '</sitemapindex>',
 ]));
-write('sitemap-salones.xml', urlset(salons.map((slug) => `salones/${slug}`)));
+write('sitemap-salones.xml', urlset(['salones', ...salons.map((slug) => `salones/${slug}`)]));
 write('sitemap-servicios.xml', urlset([...services.map((slug) => `servicios/${slug}`), ...serviceCities]));
+write('sitemap-categorias.xml', urlset(categories.map((slug) => `categoria/${slug}`)));
 write('sitemap-ciudades.xml', urlset(cities.map((slug) => `ciudad/${slug}`)));
 write('sitemap-blog.xml', urlset(blog));
 write('sitemap-legales.xml', urlset(legal));

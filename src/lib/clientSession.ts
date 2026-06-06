@@ -32,7 +32,11 @@ export function loadClientSession(slug?: string): ClientSession | null {
 
   try {
     const session = JSON.parse(localStorage.getItem(key) || 'null') as ClientSession | null;
-    return session?.token ? session : null;
+    if (session?.token) return session;
+    if (!slug) return null;
+
+    const globalSession = JSON.parse(localStorage.getItem(CURRENT_SESSION_KEY) || 'null') as ClientSession | null;
+    return globalSession?.token ? globalSession : null;
   } catch {
     return null;
   }

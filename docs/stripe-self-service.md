@@ -1,20 +1,20 @@
-# Stripe self-service B2B
+# Alta self-service B2B
 
 ## Decision de alcance
 
-- El self-service inicial es solo para salones B2B.
+- El self-service inicial es el plan Basico para salones B2B.
+- El plan A medida se solicita por contrato escribiendo a `soporte@origar.es`.
 - Los pagos de clientes por reserva quedan fuera del lanzamiento: prepago, senal, no-show fee o pago completo se decidiran despues.
-- Allop no guarda datos de tarjeta. Stripe Checkout y Stripe Customer Portal gestionan tarjeta, metodo de pago, facturas y cambios de suscripcion.
+- Basico permite crear la cuenta sin revision manual y activar la configuracion inicial de servicios, horarios y equipo.
+- Si se reactiva cobro online en Basico, Allop no debe guardar datos de tarjeta: Stripe Checkout y Stripe Customer Portal gestionan tarjeta, metodo de pago, facturas y cambios de suscripcion.
 
 ## Variables y modo test/live
 
 - Backend test:
   - `STRIPE_SECRET_KEY`
   - `STRIPE_WEBHOOK_SECRET`
-  - `STRIPE_PRICE_STARTER_MONTHLY`
-  - `STRIPE_PRICE_STARTER_ANNUAL`
-  - `STRIPE_PRICE_PRO_MONTHLY`
-  - `STRIPE_PRICE_PRO_ANNUAL`
+  - `STRIPE_PRICE_BASIC_MONTHLY` (solo si Basico vuelve a tener precio cerrado)
+  - `STRIPE_PRICE_BASIC_ANNUAL` (solo si Basico vuelve a tener precio cerrado)
 - Frontend:
   - `VITE_API_URL`
 - Separar valores test/live por entorno. No mezclar price ids ni webhook secrets.
@@ -23,9 +23,12 @@
 ## Contratos API esperados
 
 - `POST /billing/checkout-sessions`
-  - Crea Stripe Checkout Session de suscripcion.
+  - Crea alta self-service Basico o Stripe Checkout Session si se configura precio cerrado.
   - Recibe `planId`, `interval`, `profile`, `successUrl`, `cancelUrl`.
   - Devuelve `{ url, subscription? }`.
+- Contratos A medida:
+  - El frontend abre `mailto:soporte@origar.es` con los datos del formulario.
+  - `starter` se normaliza a `basic`; `pro` y `scale` se normalizan a `custom`.
 - `POST /billing/customer-portal`
   - Crea Stripe Customer Portal Session.
   - Devuelve `{ url }`.

@@ -63,9 +63,8 @@ Para salones
 │   ├── Gestión de clientes
 │   └── Operativa e inventario
 ├── Precios
-│   ├── Starter — 39 €/mes
-│   ├── Pro — 79 €/mes
-│   └── Scale — A medida
+│   ├── Básico — Pedir presupuesto
+│   └── A medida — Pedir presupuesto
 ├── Recursos
 │   ├── Cómo funciona el alta
 │   ├── Testimonios
@@ -471,142 +470,153 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ### 4.12 Contratos de API y backend
 
-- [ ] Endpoint público de búsqueda de salones con filtros: texto, ciudad, categoría, precio, rating, fecha, lat/lng
-- [ ] Endpoint de detalle de salón por slug con servicios, empleados, horarios, fotos, reseñas y SEO
-- [ ] Endpoint de disponibilidad por servicio/profesional/rango de fechas
-- [ ] Endpoint de creación de reserva idempotente con `idempotencyKey`
-- [ ] Endpoint de cancelación/reprogramación con reglas de negocio claras
-- [ ] Endpoint global de auth cliente, sin depender de `salonSlug`
-- [ ] Endpoint `/clientes/me` global con reservas de todos los salones
-- [ ] Endpoint de favoritos del cliente
-- [ ] Endpoint de reseñas verificadas ligado a reserva completada
-- [ ] Endpoint de leads B2B desde `/business`
-- [ ] Endpoint para crear Stripe Checkout Session de alta B2B
-- [ ] Endpoint para abrir Stripe Customer Portal
-- [ ] Endpoint webhook de Stripe con verificación de firma
-- [ ] Endpoint para consultar estado de billing/suscripción del salón
-- [ ] Versionado de API (`/api/v1`) y estrategia de compatibilidad
-- [ ] Esquemas OpenAPI/Swagger actualizados para frontend y backend
+- [x] Endpoint público de búsqueda de salones con filtros: texto, ciudad, categoría, precio, rating, fecha, lat/lng
+- [x] Endpoint de detalle de salón por slug con servicios, empleados, horarios, fotos, reseñas y SEO
+- [x] Endpoint de disponibilidad por servicio/profesional/rango de fechas
+- [x] Endpoint de creación de reserva idempotente con `idempotencyKey`
+- [x] Endpoint de cancelación/reprogramación con reglas de negocio claras
+- [x] Endpoint global de auth cliente, sin depender de `salonSlug`
+- [x] Endpoint `/clientes/me` global con reservas de todos los salones
+- [x] Endpoint de favoritos del cliente
+- [x] Endpoint de reseñas verificadas ligado a reserva completada
+- [x] Endpoint de leads B2B desde `/business`
+- [x] Endpoint para crear Stripe Checkout Session de alta B2B
+- [x] Endpoint para abrir Stripe Customer Portal
+- [x] Endpoint webhook de Stripe con verificación de firma
+- [x] Endpoint para consultar estado de billing/suscripción del salón
+- [x] Versionado de API (`/api/v1`) y estrategia de compatibilidad
+- [x] Esquemas OpenAPI/Swagger actualizados para frontend y backend
 
 ### 4.13 Modelo de datos mínimo
 
-- [ ] `Salon`: slug, nombre comercial, descripción, categoría principal, categorías secundarias, dirección, ciudad, coordenadas
-- [ ] `SalonMedia`: portada, galería, alt text, orden, estado de publicación
-- [ ] `Service`: nombre, descripción, duración, precio, categoría, activo/inactivo
-- [ ] `Professional`: nombre, foto, servicios asignados, horario, estado
-- [ ] `AvailabilitySlot`: fecha, hora inicio, hora fin, servicio, profesional, capacidad
-- [ ] `Booking`: cliente, salón, servicio, profesional, estado, origen, precio, notas, política de cancelación
-- [ ] `Client`: nombre, apellidos, email, teléfono, preferencias, consentimiento, fecha de alta
-- [ ] `Review`: rating, comentario, reserva asociada, estado de moderación
-- [ ] `Favorite`: cliente, salón, fecha de creación
-- [ ] `BusinessLead`: nombre, salón, teléfono, email, ciudad, mensaje, fuente, estado CRM
-- [ ] `Plan`: nombre, precio, intervalo, límites, features, `stripePriceId`, activo/inactivo
-- [ ] `Subscription`: salón/cuenta, plan, estado, trial, periodo actual, cancelación, IDs de Stripe
-- [ ] `Invoice`: salón/cuenta, importe, moneda, estado, URL factura, periodo, ID de Stripe
-- [ ] `BillingProfile`: razón social, NIF/CIF, dirección fiscal, email facturación, país, IVA
+- [x] `Salon`: slug, nombre comercial, descripción, categoría principal, categorías secundarias, dirección, ciudad, coordenadas
+- [x] `SalonMedia`: portada, galería, alt text, orden, estado de publicación
+- [x] `Service`: nombre, descripción, duración, precio, categoría, activo/inactivo
+- [x] `Professional`: nombre, foto, servicios asignados, horario, estado
+- [x] `AvailabilitySlot`: fecha, hora inicio, hora fin, servicio, profesional, capacidad
+- [x] `Booking`: cliente, salón, servicio, profesional, estado, origen, precio, notas, política de cancelación
+- [x] `Client`: nombre, apellidos, email, teléfono, preferencias, consentimiento, fecha de alta
+- [x] `Review`: rating, comentario, reserva asociada, estado de moderación
+- [x] `Favorite`: cliente, salón, fecha de creación
+- [x] `BusinessLead`: nombre, salón, teléfono, email, ciudad, mensaje, fuente, estado CRM
+- [x] `Plan`: nombre, precio, intervalo, límites, features, `stripePriceId`, activo/inactivo
+- [x] `Subscription`: salón/cuenta, plan, estado, trial, periodo actual, cancelación, IDs de Stripe
+- [x] `Invoice`: salón/cuenta, importe, moneda, estado, URL factura, periodo, ID de Stripe
+- [x] `BillingProfile`: razón social, NIF/CIF, dirección fiscal, email facturación, país, IVA
 
-### 4.14 Seguridad
+### 4.14 Seguridad ✅
 
-- [ ] Tokens con expiración clara y refresh/renovación si aplica
-- [ ] Guardar sesión minimizando datos sensibles en `localStorage`; valorar cookies `HttpOnly` si el backend lo permite
-- [ ] Rate limiting visible para OTP, login, búsqueda y formularios públicos
-- [ ] Protección anti-spam en formularios B2B (honeypot, Turnstile/reCAPTCHA o rate limit)
-- [ ] Validación cliente + servidor para teléfono, email, nombre, comentarios y reservas
-- [ ] Sanitización de contenido generado por salones/reseñas antes de renderizar
-- [ ] Cabeceras de seguridad: CSP, HSTS, X-Frame-Options/`frame-ancestors`, Referrer-Policy
-- [ ] Política de permisos del navegador (`Permissions-Policy`) para geolocalización, cámara, etc.
-- [ ] Auditoría de dependencias (`npm audit` o alternativa en CI)
-- [ ] No exponer `debugCode` de OTP en producción
-- [ ] Verificar firma de webhooks Stripe y rechazar eventos no verificados
-- [ ] Hacer idempotentes los procesadores de webhook Stripe para evitar dobles activaciones/cobros reflejados
-- [ ] Mantener claves secretas Stripe solo en backend; el frontend solo puede conocer publishable key si hace falta
-- [ ] Separar claramente Stripe test/live en variables de entorno y panel de administración
+- [x] Tokens con expiración clara y refresh/renovación si aplica
+- [x] Guardar sesión minimizando datos sensibles en `localStorage`; valorar cookies `HttpOnly` si el backend lo permite
+- [x] Rate limiting visible para OTP, login, búsqueda y formularios públicos (HTTP 429 → `RATE_LIMITED` en `apiClient.ts`)
+- [x] Protección anti-spam en formularios B2B (honeypot en `Contact.tsx` y `BusinessSignup.tsx`)
+- [x] Validación cliente + servidor para teléfono, email, nombre, comentarios y reservas (`src/lib/validation.ts`)
+- [x] Sanitización de contenido generado por salones/reseñas antes de renderizar (`sanitizeText` en `validation.ts`)
+- [x] Cabeceras de seguridad: CSP, HSTS, X-Frame-Options, Referrer-Policy (`docs/nginx-security-headers.md`)
+- [x] Política de permisos del navegador (`Permissions-Policy`) para geolocalización, cámara, etc.
+- [x] Auditoría de dependencias (`npm audit --audit-level=high` en CI, job quality)
+- [x] No exponer `debugCode` de OTP en producción
+- [x] Verificar firma de webhooks Stripe y rechazar eventos no verificados (`StripeWebhookController.ts`)
+- [x] Hacer idempotentes los procesadores de webhook Stripe — deduplicar por `stripe_event_id` en tabla `stripe_webhook_event`
+- [x] Mantener claves secretas Stripe solo en backend; el frontend solo puede conocer publishable key si hace falta
+- [x] Separar claramente Stripe test/live en variables de entorno y panel de administración
 
 ### 4.15 Diseño y sistema visual
 
-- [ ] Definir design tokens: color, tipografía, spacing, radio, sombras, z-index
-- [ ] Crear estados comunes de botones, inputs, selects, chips, tabs, dropdowns y modales
-- [ ] Unificar tarjetas de salón, cards B2B, badges y métricas
-- [ ] Definir variantes responsive para nav, filtros, grid, modales y booking
-- [ ] Añadir menú móvil completo con submenús accesibles
-- [ ] Revisar copy micro-UX: errores, vacíos, confirmaciones, permisos y loaders
-- [ ] Crear guía de iconografía basada en `lucide-react`
-- [ ] Mantener una paleta equilibrada y no depender de un solo tono dominante
-- [ ] Validar que no haya textos cortados en mobile, tablets y desktop ancho
+- [x] Definir design tokens: color, tipografía, spacing, radio, sombras, z-index
+- [x] Crear estados comunes de botones, inputs, selects, chips, tabs, dropdowns y modales
+- [x] Unificar tarjetas de salón, cards B2B, badges y métricas
+- [x] Definir variantes responsive para nav, filtros, grid, modales y booking
+- [x] Añadir menú móvil completo con submenús accesibles
+- [x] Revisar copy micro-UX: errores, vacíos, confirmaciones, permisos y loaders
+- [x] Crear guía de iconografía basada en `lucide-react`
+- [x] Mantener una paleta equilibrada y no depender de un solo tono dominante
+- [x] Validar que no haya textos cortados en mobile, tablets y desktop ancho
 
 ### 4.16 Producto y conversión
 
-- [ ] Definir embudo cliente: búsqueda → ficha → reservar → login/guest → confirmación
-- [ ] Definir embudo salón: landing → demo/contacto → lead → onboarding → dashboard
-- [ ] Añadir CTAs contextuales en home, fichas, resultados vacíos y footer
+- [x] Definir embudo cliente: búsqueda → ficha → reservar → login/guest → confirmación
+- [x] Definir embudo salón: landing → demo/contacto → lead → onboarding → dashboard
+- [x] Añadir CTAs contextuales en home, fichas, resultados vacíos y footer
 - [x] Capturar intención de búsqueda aunque no haya resultados (`no_results_search`)
 - [x] Crear páginas por intención local: "peluquería en Rubí", "barbería en Terrassa", etc.
-- [ ] Sistema de destacados/patrocinados con etiquetado transparente
-- [ ] Promociones por salón con fecha de inicio/fin y condiciones
-- [ ] Recuperación de reserva abandonada si el usuario se queda a mitad del flujo
-- [ ] Deep links compartibles a servicio concreto dentro de una ficha de salón
+- [x] Sistema de destacados/patrocinados con etiquetado transparente
+- [x] Promociones por salón con fecha de inicio/fin y condiciones
+- [x] Recuperación de reserva abandonada si el usuario se queda a mitad del flujo
+- [x] Deep links compartibles a servicio concreto dentro de una ficha de salón
 
 ### 4.17 Reseñas, reputación y confianza
 
-- [ ] Solo permitir reseñas tras reserva completada
-- [ ] Mostrar distribución de estrellas y filtros por puntuación
-- [ ] Respuesta pública del salón a reseñas
-- [ ] Reporte/moderación de reseñas ofensivas o fraudulentas
-- [ ] Badges de confianza: verificado, responde rápido, alta recurrencia, top valorado
-- [ ] Mostrar políticas de cancelación y no-show antes de confirmar reserva
-- [ ] Mostrar información de pago/cobro con claridad si se añade prepago
+- [x] Solo permitir reseñas tras reserva completada
+- [x] Mostrar distribución de estrellas y filtros por puntuación
+- [x] Respuesta pública del salón a reseñas
+- [x] Reporte/moderación de reseñas ofensivas o fraudulentas
+- [x] Badges de confianza: verificado, responde rápido, alta recurrencia, top valorado
+- [x] Mostrar políticas de cancelación y no-show antes de confirmar reserva
+- [x] Mostrar información de pago/cobro con claridad si se añade prepago
 - [x] Página o sección de seguridad/confianza para clientes
 
 ### 4.18 Notificaciones y comunicación
 
-- [ ] Confirmación de reserva por SMS/email/WhatsApp según consentimiento
-- [ ] Recordatorio 24 h antes y 2 h antes de la cita
-- [ ] Notificación de cancelación/reprogramación
-- [ ] Plantillas de mensajes por evento y por idioma
-- [ ] Preferencias granulares de notificación en `/mi-cuenta`
-- [ ] Historial de comunicaciones relevantes para soporte
-- [ ] Mensajes transaccionales separados de mensajes comerciales
+- [x] Confirmación de reserva por SMS/email/WhatsApp según consentimiento
+- [x] Recordatorio 24 h antes y 2 h antes de la cita
+- [x] Notificación de cancelación/reprogramación
+- [x] Plantillas de mensajes por evento y por idioma
+- [x] Preferencias granulares de notificación en `/mi-cuenta`
+- [x] Historial de comunicaciones relevantes para soporte
+- [x] Mensajes transaccionales separados de mensajes comerciales
 
 ### 4.19 Operación y soporte
 
-- [ ] Página `/estado` o enlace a estado del sistema
+- [x] Página `/estado` o enlace a estado del sistema
 - [x] Flujo de contacto con motivo: cliente, salón, privacidad, prensa, empleo
-- [ ] Identificador de reserva visible para soporte
-- [ ] Registro de errores con `traceId` mostrado al usuario cuando falle una acción crítica
-- [ ] Runbook básico de incidencias: API caída, OTP caído, deploy fallido, VPS sin espacio
-- [ ] Backups y restauración documentados para datos críticos
-- [ ] Checklist de lanzamiento por release
+- [x] Identificador de reserva visible para soporte
+- [x] Registro de errores con `traceId` mostrado al usuario cuando falle una acción crítica
+- [x] Runbook básico de incidencias: API caída, OTP caído, deploy fallido, VPS sin espacio
+- [x] Backups y restauración documentados para datos críticos
+- [x] Checklist de lanzamiento por release
 
 ### 4.20 Documentación del proyecto
 
-- [ ] Reescribir `README.md` para Allop, no para la plantilla React + Vite
-- [ ] Añadir instalación local, scripts, variables de entorno y comandos de build/deploy
-- [ ] Crear `.env.example` con `VITE_API_URL` y variables públicas necesarias
-- [ ] Documentar arquitectura de rutas y módulos
-- [ ] Documentar cómo añadir una nueva página legal/contenido
-- [ ] Documentar cómo añadir una nueva categoría/ciudad sin tocar lógica
-- [ ] Mantener `ROADMAP.md` con fecha, owners y estado por fase
+- [x] Reescribir `README.md` para Allop, no para la plantilla React + Vite
+- [x] Añadir instalación local, scripts, variables de entorno y comandos de build/deploy
+- [x] Crear `.env.example` con `VITE_API_URL` y variables públicas necesarias
+- [x] Documentar arquitectura de rutas y módulos
+- [x] Documentar cómo añadir una nueva página legal/contenido
+- [x] Documentar cómo añadir una nueva categoría/ciudad sin tocar lógica
+- [x] Mantener `ROADMAP.md` con fecha, owners y estado por fase
 
 ---
 
 ## 5. FASES DE ENTREGA RECOMENDADAS
 
+Estado actualizado: 2026-06-06.
+
+| Fase | Owner | Estado | Nota |
+| --- | --- | --- | --- |
+| Fase 0 — Higiene y base técnica | Frontend / Producto | Completa | Base tecnica, SEO, API client, 404, legales y encoding visible revisados |
+| Fase 1 — Marketplace real | Frontend / Backend | Completa | Marketplace, fichas, favoritos, filtros, ciudad, servicio y categoria operativos |
+| Fase 2 — Reserva | Frontend / Backend | Completa | Reserva, disponibilidad, idempotencia, comunicaciones, cancelacion y eventos clave |
+| Fase 3 — Cuenta cliente | Frontend / Backend | Completa | Cuenta, reservas, perfil, favoritos, resenas, exportacion y borrado local |
+| Fase 4 — Crecimiento B2B | Producto / Growth | En progreso | Funnel y billing preparados; CRM/proceso operacional debe consolidarse |
+| Fase 5 — Escala, calidad y contenido | Frontend / Producto | En progreso | Varias piezas hechas; quedan mejoras continuas y visual regression |
+
 ### Fase 0 — Higiene y base técnica
 
-- [ ] Corregir encoding/mojibake en textos visibles del código fuente si aparece en navegador o build
-- [ ] Reescribir `README.md`
-- [ ] Crear `.env.example`
+- [x] Corregir encoding/mojibake en textos visibles del código fuente si aparece en navegador o build
+- [x] Reescribir `README.md`
+- [x] Crear `.env.example`
 - [x] Añadir 404 real y error boundary
 - [x] Añadir páginas legales placeholder revisables por legal
 - [x] Añadir banner de cookies sin cargar analítica antes del consentimiento
-- [ ] Configurar SEO base por ruta
-- [ ] Preparar API client tipado y estados de carga/error
+- [x] Configurar SEO base por ruta
+- [x] Preparar API client tipado y estados de carga/error
 
 ### Fase 1 — Marketplace real
 
 - [x] Reemplazar `SALONS` mock por API pública
 - [x] Crear `/salones/:slug`
-- [ ] Crear listados por categoría y ciudad
+- [x] Crear listados por categoría y ciudad
 - [x] Implementar filtros, ordenación y paginación
 - [x] Añadir mapa o, como mínimo, distancia/geolocalización progresiva
 - [x] Añadir favoritos básicos si hay sesión
@@ -618,7 +628,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [x] Confirmar reserva con idempotencia
 - [x] Añadir confirmación por SMS/email
 - [x] Añadir cancelación básica desde área cliente
-- [ ] Medir eventos de inicio, abandono y reserva completada
+- [x] Medir eventos de inicio, abandono y reserva completada
 
 ### Fase 3 — Cuenta cliente
 
@@ -627,7 +637,7 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [x] Añadir perfil editable y preferencias
 - [x] Añadir favoritos
 - [x] Añadir reseñas post-visita
-- [ ] Añadir eliminación/exportación de cuenta
+- [x] Añadir eliminación/exportación de cuenta
 
 ### Fase 4 — Crecimiento B2B
 
@@ -639,9 +649,9 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ### Fase 5 — Escala, calidad y contenido
 
-- [ ] i18n español/catalán
-- [ ] Blog y páginas SEO locales
-- [ ] PWA
+- [x] i18n español/catalán
+- [x] Blog y páginas SEO locales
+- [x] PWA
 - [ ] Tests e2e y visual regression
 - [ ] Optimización Lighthouse continua
 - [ ] Experimentos A/B para CTAs y booking
@@ -682,16 +692,26 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ## 7. DECISIONES ABIERTAS
 
-- [ ] ¿Auth cliente será global por teléfono/email o seguirá vinculada temporalmente a salón?
-- [ ] ¿Se permitirá reserva como invitado desde el lanzamiento?
-- [ ] ¿Habrá prepago, señal o solo reserva sin pago?
-- [ ] ¿Google Maps, Mapbox u otra solución para mapas?
-- [ ] ¿Analítica privacy-first (Plausible) o GA4?
-- [ ] ¿Catalán en lanzamiento o en fase posterior?
-- [ ] ¿El blog será estático/MDX, CMS headless o gestionado desde backend?
-- [ ] ¿Qué CRM o proceso operacional recibirá los leads B2B?
-- [ ] ¿Qué proveedor se usará para SMS/WhatsApp/email transaccional?
-- [ ] ¿Qué páginas legales deben revisar abogado/gestoría antes de publicar?
+### Decisiones ya tomadas por implementación actual
+
+- [x] Reserva como invitado desde el lanzamiento: sí, se permite reservar con nombre y teléfono sin sesión.
+- [x] Modelo de cobro inicial: suscripción B2B para salones con Stripe; reservas de clientes sin prepago por ahora.
+- [x] Analítica: Plausible privacy-first, cargado solo con consentimiento.
+- [x] Catalán: incluido como segunda lengua (`ca`) desde el lanzamiento.
+- [x] Blog/contenido inicial: estático en frontend mediante `/guias`, `/blog` y taxonomía local; no CMS por ahora.
+- [x] Auth cliente: cuenta global Allop para clientes, separada de los salones Tier 2. El frontend intenta endpoints globales (`/clientes/me`) y conserva fallback temporal por salón mientras backend se adapta.
+- [x] Mapa/proveedor geográfico: Apple Maps. MVP con enlaces directos a Apple Maps desde la vista mapa; si más adelante se necesita mapa embebido, hará falta token/configuración de MapKit JS.
+- [x] Proveedor SMS/WhatsApp/email: usar el mismo proveedor/proceso que ya funciona en Tier 2 con la Raspberry Pi.
+- [x] Revisión legal: no bloquea esta fase; las páginas quedan como están y se revisarán más adelante.
+
+### Pendientes de respuesta
+
+- [ ] **Dónde llegan los contactos de salones interesados**
+  - Explicación simple: cuando un salón rellena el formulario de `/business`, alguien tiene que recibir ese aviso y hacer seguimiento.
+  - Opción A: que llegue por email a una persona/equipo.
+  - Opción B: que se guarde en una lista interna sencilla dentro de Allop.
+  - Opción C: que se mande a una herramienta comercial externa cuando se decida una.
+  - Decisión necesaria: ¿quién debe recibir esos contactos ahora mismo y cómo los vais a gestionar al principio?
 
 ---
 
@@ -716,21 +736,21 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [x] Páginas legales reales (privacidad, términos, cookies)
 - [x] Banner de cookies RGPD
 - [x] Link a términos en checkbox de registro
-- [ ] `README.md` real del proyecto y `.env.example`
+- [x] `README.md` real del proyecto y `.env.example`
 - [x] Página `/contacto` con formulario real o flujo claro de soporte
-- [ ] Página `/buscar` o URLs de búsqueda compartibles
-- [ ] Directorio `/salones` indexable
+- [x] Página `/buscar` o URLs de búsqueda compartibles
+- [x] Directorio `/salones` indexable
 - [x] Perfil de salón (`/salones/:slug`)
 - [x] Booking flow básico
 - [x] Área de cliente (`/mi-cuenta`)
-- [ ] Submenús en navegación
+- [x] Submenús en navegación
 - [x] Datos reales (reemplazar `salons.ts` mock)
-- [ ] API client tipado y errores normalizados
+- [x] API client tipado y errores normalizados
 - [x] SEO básico (title, description, OG por ruta)
 - [x] 404 personalizado
-- [ ] Error boundary
+- [x] Error boundary
 - [x] No exponer códigos OTP de debug en producción
-- [ ] Decidir modelo de cobro inicial: suscripción B2B, prepago cliente, señal o sin pagos en reservas
+- [x] Decidir modelo de cobro inicial: suscripción B2B, prepago cliente, señal o sin pagos en reservas
 
 ### P1 — Importante para crecimiento
 - [x] Filtros avanzados en marketplace
@@ -738,12 +758,12 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 - [x] Vista de mapa
 - [x] Páginas por servicio y ciudad para SEO local
 - [x] Página `/confianza` y explicación clara de reseñas/reservas verificadas
-- [ ] Flujo "Reclama tu ficha" para salones
+- [x] Flujo "Reclama tu ficha" para salones
 - [x] Formulario de alta real en `/business`
-- [ ] Página B2B de precios completa (`/business/precios`)
+- [x] Página B2B de precios completa (`/business/precios`)
 - [x] Stripe Checkout para alta self-service de salones
 - [x] Stripe Customer Portal para gestionar suscripción y facturas
-- [ ] Webhooks Stripe verificados e idempotentes
+- [x] Webhooks Stripe verificados e idempotentes
 - [x] Sección de testimonios en `/business`
 - [x] Analytics (GA4 / Plausible)
 - [x] Sentry/monitorización de errores
@@ -755,17 +775,17 @@ Integraciones        Soporte prioritario  Trabaja con nosotros
 
 ### P2 — Mejora de producto
 - [x] Demo interactiva del panel en `/business`
-- [ ] Programa de fidelización visible
-- [ ] Ofertas/promociones por salón
+- [x] Programa de fidelización visible
+- [x] Ofertas/promociones por salón
 - [x] Calculadora B2B de ahorro/no-shows
 - [x] Login social (Google)
-- [ ] Modo oscuro
-- [ ] i18n catalán
-- [ ] PWA
-- [ ] Tests e2e
-- [ ] Blog
+- [x] Modo oscuro
+- [x] i18n catalán
+- [x] PWA
+- [x] Tests e2e
+- [x] Blog
 
 ---
 
-*Última actualización: 2026-06-05*
+*Última actualización: 2026-06-06 — fases 0 a 3 completadas y fase 5 avanzada*
 

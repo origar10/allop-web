@@ -1,16 +1,17 @@
 import { AlertTriangle, ArrowRight, CheckCircle, CreditCard, Lock, Receipt } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getBillingPlan, getSubscriptionStatus, openCustomerPortal, recordBillingEvent, type SubscriptionSnapshot } from '../lib/billingApi';
+import { getBillingPlan, getSubscriptionStatus, normalizeBillingPlanId, openCustomerPortal, recordBillingEvent, type SubscriptionSnapshot } from '../lib/billingApi';
 import { setSeo } from '../lib/seo';
 
 export default function BusinessBillingResult({ mode }: { mode: 'success' | 'cancel' }) {
   const [searchParams] = useSearchParams();
   const [subscription, setSubscription] = useState<SubscriptionSnapshot | null>(null);
   const [portalMessage, setPortalMessage] = useState('');
-  const planId = searchParams.get('plan') || subscription?.planId || 'pro';
-  const plan = getBillingPlan(planId === 'starter' || planId === 'pro' || planId === 'scale' ? planId : 'pro');
+  const planId = normalizeBillingPlanId(searchParams.get('plan') || subscription?.planId);
+  const plan = getBillingPlan(planId);
   const fallback = searchParams.get('fallback') === '1';
+  const selfService = searchParams.get('selfService') === '1' || plan.selfService;
 
   useEffect(() => {
     setSeo({
@@ -56,24 +57,39 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
       <div className="container billing-result">
         <CheckCircle size={38} />
         <p className="eyebrow">Alta recibida</p>
-        <h1>{fallback ? 'Checkout simulado preparado.' : 'Suscripcion enviada a Stripe.'}</h1>
-        <p>El plan {plan.name} queda asociado al salon y el estado de activacion queda pendiente de configurar servicios, agenda, equipo y permisos.</p>
+          <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? 'Checkout simulado preparado.' : 'Suscripcion enviada a Stripe.'}</h1>
+          <p>{selfService
+            ? `El plan ${plan.name} queda activo sin revision manual. Ya puedes configurar servicios, agenda, equipo y permisos.`
+            : `El plan ${plan.name} queda asociado al salon y el estado de activacion queda pendiente de configurar servicios, agenda, equipo y permisos.`
+          }</p>
         <div className="billing-status-grid">
           <article><CreditCard size={18} /><strong>{subscription?.status || 'trialing'}</strong><span>Estado de suscripcion</span></article>
-          <article><Receipt size={18} /><strong>{subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripcion</span></article>
+          <article><Receipt size={18} /><strong>{selfService ? 'self-service' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripcion</span></article>
           <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>Activacion del salon</span></article>
         </div>
-        <div className="billing-alerts">
-          <span>Pago fallido o tarjeta caducada: aviso inmediato y 7 dias de grace period.</span>
-          <span>Trial terminando: aviso 3 dias antes de la primera factura.</span>
-          <span>Suscripcion cancelada: acceso limitado al finalizar periodo vigente.</span>
-        </div>
+        {selfService
+          ? (
+            <div className="billing-alerts">
+              <span>Básico no queda en revisión: la cuenta se ha guardado como activa.</span>
+              <span>El precio final se confirma antes de contratar servicios de pago.</span>
+              <span>Para contratos o plan A medida se usa soporte@origar.es.</span>
+            </div>
+          )
+          : (
+            <div className="billing-alerts">
+              <span>Pago fallido o tarjeta caducada: aviso inmediato y 7 dias de grace period.</span>
+              <span>Trial terminando: aviso 3 dias antes de la primera factura.</span>
+              <span>Suscripcion cancelada: acceso limitado al finalizar periodo vigente.</span>
+            </div>
+          )}
         {portalMessage && <p className="auth-message ok" role="status" aria-live="polite">{portalMessage}</p>}
         <div className="billing-result-actions">
-          <button className="btn btn-primary btn-lg" type="button" onClick={openPortal}>
-            <CreditCard size={16} />
-            Abrir Customer Portal
-          </button>
+          {!selfService && (
+            <button className="btn btn-primary btn-lg" type="button" onClick={openPortal}>
+              <CreditCard size={16} />
+              Abrir Customer Portal
+            </button>
+          )}
           <Link className="btn btn-ghost btn-lg" to="/business">Volver a Business</Link>
         </div>
       </div>

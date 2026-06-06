@@ -75,10 +75,20 @@ export function loginClient(slug: string, params: { telefono: string; verificati
   return apiPost<ClientAuthResponse>(`/salones/${encodeURIComponent(slug)}/auth/cliente/login`, params);
 }
 
-export function getClientMe(slug: string, token: string, signal?: AbortSignal) {
-  return apiGet<ClientProfile>(`/salones/${encodeURIComponent(slug)}/auth/cliente/me`, { token, signal });
+export async function getClientMe(slug: string, token: string, signal?: AbortSignal) {
+  try {
+    return await apiGet<ClientProfile>('/clientes/me', { token, signal });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    return apiGet<ClientProfile>(`/salones/${encodeURIComponent(slug)}/auth/cliente/me`, { token, signal });
+  }
 }
 
-export function getClientBookings(slug: string, token: string, signal?: AbortSignal) {
-  return apiGet<ClientBooking[]>(`/salones/${encodeURIComponent(slug)}/clientes/me/reservas`, { token, signal });
+export async function getClientBookings(slug: string, token: string, signal?: AbortSignal) {
+  try {
+    return await apiGet<ClientBooking[]>('/clientes/me/reservas', { token, signal });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    return apiGet<ClientBooking[]>(`/salones/${encodeURIComponent(slug)}/clientes/me/reservas`, { token, signal });
+  }
 }

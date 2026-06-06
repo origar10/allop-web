@@ -81,8 +81,8 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const title = isRegister ? 'Crea tu cuenta de cliente' : 'Accede a tu cuenta';
   const Icon = isRegister ? UserPlus : LogIn;
   const subtitle = isRegister
-    ? 'Registra tu cuenta global por telÃ©fono para reservar mÃ¡s rÃ¡pido en Allop.'
-    : 'Entra con cÃ³digo SMS para ver tus reservas y continuar como cliente.';
+    ? 'Registra tu cuenta global por teléfono para reservar más rápido en Allop.'
+    : 'Entra con código SMS para ver tus reservas y continuar como cliente.';
 
   async function refreshSession(currentSession: ClientSession) {
     const [profile, nextBookings] = await Promise.all([
@@ -135,16 +135,16 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     const text = error instanceof Error ? error.message : fallback;
     const normalized = text.toLowerCase();
 
-    if (normalized.includes('otp') || normalized.includes('code') || normalized.includes('cÃ³digo')) {
-      return 'El cÃ³digo no es correcto o ha caducado. Revisa el SMS o solicita uno nuevo.';
+    if (normalized.includes('otp') || normalized.includes('code') || normalized.includes('código')) {
+      return 'El código no es correcto o ha caducado. Revisa el SMS o solicita uno nuevo.';
     }
 
     if (normalized.includes('phone') || normalized.includes('tel')) {
-      return 'El telÃ©fono no parece vÃ¡lido. Usa prefijo si estÃ¡s fuera de EspaÃ±a.';
+      return 'El teléfono no parece válido. Usa prefijo si estás fuera de España.';
     }
 
     if (normalized.includes('network') || normalized.includes('fetch')) {
-      return 'No hay conexiÃ³n con Allop ahora mismo. IntÃ©ntalo de nuevo en unos segundos.';
+      return 'No hay conexión con Allop ahora mismo. Inténtalo de nuevo en unos segundos.';
     }
 
     return text || fallback;
@@ -154,12 +154,12 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     const telefono = normalizePhone(phone);
 
     if (!selectedSalon) {
-      setMessage({ ok: false, text: 'Selecciona un salÃ³n.' });
+      setMessage({ ok: false, text: 'Selecciona un salón.' });
       return;
     }
 
     if (telefono.length < 8) {
-      setMessage({ ok: false, text: 'Introduce un telÃ©fono vÃ¡lido.' });
+      setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
       return;
     }
 
@@ -169,7 +169,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     }
 
     if (isRegister && !acceptedTerms) {
-      setMessage({ ok: false, text: 'Acepta los tÃ©rminos y la polÃ­tica de privacidad para crear la cuenta.' });
+      setMessage({ ok: false, text: 'Acepta los términos y la política de privacidad para crear la cuenta.' });
       return;
     }
 
@@ -187,11 +187,11 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       setMessage({
         ok: true,
         text: import.meta.env.DEV && response.debugCode
-          ? `CÃ³digo generado para pruebas: ${response.debugCode}`
-          : 'Te hemos enviado un cÃ³digo por SMS. Puede tardar unos segundos.',
+          ? `Código generado para pruebas: ${response.debugCode}`
+          : 'Te hemos enviado un código por SMS. Puede tardar unos segundos.',
       });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'No se pudo enviar el cÃ³digo.') });
+      setMessage({ ok: false, text: authErrorText(error, 'No se pudo enviar el código.') });
     } finally {
       setLoading(false);
     }
@@ -199,12 +199,12 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const completeAuth = async () => {
     if (!selectedSalon || !challengeId) {
-      setMessage({ ok: false, text: 'Vuelve a solicitar el cÃ³digo.' });
+      setMessage({ ok: false, text: 'Vuelve a solicitar el código.' });
       return;
     }
 
     if (code.trim().length < 4) {
-      setMessage({ ok: false, text: 'Introduce el cÃ³digo recibido.' });
+      setMessage({ ok: false, text: 'Introduce el código recibido.' });
       return;
     }
 
@@ -242,14 +242,14 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       saveClientSession(nextSession);
       setSession(nextSession);
       setStep('done');
-      setMessage({ ok: true, text: `SesiÃ³n iniciada como ${auth.cliente.nombre}.` });
+      setMessage({ ok: true, text: `Sesión iniciada como ${auth.cliente.nombre}.` });
       if (isRegister) {
         trackEvent('registration_completed', { salonSlug: selectedSalon.slug, hasEmail: Boolean(email.trim()) });
       }
       await refreshSession(nextSession);
       navigate(nextPath, { replace: true });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'No se pudo iniciar la sesiÃ³n.') });
+      setMessage({ ok: false, text: authErrorText(error, 'No se pudo iniciar la sesión.') });
     } finally {
       setLoading(false);
     }
@@ -273,7 +273,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     setSession(null);
     setBookings([]);
     setStep('phone');
-    setMessage({ ok: true, text: 'SesiÃ³n cerrada.' });
+    setMessage({ ok: true, text: 'Sesión cerrada.' });
     notify('Sesión cerrada.', 'success');
   };
 
@@ -299,15 +299,15 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="client-auth-points">
-            <span><CheckCircle size={16} /> Reservas mÃ¡s rÃ¡pidas</span>
-            <span><ShieldCheck size={16} /> Acceso con cÃ³digo SMS</span>
+            <span><CheckCircle size={16} /> Reservas más rápidas</span>
+            <span><ShieldCheck size={16} /> Acceso con código SMS</span>
             <span><CheckCircle size={16} /> Historial global</span>
           </div>
         </div>
 
         <form className="client-auth-card" onSubmit={submit}>
           <div className="client-auth-icon"><Icon size={22} /></div>
-          <h2>{isRegister ? 'Registro cliente' : 'Inicio de sesiÃ³n'}</h2>
+          <h2>{isRegister ? 'Registro cliente' : 'Inicio de sesión'}</h2>
           <button className="btn btn-ghost btn-lg auth-google" type="button" onClick={startGoogleLogin} disabled={loading}>
             <span>G</span>
             Continuar con Google
@@ -336,9 +336,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
               )}
 
               <label>
-                TelÃ©fono
+                Teléfono
                 <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
-                <span className="auth-help">Usaremos este nÃºmero para enviarte un cÃ³digo SMS de un solo uso.</span>
+                <span className="auth-help">Usaremos este número para enviarte un código SMS de un solo uso.</span>
               </label>
 
               {isRegister && step === 'phone' && (
@@ -350,16 +350,16 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                     disabled={loading}
                   />
                   <span>
-                    Acepto los <Link to="/terminos">tÃ©rminos</Link> y la <Link to="/privacidad">polÃ­tica de privacidad</Link>.
+                    Acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
                   </span>
                 </label>
               )}
 
               {step === 'code' && (
                 <label>
-                  CÃ³digo SMS
+                  Código SMS
                   <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" disabled={loading} />
-                  <span className="auth-help">Introduce el cÃ³digo recibido por SMS. Caduca por seguridad.</span>
+                  <span className="auth-help">Introduce el código recibido por SMS. Caduca por seguridad.</span>
                 </label>
               )}
             </>
@@ -374,9 +374,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 <strong>Reservas</strong>
                 {bookings.length ? bookings.slice(0, 3).map((booking) => (
                   <p key={booking.id}>
-                    {booking.servicio?.nombre || 'Reserva'} Â· {formatBookingDate(booking.fecha_hora_inicio)} Â· {booking.estado || 'pendiente'}
+                    {booking.servicio?.nombre || 'Reserva'} · {formatBookingDate(booking.fecha_hora_inicio)} · {booking.estado || 'pendiente'}
                   </p>
-                )) : <p>AÃºn no tienes reservas en este salÃ³n.</p>}
+                )) : <p>Aún no tienes reservas en este salón.</p>}
               </div>
             </div>
           )}
@@ -394,7 +394,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           {step === 'phone' && (
             <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
               {loading && <span className="inline-spinner" aria-hidden="true" />}
-              {loading ? 'Enviando...' : 'Enviar cÃ³digo'}
+              {loading ? 'Enviando...' : 'Enviar código'}
             </button>
           )}
 
@@ -406,10 +406,10 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={() => setStep('phone')} disabled={loading}>
                 <RotateCcw size={16} />
-                Cambiar telÃ©fono
+                Cambiar teléfono
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={requestCode} disabled={loading || resendCountdown > 0}>
-                {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : 'Reenviar cÃ³digo'}
+                {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : 'Reenviar código'}
               </button>
             </div>
           )}
@@ -424,16 +424,16 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={logout}>
                 <LogOut size={16} />
-                Cerrar sesiÃ³n
+                Cerrar sesión
               </button>
             </div>
           )}
 
-          {import.meta.env.DEV && debugCode && step === 'code' && <p className="auth-debug">CÃ³digo de entorno de pruebas: {debugCode}</p>}
+          {import.meta.env.DEV && debugCode && step === 'code' && <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>}
 
           <p className="auth-switch">
-            {isRegister ? 'Â¿Ya tienes cuenta?' : 'Â¿AÃºn no tienes cuenta?'}{' '}
-            <Link to={isRegister ? '/login' : '/register'}>{isRegister ? 'Inicia sesiÃ³n' : 'RegÃ­strate'}</Link>
+            {isRegister ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'}{' '}
+            <Link to={isRegister ? '/login' : '/register'}>{isRegister ? 'Inicia sesión' : 'Regístrate'}</Link>
           </p>
         </form>
       </div>

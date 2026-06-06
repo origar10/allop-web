@@ -4,9 +4,10 @@ import { formatCurrency } from '../shared/formatters';
 const BILLING_STATE_KEY = 'allop.billing.subscription';
 const BILLING_EVENTS_KEY = 'allop.billing.events';
 
-export type BillingPlanId = 'starter' | 'pro' | 'scale';
+export type BillingPlanId = 'basic' | 'custom';
 export type BillingInterval = 'monthly' | 'annual';
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete';
+export const CONTRACT_EMAIL = 'soporte@origar.es';
 
 export interface BillingPlan {
   id: BillingPlanId;
@@ -20,6 +21,8 @@ export interface BillingPlan {
   reminders: string;
   support: string;
   features: string[];
+  /** true → flujo Stripe Checkout; false → leads comercial / contrato */
+  selfService: boolean;
   stripePriceEnvMonthly?: string;
   stripePriceEnvAnnual?: string;
 }
@@ -60,49 +63,40 @@ export interface BillingEvent {
 
 export const BILLING_PLANS: BillingPlan[] = [
   {
-    id: 'starter',
-    name: 'Starter',
-    monthlyPrice: 39,
-    annualPrice: 390,
-    trialDays: 14,
+    id: 'basic',
+    name: 'Básico',
+    monthlyPrice: null,
+    annualPrice: null,
+    trialDays: 0,
     employees: 'Hasta 3',
     seats: '1 usuario gestor',
     bookings: '300/mes',
-    reminders: 'Basicos',
-    support: 'Estandar',
-    features: ['Ficha publica', 'Agenda online', 'Recordatorios basicos', 'Soporte por email'],
-    stripePriceEnvMonthly: 'STRIPE_PRICE_STARTER_MONTHLY',
-    stripePriceEnvAnnual: 'STRIPE_PRICE_STARTER_ANNUAL',
+    reminders: 'Básicos',
+    support: 'Estándar',
+    features: ['Alta self-service', 'Ficha pública', 'Agenda online', 'Recordatorios básicos', 'Sin revisión manual'],
+    selfService: true,
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    monthlyPrice: 79,
-    annualPrice: 790,
-    trialDays: 14,
-    employees: 'Hasta 12',
-    seats: 'Hasta 4 usuarios',
-    bookings: '1.500/mes',
-    reminders: 'SMS/email segun plan',
-    support: 'Prioritario',
-    features: ['Agenda por profesional', 'Caja', 'Clientes e historial', 'Inventario basico'],
-    stripePriceEnvMonthly: 'STRIPE_PRICE_PRO_MONTHLY',
-    stripePriceEnvAnnual: 'STRIPE_PRICE_PRO_ANNUAL',
-  },
-  {
-    id: 'scale',
-    name: 'Scale',
+    id: 'custom',
+    name: 'A medida',
     monthlyPrice: null,
     annualPrice: null,
     trialDays: 0,
     employees: 'A medida',
-    seats: 'Ilimitados',
+    seats: 'A medida',
     bookings: 'A medida',
-    reminders: 'Personalizados',
-    support: 'Dedicado',
-    features: ['Multi-sede', 'Roles avanzados', 'Migracion asistida', 'Integraciones a medida'],
+    reminders: 'SMS/email según contrato',
+    support: 'Prioritario',
+    features: ['Multi-salón', 'Roles avanzados', 'Integraciones a medida', 'Migración acompañada', 'Contrato personalizado'],
+    selfService: false,
   },
 ];
+
+export function normalizeBillingPlanId(value: string | null | undefined): BillingPlanId {
+  if (value === 'basic' || value === 'starter') return 'basic';
+  if (value === 'custom' || value === 'pro' || value === 'scale') return 'custom';
+  return 'basic';
+}
 
 function readSubscription() {
   const raw = localStorage.getItem(BILLING_STATE_KEY);
@@ -135,17 +129,18 @@ function buildLocalSubscription(profile: BillingProfile, planId: BillingPlanId, 
     stripeSubscriptionId: `sub_pending_${Date.now()}`,
     currentPeriodEnd: currentPeriodEnd.toISOString(),
     trialEndsAt,
-    activationState: 'pending_setup',
+    activationState: plan.selfService ? 'active' : 'pending_setup',
   };
 }
 
-export function getBillingPlan(planId: BillingPlanId) {
-  return BILLING_PLANS.find((plan) => plan.id === planId) || BILLING_PLANS[0];
+export function getBillingPlan(planId: BillingPlanId | string | null | undefined) {
+  const normalizedPlanId = normalizeBillingPlanId(planId);
+  return BILLING_PLANS.find((plan) => plan.id === normalizedPlanId) || BILLING_PLANS[0];
 }
 
 export function formatPlanPrice(plan: BillingPlan, interval: BillingInterval) {
   const price = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
-  if (price === null) return 'A medida';
+  if (price === null) return 'Pedir presupuesto';
   return `${formatCurrency(price)}${interval === 'annual' ? '/ano' : '/mes'}`;
 }
 
@@ -161,7 +156,13 @@ export function recordBillingEvent(name: string, payload: BillingEvent['payload'
 }
 
 export async function createCheckoutSession(planId: BillingPlanId, interval: BillingInterval, profile: BillingProfile) {
+  const plan = getBillingPlan(planId);
   recordBillingEvent('checkout_started', { planId, interval, salonName: profile.salonName, coupon: profile.coupon || null });
+
+  if (!plan.selfService) {
+    recordBillingEvent('contract_requested', { planId, salonName: profile.salonName, email: profile.email || null });
+    return { url: buildContractMailto(profile, plan.name), localFallback: true };
+  }
 
   const payload = {
     planId,
@@ -182,6 +183,31 @@ export async function createCheckoutSession(planId: BillingPlanId, interval: Bil
     writeSubscription(subscription);
     return { url: `/business/alta/success?plan=${planId}&interval=${interval}&fallback=1`, localFallback: true };
   }
+}
+
+export function buildSelfServiceSignup(profile: BillingProfile, planId: BillingPlanId = 'basic', interval: BillingInterval = 'monthly') {
+  const subscription = buildLocalSubscription(profile, planId, interval);
+  writeSubscription(subscription);
+  recordBillingEvent('self_service_signup_completed', { planId, salonName: profile.salonName, email: profile.email || null });
+  return subscription;
+}
+
+export function buildContractMailto(profile: BillingProfile, planName = 'A medida') {
+  const subject = encodeURIComponent(`Contrato Allop ${planName} - ${profile.salonName || 'salón'}`);
+  const body = encodeURIComponent([
+    `Hola, quiero pedir presupuesto/contrato para el plan ${planName}.`,
+    '',
+    `Salón: ${profile.salonName || '-'}`,
+    `Contacto: ${profile.contactName || '-'}`,
+    `Email: ${profile.email || '-'}`,
+    `Teléfono: ${profile.phone || '-'}`,
+    `Razón social: ${profile.fiscalName || '-'}`,
+    `NIF/CIF: ${profile.taxId || '-'}`,
+    `Dirección fiscal: ${profile.address || '-'}`,
+    `Ciudad: ${profile.city || '-'}`,
+    `Cupón: ${profile.coupon || '-'}`,
+  ].join('\n'));
+  return `mailto:${CONTRACT_EMAIL}?subject=${subject}&body=${body}`;
 }
 
 export async function openCustomerPortal() {
@@ -225,7 +251,7 @@ export function isModuleLocked(subscription: SubscriptionSnapshot | null, module
   if (!subscription) return true;
   if (subscription.status === 'past_due' && subscription.gracePeriodEndsAt && new Date(subscription.gracePeriodEndsAt) < new Date()) return true;
   if (subscription.status === 'canceled' || subscription.status === 'incomplete') return true;
-  if (module === 'multi_salon') return subscription.planId !== 'scale';
-  if (module === 'caja' || module === 'clientes') return subscription.planId === 'starter';
+  if (module === 'multi_salon') return subscription.planId !== 'custom';
+  if (module === 'caja' || module === 'clientes') return subscription.planId === 'basic';
   return false;
 }

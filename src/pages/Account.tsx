@@ -2,9 +2,13 @@ import {
   Bell,
   CalendarDays,
   CheckCircle,
+  Headphones,
   Heart,
+  Inbox,
   LogOut,
+  Mail,
   MessageSquare,
+  Phone,
   ShieldCheck,
   Star,
   Trash2,
@@ -19,6 +23,7 @@ import {
   deleteAccountData,
   exportAccountData,
   fallbackBookings,
+  loadCommsHistory,
   loadFavoriteSlugs,
   loadNotificationPreferences,
   loadProfileDraft,
@@ -30,15 +35,17 @@ import {
   saveReview,
   type AccountBooking,
   type AccountProfileDraft,
+  type CommsHistoryEntry,
   type NotificationPreferences,
 } from '../lib/accountStore';
+import { getEventLabel } from '../lib/notificationTemplates';
 import { clearClientSession, loadClientSession } from '../lib/clientSession';
 import { getClientBookings } from '../lib/platformApi';
 import { useToast } from '../lib/useToast';
 import { statusFromItems, type AsyncStatus } from '../shared/asyncState';
 import { formatDateTime } from '../shared/formatters';
 
-type AccountView = 'dashboard' | 'reservas' | 'favoritos' | 'perfil' | 'puntos';
+type AccountView = 'dashboard' | 'reservas' | 'favoritos' | 'perfil' | 'puntos' | 'comunicaciones';
 
 const ACCOUNT_NAV: { view: AccountView; label: string }[] = [
   { view: 'dashboard', label: 'Resumen' },
@@ -46,6 +53,7 @@ const ACCOUNT_NAV: { view: AccountView; label: string }[] = [
   { view: 'favoritos', label: 'Favoritos' },
   { view: 'perfil', label: 'Perfil' },
   { view: 'puntos', label: 'Puntos' },
+  { view: 'comunicaciones', label: 'Comunicaciones' },
 ];
 
 function getView(pathname: string): AccountView {
@@ -53,6 +61,7 @@ function getView(pathname: string): AccountView {
   if (pathname.includes('/favoritos')) return 'favoritos';
   if (pathname.includes('/perfil')) return 'perfil';
   if (pathname.includes('/puntos')) return 'puntos';
+  if (pathname.includes('/comunicaciones')) return 'comunicaciones';
   return 'dashboard';
 }
 
@@ -74,11 +83,21 @@ export default function Account() {
   const [prefs, setPrefs] = useState<NotificationPreferences>(() => loadNotificationPreferences());
   const [profileMessage, setProfileMessage] = useState('');
   const [privacyMessage, setPrivacyMessage] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [reviewBookingId, setReviewBookingId] = useState('');
   const [reviewText, setReviewText] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
+  const [commsHistory, setCommsHistory] = useState<CommsHistoryEntry[]>(() => loadCommsHistory());
   const reviews = loadReviews();
   const { notify } = useToast();
+
+  // Reload comms history whenever the user navigates to the communicaciones tab
+  useEffect(() => {
+    if (view !== 'comunicaciones') return undefined;
+
+    const timer = window.setTimeout(() => setCommsHistory(loadCommsHistory()), 0);
+    return () => window.clearTimeout(timer);
+  }, [view]);
 
   useEffect(() => {
     if (!session) return;
@@ -133,8 +152,6 @@ export default function Account() {
   }
 
   const cancelBooking = (id: string) => {
-    if (!window.confirm('Cancelar esta reserva?')) return;
-
     const next = cancelStoredBooking(id);
     setBookings(next.length ? next : bookings.map((booking) => (
       booking.id === id ? { ...booking, status: 'cancelada' as const } : booking
@@ -192,8 +209,7 @@ export default function Account() {
   };
 
   const deleteData = () => {
-    if (!window.confirm('Eliminar datos locales de cuenta, reservas guardadas, favoritos, preferencias y reseñas?')) return;
-
+    setDeleteConfirm(false);
     deleteAccountData();
     clearClientSession(session.salonSlug);
     clearClientSession();
@@ -321,9 +337,58 @@ export default function Account() {
 
               <section className="account-card">
                 <h2 className="section-title"><Bell size={20} /> Preferencias de notificación</h2>
-                <div className="toggle-list">
-                  <label><input type="checkbox" checked={prefs.sms} onChange={(event) => updatePrefs({ ...prefs, sms: event.target.checked })} /> SMS de confirmación y recordatorio</label>
-                  <label><input type="checkbox" checked={prefs.email} onChange={(event) => updatePrefs({ ...prefs, email: event.target.checked })} /> Email de confirmación y novedades operativas</label>
+                <p className="section-subtitle">Elige cómo y cuándo quieres recibir mensajes de Allop. Los mensajes transaccionales solo se envían si tienes al menos un canal activo.</p>
+
+                <div className="prefs-group">
+                  <h3 className="prefs-group-title">Canales</h3>
+                  <div className="toggle-list">
+                    <label>
+                      <input type="checkbox" checked={prefs.sms} onChange={(e) => updatePrefs({ ...prefs, sms: e.target.checked })} />
+                      <Phone size={14} /> SMS
+                    </label>
+                    <label>
+                      <input type="checkbox" checked={prefs.email} onChange={(e) => updatePrefs({ ...prefs, email: e.target.checked })} />
+                      <Mail size={14} /> Email
+                    </label>
+                    <label>
+                      <input type="checkbox" checked={prefs.whatsapp} onChange={(e) => updatePrefs({ ...prefs, whatsapp: e.target.checked })} />
+                      <MessageSquare size={14} /> WhatsApp
+                    </label>
+                  </div>
+                </div>
+
+                <div className="prefs-group">
+                  <h3 className="prefs-group-title">Notificaciones transaccionales</h3>
+                  <p className="prefs-group-desc">Mensajes relacionados con tus reservas. No tienen finalidad comercial.</p>
+                  <div className="toggle-list">
+                    <label>
+                      <input type="checkbox" checked={prefs.confirmaciones} onChange={(e) => updatePrefs({ ...prefs, confirmaciones: e.target.checked })} />
+                      Confirmación de reserva
+                    </label>
+                    <label>
+                      <input type="checkbox" checked={prefs.recordatorios} onChange={(e) => updatePrefs({ ...prefs, recordatorios: e.target.checked })} />
+                      Recordatorio 24h y 2h antes
+                    </label>
+                    <label>
+                      <input type="checkbox" checked={prefs.cancelaciones} onChange={(e) => updatePrefs({ ...prefs, cancelaciones: e.target.checked })} />
+                      Aviso de cancelación o reprogramación
+                    </label>
+                  </div>
+                </div>
+
+                <div className="prefs-group">
+                  <h3 className="prefs-group-title">Novedades y ofertas</h3>
+                  <p className="prefs-group-desc">Mensajes opcionales sobre salones, promociones y novedades de Allop.</p>
+                  <div className="toggle-list">
+                    <label>
+                      <input type="checkbox" checked={prefs.novedades} onChange={(e) => updatePrefs({ ...prefs, novedades: e.target.checked })} />
+                      Novedades de salones guardados
+                    </label>
+                    <label>
+                      <input type="checkbox" checked={prefs.ofertas} onChange={(e) => updatePrefs({ ...prefs, ofertas: e.target.checked })} />
+                      Ofertas y promociones activas
+                    </label>
+                  </div>
                 </div>
               </section>
 
@@ -341,16 +406,24 @@ export default function Account() {
 
               <section className="account-card">
                 <h2 className="section-title"><Trash2 size={20} /> Privacidad y derechos RGPD</h2>
-                <p className="section-subtitle">Puedes exportar tus datos locales o eliminar la informacion guardada en este navegador. Para supresion completa en backend, contacta con soporte.</p>
+                <p className="section-subtitle">Puedes exportar tus datos locales o eliminar la información guardada en este navegador. Para supresión completa en el servidor, contacta con soporte.</p>
                 {privacyMessage && <p className="auth-message ok" role="status" aria-live="polite">{privacyMessage}</p>}
                 <div className="privacy-actions">
                   <button className="btn btn-ghost btn-lg" type="button" onClick={exportData}>Exportar mis datos</button>
-                  <button className="btn btn-ghost btn-lg danger" type="button" onClick={deleteData}>
-                    <Trash2 size={16} />
-                    Eliminar mi cuenta
-                  </button>
+                  {deleteConfirm ? (
+                    <div className="confirm-row">
+                      <span>¿Eliminar todos los datos locales guardados?</span>
+                      <button className="btn btn-sm danger" type="button" onClick={deleteData}>Sí, eliminar</button>
+                      <button className="btn btn-sm btn-ghost" type="button" onClick={() => setDeleteConfirm(false)}>Cancelar</button>
+                    </div>
+                  ) : (
+                    <button className="btn btn-ghost btn-lg danger" type="button" onClick={() => setDeleteConfirm(true)}>
+                      <Trash2 size={16} />
+                      Eliminar mi cuenta
+                    </button>
+                  )}
                 </div>
-                <Link className="see-all" to="/rgpd">Ver informacion RGPD</Link>
+                <Link className="see-all" to="/rgpd">Ver información RGPD</Link>
               </section>
             </>
           )}
@@ -369,6 +442,42 @@ export default function Account() {
               </div>
             </section>
           )}
+
+          {view === 'comunicaciones' && (
+            <section className="account-card">
+              <h2 className="section-title"><Inbox size={20} /> Historial de comunicaciones</h2>
+              <p className="section-subtitle">Registro de mensajes transaccionales enviados relacionados con tus reservas. Solo útil para soporte.</p>
+              {commsHistory.length === 0 ? (
+                <div className="account-loading">
+                  No hay comunicaciones registradas. Aparecerán aquí tras tu próxima reserva o cancelación.
+                </div>
+              ) : (
+                <div className="comms-history-list">
+                  {commsHistory.map((entry) => (
+                    <article key={entry.id} className="comms-history-entry">
+                      <div className="comms-history-entry-top">
+                        <span className={`comms-channel-chip comms-channel-${entry.channel}`}>
+                          {entry.channel === 'sms' && <Phone size={11} />}
+                          {entry.channel === 'email' && <Mail size={11} />}
+                          {entry.channel === 'whatsapp' && <MessageSquare size={11} />}
+                          {entry.channel.toUpperCase()}
+                        </span>
+                        <strong>{getEventLabel(entry.event)}</strong>
+                        <time className="comms-history-time" dateTime={entry.sentAt}>
+                          {new Date(entry.sentAt).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </time>
+                      </div>
+                      <p>{entry.salonName} · {entry.serviceName}</p>
+                      <small>{entry.bookingDate} {entry.bookingTime}{entry.locator ? ` · ${entry.locator}` : ''}</small>
+                    </article>
+                  ))}
+                </div>
+              )}
+              <p className="comms-history-note">
+                Este historial se almacena localmente en tu dispositivo. Para incidencias con una comunicación, incluye el localizador de reserva al contactar con soporte.
+              </p>
+            </section>
+          )}
         </main>
       </div>
     </section>
@@ -381,6 +490,15 @@ function BookingList({ bookings, loading, onCancel }: {
   status?: AsyncStatus;
   onCancel: (id: string) => void;
 }) {
+  const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
+  const [copiedLocator, setCopiedLocator] = useState('');
+
+  const copyLocator = (locator: string) => {
+    navigator.clipboard?.writeText(locator).catch(() => undefined);
+    setCopiedLocator(locator);
+    window.setTimeout(() => setCopiedLocator(''), 1800);
+  };
+
   if (loading) {
     return (
       <div className="account-loading account-loading-skeleton" role="status" aria-live="polite">
@@ -401,15 +519,40 @@ function BookingList({ bookings, loading, onCancel }: {
           <div>
             <strong>{booking.serviceName}</strong>
             <span>{booking.salonName} · {formatDateTime(booking.startsAt)}</span>
-            <small>{booking.locator}</small>
+            <div className="booking-locator-row">
+              <code className="booking-locator-code">{booking.locator}</code>
+              <button
+                type="button"
+                className="booking-locator-copy"
+                onClick={() => copyLocator(booking.locator)}
+                aria-label={`Copiar localizador ${booking.locator}`}
+              >
+                {copiedLocator === booking.locator ? 'Copiado' : 'Copiar'}
+              </button>
+              <a
+                href={`/contacto?motivo=soporte-reserva&localizador=${booking.locator}`}
+                className="booking-locator-support"
+                aria-label={`Soporte para reserva ${booking.locator}`}
+              >
+                <Headphones size={12} /> Soporte
+              </a>
+            </div>
           </div>
           <div className="booking-row-actions">
             <span className={`status-pill ${booking.status}`}>{booking.status}</span>
             {(booking.status === 'pendiente' || booking.status === 'confirmada') && (
-              <button type="button" onClick={() => onCancel(booking.id)}>
-                <Trash2 size={14} />
-                Cancelar
-              </button>
+              pendingCancelId === booking.id ? (
+                <div className="confirm-row">
+                  <span>¿Cancelar?</span>
+                  <button type="button" className="btn btn-sm danger" onClick={() => { onCancel(booking.id); setPendingCancelId(null); }}>Sí</button>
+                  <button type="button" className="btn btn-sm btn-ghost" onClick={() => setPendingCancelId(null)}>No</button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setPendingCancelId(booking.id)}>
+                  <Trash2 size={14} />
+                  Cancelar
+                </button>
+              )
             )}
           </div>
         </article>

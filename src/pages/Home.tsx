@@ -23,6 +23,7 @@ import { PROMO_BANNER, RECENT_REVIEWS, SALONS, type Salon } from '../data/salons
 import { saveMarketplaceLead, type MarketplaceLead } from '../lib/marketplaceLeads';
 import { listMarketplaceSalons } from '../lib/salonsApi';
 import { setSeo } from '../lib/seo';
+import { CATEGORIES as TAXONOMY_CATEGORIES } from '../lib/taxonomy';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { matchesQuery, normalize } from '../lib/searchUtils';
 import { statusFromItems } from '../shared/asyncState';
@@ -151,6 +152,11 @@ function getMapPinStyle(salon: Salon, salons: Salon[]): CSSProperties {
     left: `${12 + ((salon.lng - minLng) / lngRange) * 76}%`,
     top: `${88 - ((salon.lat - minLat) / latRange) * 76}%`,
   };
+}
+
+function getAppleMapsUrl(salon: Salon) {
+  const query = encodeURIComponent(`${salon.name}, ${salon.address || salon.location}`);
+  return `https://maps.apple.com/?q=${query}&ll=${salon.lat},${salon.lng}`;
 }
 
 export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenSalon, onSalonSignup }: HomeProps) {
@@ -431,6 +437,12 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               {CITY_LINKS.map((city) => <Link key={city.slug} to={`/ciudad/${city.slug}`}>{city.label}</Link>)}
             </div>
           </article>
+          <article>
+            <h2>Categorías</h2>
+            <div>
+              {TAXONOMY_CATEGORIES.map((item) => <Link key={item.slug} to={`/categoria/${item.slug}`}>{item.label}</Link>)}
+            </div>
+          </article>
         </div>
       </section>
 
@@ -612,10 +624,16 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
               </div>
               <div className="market-map-list">
                 {visibleSalons.map((salon) => (
-                  <button key={salon.id} type="button" onClick={() => onOpenSalon(salon)}>
-                    <strong>{salon.name}</strong>
-                    <span>{salon.location} · {salon.distance} · {salon.nextSlot}</span>
-                  </button>
+                  <article key={salon.id}>
+                    <button type="button" onClick={() => onOpenSalon(salon)}>
+                      <strong>{salon.name}</strong>
+                      <span>{salon.location} · {salon.distance} · {salon.nextSlot}</span>
+                    </button>
+                    <a href={getAppleMapsUrl(salon)} target="_blank" rel="noreferrer">
+                      <MapPin size={13} />
+                      Abrir en Apple Maps
+                    </a>
+                  </article>
                 ))}
               </div>
             </div>

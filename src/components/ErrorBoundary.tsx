@@ -7,6 +7,7 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   hasError: boolean;
+  traceId?: string;
 }
 
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -17,7 +18,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    captureError(error, 'boundary', info.componentStack || undefined);
+    const traceId = captureError(error, 'boundary', info.componentStack || undefined);
+    this.setState({ traceId });
   }
 
   render() {
@@ -25,10 +27,18 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       return (
         <main className="error-boundary">
           <section>
-            <p className="eyebrow">Error de aplicacion</p>
-            <h1>Algo no ha cargado bien.</h1>
-            <p>Hemos registrado el error para revisarlo. Puedes volver al marketplace o contactar con soporte si afecta a una reserva.</p>
+            <p className="eyebrow">Error de aplicación</p>
+            <h1>Algo ha fallado al cargar.</h1>
+            <p>Hemos registrado el error automáticamente. Vuelve al inicio o contacta con soporte si el problema afecta a una reserva activa.</p>
+            {this.state.traceId && (
+              <p className="error-trace-id">
+                Referencia: <code>{this.state.traceId}</code>
+              </p>
+            )}
             <a className="btn btn-primary" href="/">Volver al inicio</a>
+            <a className="btn btn-ghost" href={`/contacto?motivo=error-tecnico&traza=${this.state.traceId || ''}`}>
+              Contactar soporte
+            </a>
           </section>
         </main>
       );

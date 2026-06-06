@@ -1,8 +1,11 @@
 import {
+  Bell,
   CalendarDays,
   CheckCircle,
   Clock,
   LogIn,
+  Mail,
+  MessageSquare,
   Phone,
   Scissors,
   ShieldCheck,
@@ -10,14 +13,22 @@ import {
   XCircle,
 } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { SALONS } from '../data/salons';
 import { createBooking, listAvailability, type AvailabilityDay, type BookingConfirmation } from '../lib/bookingApi';
-import { addStoredBooking, createLocalBooking } from '../lib/accountStore';
+import { addCommsHistoryEntry, addStoredBooking, createLocalBooking, loadNotificationPreferences } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getAvailableDates, getProfessionals, getServices, TIME_SLOTS } from '../lib/salonDetails';
 import { trackEvent } from '../lib/analytics';
 import { useToast } from '../lib/useToast';
+import {
+  confirmationChannelSummary,
+  getCancellationChannels,
+  getConfirmationChannels,
+  reminderChannelSummary,
+} from '../lib/notificationTemplates';
+import { captureError } from '../lib/monitoring';
+import { ApiError } from '../shared/apiClient';
 
 type BookingStep = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -32,8 +43,24 @@ function buildIdempotencyKey() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+interface BookingDraft {
+  step: BookingStep;
+  selectedServiceId: string;
+  selectedProfessionalId: string;
+  selectedDate: string;
+  selectedTime: string;
+}
+
+function loadDraft(key: string): BookingDraft | null {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as BookingDraft) : null;
+  } catch { return null; }
+}
+
 export default function BookingFlow() {
   const { salonSlug = '' } = useParams();
+  const [searchParams] = useSearchParams();
   const salon = useMemo(() => SALONS.find((item) => item.slug === salonSlug), [salonSlug]);
   const session = salon ? loadClientSession(salon.slug) : null;
   const services = useMemo(() => salon ? getServices(salon) : [], [salon]);
@@ -42,22 +69,39 @@ export default function BookingFlow() {
     ...date,
     times: salon ? [salon.nextSlot, ...TIME_SLOTS].slice(0, 7) : TIME_SLOTS,
   })), [salon]);
+
+  const draftKey = `booking_draft_${salonSlug}`;
+  const [draft] = useState(() => loadDraft(draftKey));
+
   const [dates, setDates] = useState<AvailabilityDay[]>(fallbackDates);
-  const [step, setStep] = useState<BookingStep>(1);
-  const [selectedServiceId, setSelectedServiceId] = useState(services[0]?.id || '');
-  const [selectedProfessionalId, setSelectedProfessionalId] = useState('any');
-  const [selectedDate, setSelectedDate] = useState(dates[0]?.id || '');
-  const [selectedTime, setSelectedTime] = useState(salon?.nextSlot || TIME_SLOTS[0]);
+  const [step, setStep] = useState<BookingStep>(draft?.step ?? 1);
+  const [selectedServiceId, setSelectedServiceId] = useState(
+    searchParams.get('service') || draft?.selectedServiceId || services[0]?.id || '',
+  );
+  const [selectedProfessionalId, setSelectedProfessionalId] = useState(draft?.selectedProfessionalId ?? 'any');
+  const [selectedDate, setSelectedDate] = useState(draft?.selectedDate || dates[0]?.id || '');
+  const [selectedTime, setSelectedTime] = useState(draft?.selectedTime || salon?.nextSlot || TIME_SLOTS[0]);
   const [guestName, setGuestName] = useState(session?.cliente.nombre || '');
   const [guestPhone, setGuestPhone] = useState(session?.cliente.telefono || '');
   const [guestEmail, setGuestEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const [errorTraceId, setErrorTraceId] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
   const [cancelled, setCancelled] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
   const trackedStart = useRef(false);
+  const bookingFinished = useRef(false);
+  const abandonmentState = useRef({
+    step,
+    selectedServiceId,
+    selectedProfessionalId,
+    selectedDate,
+    selectedTime,
+  });
   const { notify } = useToast();
+  const notifPrefs = useMemo(() => loadNotificationPreferences(), []);
 
   useEffect(() => {
     if (!salon) return;
@@ -88,6 +132,43 @@ export default function BookingFlow() {
     trackEvent('booking_started', { salonSlug: salon.slug, source: 'booking_flow' });
   }, [salon]);
 
+  useEffect(() => {
+    abandonmentState.current = {
+      step,
+      selectedServiceId,
+      selectedProfessionalId,
+      selectedDate,
+      selectedTime,
+    };
+  }, [selectedDate, selectedProfessionalId, selectedServiceId, selectedTime, step]);
+
+  useEffect(() => {
+    if (!salon) return undefined;
+
+    return () => {
+      const state = abandonmentState.current;
+      if (!trackedStart.current || bookingFinished.current || state.step <= 1) return;
+
+      trackEvent('booking_abandoned', {
+        salonSlug: salon.slug,
+        step: state.step,
+        serviceId: state.selectedServiceId || null,
+        professionalId: state.selectedProfessionalId || null,
+        date: state.selectedDate || null,
+        time: state.selectedTime || null,
+      });
+    };
+  }, [salon]);
+
+  useEffect(() => {
+    if (step <= 1) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        step, selectedServiceId, selectedProfessionalId, selectedDate, selectedTime,
+      } satisfies BookingDraft));
+    } catch { /* quota exceeded, ignore */ }
+  }, [draftKey, step, selectedServiceId, selectedProfessionalId, selectedDate, selectedTime]);
+
   if (!salon) {
     return <Navigate to="/404" replace />;
   }
@@ -98,7 +179,11 @@ export default function BookingFlow() {
   const availableTimes = dates.find((date) => date.id === selectedDate)?.times || TIME_SLOTS;
   const canUseSession = Boolean(session);
 
-  const goNext = () => setStep((current) => Math.min(current + 1, 6) as BookingStep);
+  const goNext = () => setStep((current) => {
+    const next = Math.min(current + 1, 6) as BookingStep;
+    trackEvent('booking_step', { salonSlug: salon.slug, step: next });
+    return next;
+  });
   const goBack = () => setStep((current) => Math.max(current - 1, 1) as BookingStep);
 
   const submitBooking = async (event: FormEvent<HTMLFormElement>) => {
@@ -123,20 +208,32 @@ export default function BookingFlow() {
     }
 
     setLoading(true);
+    setErrorTraceId('');
 
-    const result = await createBooking({
-      salonSlug: salon.slug,
-      service: selectedService,
-      professional: selectedProfessional,
-      date: selectedDate,
-      time: selectedTime,
-      clientName: canUseSession ? session?.cliente.nombre || guestName : guestName.trim(),
-      phone: canUseSession ? session?.cliente.telefono || phone : phone,
-      email: guestEmail.trim() || undefined,
-      notes: notes.trim() || undefined,
-      token: session?.token,
-      idempotencyKey: buildIdempotencyKey(),
-    });
+    let result;
+    try {
+      result = await createBooking({
+        salonSlug: salon.slug,
+        service: selectedService,
+        professional: selectedProfessional,
+        date: selectedDate,
+        time: selectedTime,
+        clientName: canUseSession ? session?.cliente.nombre || guestName : guestName.trim(),
+        phone: canUseSession ? session?.cliente.telefono || phone : phone,
+        email: guestEmail.trim() || undefined,
+        notes: notes.trim() || undefined,
+        token: session?.token,
+        idempotencyKey: buildIdempotencyKey(),
+      });
+    } catch (err) {
+      const traceId = err instanceof ApiError && err.traceId
+        ? err.traceId
+        : captureError(err, 'manual');
+      setErrorTraceId(traceId);
+      setError(err instanceof Error ? err.message : 'No se pudo confirmar la reserva.');
+      setLoading(false);
+      return;
+    }
 
     addStoredBooking(createLocalBooking({
       id: result.id,
@@ -154,6 +251,23 @@ export default function BookingFlow() {
       status: result.status,
       guest: !canUseSession,
     });
+    bookingFinished.current = true;
+    sessionStorage.removeItem(draftKey);
+
+    // Register confirmation comms history entries for each active channel
+    const confirmChannels = getConfirmationChannels(notifPrefs);
+    for (const channel of confirmChannels) {
+      addCommsHistoryEntry({
+        event: 'confirmacion',
+        channel,
+        salonName: salon.name,
+        serviceName: selectedService.name,
+        bookingDate: selectedDate,
+        bookingTime: selectedTime,
+        locator: result.locator,
+      });
+    }
+
     setConfirmation(result);
     setStep(6);
     setLoading(false);
@@ -161,8 +275,28 @@ export default function BookingFlow() {
   };
 
   const cancelFromConfirmation = () => {
-    if (!window.confirm('Cancelar esta reserva?')) return;
+    setCancelConfirm(false);
     setCancelled(true);
+    sessionStorage.removeItem(draftKey);
+    bookingFinished.current = true;
+    trackEvent('booking_cancelled', { salonSlug: salon.slug, step: 6 });
+
+    // Register cancellation comms history entries
+    if (confirmation) {
+      const cancelChannels = getCancellationChannels(notifPrefs);
+      for (const channel of cancelChannels) {
+        addCommsHistoryEntry({
+          event: 'cancelacion',
+          channel,
+          salonName: salon.name,
+          serviceName: selectedService?.name || 'Reserva',
+          bookingDate: selectedDate,
+          bookingTime: selectedTime,
+          locator: confirmation.locator,
+        });
+      }
+    }
+
     notify('Reserva cancelada.', 'success');
   };
 
@@ -309,12 +443,44 @@ export default function BookingFlow() {
                 Notas para el salón
                 <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
               </label>
+              {/* Notification preview */}
+              <div className="booking-notif-preview">
+                <div className="booking-notif-row">
+                  {notifPrefs.sms && <span className="booking-notif-chip"><Phone size={12} /> SMS</span>}
+                  {notifPrefs.email && <span className="booking-notif-chip"><Mail size={12} /> Email</span>}
+                  {notifPrefs.whatsapp && <span className="booking-notif-chip"><MessageSquare size={12} /> WhatsApp</span>}
+                  {!notifPrefs.sms && !notifPrefs.email && !notifPrefs.whatsapp && (
+                    <span className="booking-notif-chip muted"><Bell size={12} /> Sin notificaciones</span>
+                  )}
+                </div>
+                <p>
+                  {notifPrefs.confirmaciones
+                    ? `Recibirás confirmación ${confirmationChannelSummary(notifPrefs)}.`
+                    : 'No recibirás confirmación (desactivada en preferencias).'}
+                  {notifPrefs.recordatorios && reminderChannelSummary(notifPrefs)
+                    ? ` ${reminderChannelSummary(notifPrefs)}`
+                    : ''}
+                </p>
+                <Link to="/mi-cuenta/perfil" className="booking-notif-edit">Cambiar preferencias</Link>
+              </div>
+
               <div className="booking-policy-box">
                 <strong>Estado y políticas antes de confirmar</strong>
                 <p>La reserva puede quedar pendiente hasta que el salón confirme disponibilidad. Puedes cancelar desde la confirmación o desde Mi cuenta mientras esté pendiente/confirmada.</p>
                 <p>Si llegas tarde o no acudes, el salón puede aplicar sus reglas internas si fueron comunicadas. Consulta <Link to="/terminos">términos</Link>, <Link to="/privacidad">privacidad</Link> y <Link to="/confianza">confianza</Link>.</p>
               </div>
-              {error && <p className="auth-message err" role="alert" aria-live="assertive">{error}</p>}
+              {error && (
+                <div role="alert" aria-live="assertive">
+                  <p className="auth-message err">{error}</p>
+                  {errorTraceId && (
+                    <p className="error-trace-id">
+                      Referencia: <code>{errorTraceId}</code>
+                      {' '}·{' '}
+                      <a href={`/contacto?motivo=error-reserva&traza=${errorTraceId}`} className="btn-link-inline">Contactar soporte</a>
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="booking-nav">
                 <button className="btn btn-ghost btn-lg" type="button" onClick={goBack} disabled={loading}>Atrás</button>
                 <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
@@ -334,12 +500,32 @@ export default function BookingFlow() {
                 <>
                   <div className="booking-locator">{confirmation.locator}</div>
                   <p>{confirmation.notification}</p>
+                  {reminderChannelSummary(notifPrefs) && (
+                    <p className="booking-confirmation-reminder">
+                      <Bell size={14} />
+                      {reminderChannelSummary(notifPrefs)}
+                    </p>
+                  )}
                 </>
+              )}
+              {cancelled && notifPrefs.cancelaciones && (
+                <p className="booking-confirmation-reminder">
+                  <Bell size={14} />
+                  Notificación de cancelación enviada {confirmationChannelSummary(notifPrefs)}.
+                </p>
               )}
               <div className="booking-nav">
                 <Link className="btn btn-primary btn-lg" to={`/salones/${salon.slug}`}>Volver al salón</Link>
                 {!cancelled && (
-                  <button className="btn btn-ghost btn-lg" type="button" onClick={cancelFromConfirmation}>Cancelar reserva</button>
+                  cancelConfirm ? (
+                    <div className="confirm-row">
+                      <span>¿Cancelar esta reserva?</span>
+                      <button className="btn btn-sm danger" type="button" onClick={cancelFromConfirmation}>Sí, cancelar</button>
+                      <button className="btn btn-sm btn-ghost" type="button" onClick={() => setCancelConfirm(false)}>No</button>
+                    </div>
+                  ) : (
+                    <button className="btn btn-ghost btn-lg" type="button" onClick={() => setCancelConfirm(true)}>Cancelar reserva</button>
+                  )
                 )}
               </div>
             </div>
@@ -371,7 +557,7 @@ export default function BookingFlow() {
               <dd>{selectedService?.price || salon.desde} €</dd>
             </div>
           </dl>
-          <p><Phone size={15} /> Confirmación por SMS/email según datos disponibles.</p>
+          <p><Bell size={15} /> Confirmación {confirmationChannelSummary(notifPrefs)}.</p>
           <p><ShieldCheck size={15} /> Estado inicial: pendiente hasta confirmación del salón.</p>
         </aside>
       </div>

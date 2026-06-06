@@ -1,5 +1,5 @@
 import type { ProfessionalItem, ServiceItem } from './salonDetails';
-import { apiGet, apiPost } from '../shared/apiClient';
+import { apiGet, apiPost, ApiError } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
 export interface BookingRequest {
@@ -70,7 +70,10 @@ export async function createBooking(params: BookingRequest): Promise<BookingConf
       message: payload.message || 'Reserva creada correctamente.',
       notification: payload.notification || 'Confirmación enviada por SMS/email si el backend lo tiene configurado.',
     };
-  } catch {
+  } catch (error) {
+    // Re-throw API errors (4xx/5xx) so callers can show traceId to the user.
+    // Only fall back to local mode for network/timeout failures (no status).
+    if (error instanceof ApiError && error.status) throw error;
     return localConfirmation(params);
   }
 }

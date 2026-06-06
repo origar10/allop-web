@@ -22,6 +22,7 @@ import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { submitBusinessLead } from '../lib/businessLeads';
 import { trackEvent } from '../lib/analytics';
+import { CONTRACT_EMAIL } from '../lib/billingApi';
 
 interface BusinessProps {
   supportEmail: string;
@@ -30,26 +31,29 @@ interface BusinessProps {
 
 const plans = [
   {
-    name: 'Starter',
-    price: '39 €',
-    detail: 'Para salones que quieren empezar con reservas online.',
-    features: ['Marketplace público', 'Agenda online', 'Recordatorios básicos', 'Ficha del salón'],
-    limits: ['1 sede', 'Hasta 3 empleados', 'Soporte estándar'],
+    name: 'Basico',
+    price: 'Pedir presupuesto',
+    period: '',
+    detail: 'Para salones que quieren crear su cuenta y empezar sin revision manual.',
+    features: ['Alta self-service', 'Marketplace publico', 'Agenda online', 'Recordatorios basicos', 'Ficha del salon'],
+    limits: ['1 sede', 'Hasta 3 empleados', 'Soporte estandar'],
+    selfService: true,
+    cta: 'Crear cuenta',
+    href: '/business/alta?plan=basic',
+    external: false,
   },
   {
-    name: 'Pro',
-    price: '79 €',
-    detail: 'Para equipos que quieren centralizar operación y caja.',
-    features: ['Agenda por profesionales', 'Caja y cobros', 'Clientes e historial', 'Inventario básico'],
-    limits: ['1 sede', 'Hasta 12 empleados', 'Soporte prioritario'],
-    featured: true,
-  },
-  {
-    name: 'Scale',
-    price: 'A medida',
+    name: 'A medida',
+    price: 'Pedir presupuesto',
+    period: '',
     detail: 'Para marcas, varios salones o necesidades avanzadas.',
-    features: ['Multi-salón', 'Roles avanzados', 'Soporte prioritario', 'Integraciones a medida'],
-    limits: ['Varias sedes', 'Usuarios ilimitados', 'Acompañamiento dedicado'],
+    features: ['Multi-salon', 'Roles avanzados', 'Soporte prioritario', 'Integraciones a medida'],
+    limits: ['Varias sedes', 'Usuarios ilimitados', 'Acompanamiento dedicado'],
+    featured: true,
+    selfService: false,
+    cta: 'Pedir presupuesto',
+    href: `mailto:${CONTRACT_EMAIL}?subject=${encodeURIComponent('Presupuesto Allop A medida')}`,
+    external: true,
   },
 ];
 
@@ -119,12 +123,12 @@ const comparisonRows = [
 ];
 
 const planLimitRows = [
-  ['Usuarios', '1 usuario gestor', 'Hasta 4 usuarios', 'Ilimitados'],
-  ['Empleados', 'Hasta 3', 'Hasta 12', 'A medida'],
-  ['Sedes', '1', '1', 'Multi-sede'],
-  ['Reservas/mes', '300', '1.500', 'A medida'],
-  ['Recordatorios', 'Básicos', 'SMS/email según plan', 'Personalizados'],
-  ['Soporte', 'Estándar', 'Prioritario', 'Dedicado'],
+  ['Usuarios', '1 usuario gestor', 'A medida'],
+  ['Empleados', 'Hasta 3', 'A medida'],
+  ['Sedes', '1', 'Varias sedes'],
+  ['Reservas/mes', '300', 'A medida'],
+  ['Recordatorios', 'Basicos', 'SMS/email segun contrato'],
+  ['Soporte', 'Estandar', 'Prioritario'],
 ];
 
 const useCases = [
@@ -221,7 +225,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
                 <PlayCircle size={16} />
                 Ver demo del panel
               </a>
-              <Link className="btn btn-lg btn-ghost" to="/business/alta?plan=pro">
+              <Link className="btn btn-lg btn-ghost" to="/business/alta?plan=basic">
                 <CreditCard size={16} />
                 Empezar self-service
               </Link>
@@ -305,16 +309,19 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
           <div className="business-pricing">
             {plans.map((plan) => (
               <article className={`business-plan ${plan.featured ? 'featured' : ''}`} key={plan.name}>
-                {plan.featured && <span className="plan-badge">Recomendado</span>}
+                {plan.featured && <span className="plan-badge">Por contrato</span>}
                 <h3>{plan.name}</h3>
-                <div className="plan-price">{plan.price}<span>{plan.price.includes('€') ? '/mes' : ''}</span></div>
+                <div className="plan-price">{plan.price}{plan.period && <span>{plan.period}</span>}</div>
                 <p>{plan.detail}</p>
                 <ul>
                   {[...plan.features, ...plan.limits].map((feature) => (
                     <li key={feature}><CheckCircle size={16} /> {feature}</li>
                   ))}
                 </ul>
-                <Link className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'} to={`/business/alta?plan=${plan.name.toLowerCase()}`}>Elegir plan</Link>
+                {plan.external
+                  ? <a className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'} href={plan.href}>{plan.cta}</a>
+                  : <Link className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'} to={plan.href}>{plan.cta}</Link>
+                }
               </article>
             ))}
           </div>
@@ -322,16 +329,14 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
           <div className="business-plan-table" aria-label="Comparativa de planes">
             <div className="plan-table-row head">
               <span>Función</span>
-              <strong>Starter</strong>
-              <strong>Pro</strong>
-              <strong>Scale</strong>
+              <strong>Basico</strong>
+              <strong>A medida</strong>
             </div>
-            {['Marketplace', 'Agenda', 'Caja', 'Clientes', 'Inventario', 'Multi-salón', 'Soporte'].map((row, index) => (
+            {['Marketplace', 'Agenda', 'Caja', 'Clientes', 'Inventario', 'Soporte'].map((row, index) => (
               <div className="plan-table-row" key={row}>
                 <span>{row}</span>
-                <strong>{index < 2 ? 'Incluido' : index === 6 ? 'Estándar' : 'Opcional'}</strong>
-                <strong>{index < 5 ? 'Incluido' : index === 6 ? 'Prioritario' : 'Opcional'}</strong>
-                <strong>Incluido</strong>
+                <strong>{index < 2 ? 'Incluido' : index === 5 ? 'Estandar' : 'Opcional'}</strong>
+                <strong>{index < 5 ? 'Incluido' : 'Prioritario'}</strong>
               </div>
             ))}
           </div>
@@ -339,16 +344,14 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
           <div className="business-limit-table" aria-label="Límites de planes">
             <div className="plan-table-row head">
               <span>Límite</span>
-              <strong>Starter</strong>
-              <strong>Pro</strong>
-              <strong>Scale</strong>
+              <strong>Basico</strong>
+              <strong>A medida</strong>
             </div>
-            {planLimitRows.map(([limit, starter, pro, scale]) => (
+            {planLimitRows.map(([limit, basic, custom]) => (
               <div className="plan-table-row" key={limit}>
                 <span>{limit}</span>
-                <strong>{starter}</strong>
-                <strong>{pro}</strong>
-                <strong>{scale}</strong>
+                <strong>{basic}</strong>
+                <strong>{custom}</strong>
               </div>
             ))}
           </div>
@@ -598,7 +601,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
               <MessageCircle size={17} />
               Contactar
             </a>
-            <Link className="btn btn-lg btn-outline-white" to="/business/alta?plan=pro">
+            <Link className="btn btn-lg btn-outline-white" to="/business/alta?plan=basic">
               <CreditCard size={17} />
               Alta self-service
             </Link>

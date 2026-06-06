@@ -23,8 +23,32 @@ export interface AccountProfileDraft {
 }
 
 export interface NotificationPreferences {
+  // Channels
   sms: boolean;
   email: boolean;
+  whatsapp: boolean;
+  // Transactional events (sent when at least one channel is active)
+  confirmaciones: boolean;
+  recordatorios: boolean;
+  cancelaciones: boolean;
+  // Commercial (fully optional)
+  novedades: boolean;
+  ofertas: boolean;
+}
+
+export type CommsEvent = 'confirmacion' | 'recordatorio_24h' | 'recordatorio_2h' | 'cancelacion';
+export type CommsChannel = 'sms' | 'email' | 'whatsapp';
+
+export interface CommsHistoryEntry {
+  id: string;
+  event: CommsEvent;
+  channel: CommsChannel;
+  salonName: string;
+  serviceName: string;
+  bookingDate: string;
+  bookingTime: string;
+  sentAt: string;
+  locator?: string;
 }
 
 export interface AccountReview {
@@ -39,6 +63,18 @@ const BOOKINGS_KEY = 'allop.account.bookings';
 const PROFILE_KEY = 'allop.account.profile';
 const PREFS_KEY = 'allop.account.notificationPrefs';
 const REVIEWS_KEY = 'allop.account.reviews';
+const COMMS_KEY = 'allop.account.commsHistory';
+
+const PREFS_DEFAULT: NotificationPreferences = {
+  sms: true,
+  email: false,
+  whatsapp: false,
+  confirmaciones: true,
+  recordatorios: true,
+  cancelaciones: true,
+  novedades: false,
+  ofertas: false,
+};
 
 function readJson<T>(key: string, fallback: T): T {
   try {
@@ -202,11 +238,26 @@ export function saveProfileDraft(profile: AccountProfileDraft) {
 }
 
 export function loadNotificationPreferences(): NotificationPreferences {
-  return readJson<NotificationPreferences>(PREFS_KEY, { sms: true, email: false });
+  const stored = readJson<Partial<NotificationPreferences>>(PREFS_KEY, {});
+  return { ...PREFS_DEFAULT, ...stored };
 }
 
 export function saveNotificationPreferences(prefs: NotificationPreferences) {
   writeJson(PREFS_KEY, prefs);
+}
+
+export function loadCommsHistory(): CommsHistoryEntry[] {
+  return readJson<CommsHistoryEntry[]>(COMMS_KEY, []);
+}
+
+export function addCommsHistoryEntry(entry: Omit<CommsHistoryEntry, 'id' | 'sentAt'>) {
+  const current = loadCommsHistory();
+  const newEntry: CommsHistoryEntry = {
+    ...entry,
+    id: `comms-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+    sentAt: new Date().toISOString(),
+  };
+  writeJson(COMMS_KEY, [newEntry, ...current].slice(0, 50));
 }
 
 export function loadReviews() {
@@ -225,6 +276,7 @@ export function exportAccountData() {
     favorites: loadFavoriteSlugs(),
     bookings: loadStoredBookings(),
     reviews: loadReviews(),
+    commsHistory: loadCommsHistory(),
     exportedAt: new Date().toISOString(),
   };
 }
@@ -235,4 +287,5 @@ export function deleteAccountData() {
   localStorage.removeItem(PROFILE_KEY);
   localStorage.removeItem(PREFS_KEY);
   localStorage.removeItem(REVIEWS_KEY);
+  localStorage.removeItem(COMMS_KEY);
 }

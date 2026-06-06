@@ -1,5 +1,5 @@
-import { ChevronDown, LogOut, Moon, Search, Sun, UserRound } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { ChevronDown, LogOut, Menu, Moon, Search, Sun, UserRound, X } from 'lucide-react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { clearClientSession, loadClientSession } from '../lib/clientSession';
 import { useI18n } from '../lib/useI18n';
@@ -52,7 +52,13 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
   const isBusiness = isBusinessPath(location.pathname);
   const [query, setQuery] = useState('');
   const [session, setSession] = useState(() => loadClientSession());
+  const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useI18n();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMenuOpen(false), 0);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname]);
   const { notify } = useToast();
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -108,6 +114,15 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
         </form>
         <LanguageSelect />
         <ThemeToggle />
+        <button
+          className="nav-hamburger"
+          type="button"
+          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(v => !v)}
+        >
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
         {session ? (
           <div className="nav-user">
             <button className="btn btn-ghost" type="button">
@@ -131,6 +146,15 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
           </div>
         )}
       </div>
+      {menuOpen && (
+        <nav className="nav-mobile-drawer" aria-label="Menú principal">
+          <a href="/#buscar" onClick={() => setMenuOpen(false)}>{t('nav.marketplace.searchSalon')}</a>
+          <a href="/#como-funciona" onClick={() => setMenuOpen(false)}>{t('nav.marketplace.howItWorks')}</a>
+          <button type="button" onClick={() => { setMenuOpen(false); onBusiness(); }}>
+            {t('nav.marketplace.forSalons')}
+          </button>
+        </nav>
+      )}
     </nav>
   );
 }

@@ -8,6 +8,7 @@ export type AnalyticsEventName =
   | 'salon_click'
   | 'booking_started'
   | 'booking_completed'
+  | 'booking_abandoned'
   | 'registration_completed'
   | 'business_lead_submitted'
   | 'plan_viewed'
@@ -15,7 +16,9 @@ export type AnalyticsEventName =
   | 'checkout_completed'
   | 'checkout_abandoned'
   | 'portal_opened'
-  | 'billing_webhook_synced';
+  | 'billing_webhook_synced'
+  | 'booking_step'
+  | 'booking_cancelled';
 
 export type AnalyticsProps = Record<string, string | number | boolean | null | undefined>;
 export type AnalyticsConsent = 'accepted' | 'rejected' | null;

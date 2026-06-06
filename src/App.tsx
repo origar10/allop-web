@@ -13,6 +13,8 @@ import { useFocusTrap } from './hooks/useFocusTrap';
 import { useI18n } from './lib/useI18n';
 
 const Home = lazy(() => import('./pages/Home'));
+const SearchResults = lazy(() => import('./pages/SearchResults'));
+const SalonsDirectory = lazy(() => import('./pages/SalonsDirectory'));
 const Business = lazy(() => import('./pages/Business'));
 const ClientAuth = lazy(() => import('./pages/ClientAuth'));
 const SalonProfile = lazy(() => import('./pages/SalonProfile'));
@@ -27,6 +29,7 @@ const Guides = lazy(() => import('./pages/Guides'));
 const Press = lazy(() => import('./pages/Press'));
 const BusinessSignup = lazy(() => import('./pages/BusinessSignup'));
 const BusinessBillingResult = lazy(() => import('./pages/BusinessBillingResult'));
+const SystemStatus = lazy(() => import('./pages/SystemStatus'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const DASHBOARD_URL = 'https://dashboard.allop.es';
@@ -62,9 +65,12 @@ function RouteSeo() {
       SERVICES.some((service) => service.slug === pathParts[0]) &&
       CITIES.some((city) => city.slug === pathParts[1]);
     const skipHandledByPage = pathname === '/' ||
+      pathname === '/buscar' ||
+      pathname === '/salones' ||
       pathname.startsWith('/salones/') ||
       pathname.startsWith('/ciudad/') ||
       pathname.startsWith('/servicios/') ||
+      pathname.startsWith('/categoria/') ||
       pathname.startsWith('/guias') ||
       pathname === '/blog' ||
       pathname === '/prensa' ||
@@ -219,6 +225,8 @@ export default function App() {
                 />
               )}
             />
+            <Route path="/buscar" element={<SearchResults />} />
+            <Route path="/salones" element={<SalonsDirectory />} />
             <Route path="/login" element={<ClientAuth key="login" mode="login" />} />
             <Route path="/register" element={<ClientAuth key="register" mode="register" />} />
             <Route path="/salones/:slug" element={<SalonProfile />} />
@@ -227,6 +235,7 @@ export default function App() {
             <Route path="/mi-cuenta/:section" element={<Account />} />
             <Route path="/ciudad/:slug" element={<SeoLanding type="city" />} />
             <Route path="/servicios/:slug" element={<SeoLanding type="service" />} />
+            <Route path="/categoria/:slug" element={<SeoLanding type="category" />} />
             <Route path="/:serviceSlug/:citySlug" element={<SeoLanding type="serviceCity" />} />
             <Route path="/confianza" element={<Trust />} />
             <Route path="/ayuda" element={<Help />} />
@@ -239,6 +248,7 @@ export default function App() {
             <Route path="/business/alta" element={<BusinessSignup />} />
             <Route path="/business/alta/success" element={<BusinessBillingResult mode="success" />} />
             <Route path="/business/alta/cancel" element={<BusinessBillingResult mode="cancel" />} />
+            <Route path="/estado" element={<SystemStatus />} />
             <Route path="/bussiness" element={<Navigate to="/business" replace />} />
             <Route path="/buissiness" element={<Navigate to="/business" replace />} />
             <Route path="/404" element={<NotFound />} />

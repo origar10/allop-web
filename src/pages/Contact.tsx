@@ -1,24 +1,41 @@
 import { type FormEvent, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { saveSupportRequest } from '../lib/supportStore';
+import { firstError, validateEmail, validateFreeText, validateLocator, validateName, validatePhone } from '../lib/validation';
 
 export default function Contact({ supportEmail }: { supportEmail: string }) {
   const [searchParams] = useSearchParams();
+  const traza = searchParams.get('traza') || '';
+  const localizador = searchParams.get('localizador') || '';
+
   const [form, setForm] = useState({
     reason: searchParams.get('motivo') || 'cliente',
     name: '',
     email: '',
     phone: '',
-    bookingLocator: '',
-    message: searchParams.get('salon') ? `Ficha relacionada: ${searchParams.get('salon')}` : '',
+    bookingLocator: localizador,
+    message: [
+      searchParams.get('salon') ? `Ficha relacionada: ${searchParams.get('salon')}` : '',
+      traza ? `Referencia de error: ${traza}` : '',
+    ].filter(Boolean).join('\n'),
   });
+  const [honeypot, setHoneypot] = useState('');
   const [message, setMessage] = useState('');
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      setMessage('Indica nombre, email y mensaje para poder responder.');
+    if (honeypot) return; // silently drop bot submissions
+
+    const error = firstError(
+      validateName(form.name, 'El nombre'),
+      validateEmail(form.email),
+      validatePhone(form.phone),
+      validateLocator(form.bookingLocator),
+      validateFreeText(form.message, 'El mensaje'),
+    );
+    if (error) {
+      setMessage(error);
       return;
     }
 
@@ -45,10 +62,18 @@ export default function Contact({ supportEmail }: { supportEmail: string }) {
           </div>
         </div>
         <form className="business-lead-form" onSubmit={submit}>
+          {/* honeypot — bots fill this; humans don't see it */}
+          <label style={{ display: 'none' }} aria-hidden="true">
+            No rellenar<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
+          </label>
           <label>Motivo<select value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })}>
             <option value="cliente">Cliente</option>
+            <option value="soporte-reserva">Soporte por reserva</option>
+            <option value="error-reserva">Error al reservar</option>
+            <option value="error-tecnico">Error técnico</option>
             <option value="salon">Salón</option>
             <option value="reportar-datos">Reportar datos incorrectos</option>
+            <option value="reportar-resena">Reportar reseña</option>
             <option value="reclamar-ficha">Reclamar ficha</option>
             <option value="privacidad">Privacidad</option>
             <option value="prensa">Prensa</option>

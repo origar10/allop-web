@@ -15,13 +15,15 @@ export class ApiError extends Error {
   status?: number;
   code?: string;
   details?: unknown;
+  traceId?: string;
 
-  constructor(message: string, options: { status?: number; code?: string; details?: unknown } = {}) {
+  constructor(message: string, options: { status?: number; code?: string; details?: unknown; traceId?: string } = {}) {
     super(message);
     this.name = 'ApiError';
     this.status = options.status;
     this.code = options.code;
     this.details = options.details;
+    this.traceId = options.traceId;
   }
 }
 
@@ -84,13 +86,24 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     });
 
     const payload = response.status === 204 ? undefined : await response.json().catch(() => undefined);
+    const traceId = response.headers.get('X-Trace-Id') || response.headers.get('X-Request-Id') || undefined;
 
     if (!response.ok) {
       const data = payload as { message?: string; error?: string; code?: string } | undefined;
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After');
+        throw new ApiError('Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.', {
+          status: 429,
+          code: 'RATE_LIMITED',
+          details: retryAfter ? { retryAfter: Number(retryAfter) } : undefined,
+          traceId,
+        });
+      }
       throw new ApiError(data?.message || data?.error || 'No se pudo completar la solicitud.', {
         status: response.status,
         code: data?.code,
         details: payload,
+        traceId,
       });
     }
 

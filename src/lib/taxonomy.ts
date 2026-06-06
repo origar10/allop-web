@@ -15,6 +15,13 @@ export interface TaxonomyCity {
   description: string;
 }
 
+export interface TaxonomyCategory {
+  slug: string;
+  label: string;
+  description: string;
+  serviceSlugs: string[];
+}
+
 export interface ServiceCityRoute {
   serviceSlug: string;
   citySlug: string;
@@ -118,6 +125,27 @@ export const CITIES: TaxonomyCity[] = [
     label: 'Terrassa',
     province: 'Barcelona',
     description: 'Barberias, peluquerias y servicios de belleza en Terrassa con disponibilidad clara.',
+  },
+];
+
+export const CATEGORIES: TaxonomyCategory[] = [
+  {
+    slug: 'cabello',
+    label: 'Cabello',
+    description: 'Peluquerias, barberias, color, cortes y tratamientos capilares con reserva online.',
+    serviceSlugs: ['peluqueria', 'barberia', 'corte'],
+  },
+  {
+    slug: 'belleza',
+    label: 'Belleza',
+    description: 'Servicios de estetica, manicura, maquillaje, depilacion y cuidado personal.',
+    serviceSlugs: ['estetica', 'unas', 'manicura', 'maquillaje'],
+  },
+  {
+    slug: 'bienestar',
+    label: 'Bienestar',
+    description: 'Masajes, spa y tratamientos de bienestar para reservar sin llamadas.',
+    serviceSlugs: ['masajes'],
   },
 ];
 
@@ -240,6 +268,10 @@ export function findService(slug: string) {
 
 export function findCity(slug: string) {
   return CITIES.find((city) => city.slug === slug);
+}
+
+export function findCategory(slug: string) {
+  return CATEGORIES.find((category) => category.slug === slug);
 }
 
 export function findGuide(audience: string, slug: string) {

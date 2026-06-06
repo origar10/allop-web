@@ -1,3 +1,13 @@
+export interface Promotion {
+  id: string;
+  title: string;
+  description: string;
+  discountPct?: number;
+  startDate: string; // ISO date YYYY-MM-DD
+  endDate: string;   // ISO date YYYY-MM-DD
+  conditions?: string;
+}
+
 export interface Salon {
   id: string;
   slug: string;
@@ -11,6 +21,7 @@ export interface Salon {
   tags: string[];
   verified: boolean;
   featured: boolean;
+  promoted?: boolean;
   phone: string;
   address: string;
   lat: number;
@@ -19,6 +30,8 @@ export interface Salon {
   imageClass: string;
   nextSlot: string;
   badges?: string[];
+  promotions?: Promotion[];
+  cancelPolicy?: string;
 }
 
 export interface RecentReview {
@@ -30,6 +43,7 @@ export interface RecentReview {
   text: string;
   service: string;
   date: string;
+  ownerReply?: { text: string; date: string };
 }
 
 export interface PromoBanner {
@@ -55,6 +69,7 @@ export const SALONS: Salon[] = [
     tags: ['Corte', 'Color', 'Mechas'],
     verified: true,
     featured: true,
+    promoted: true,
     phone: '+34931234567',
     address: 'Rubí, Barcelona',
     lat: 41.4938,
@@ -63,6 +78,26 @@ export const SALONS: Salon[] = [
     imageClass: 'salon-img-feromi',
     nextSlot: 'Hoy 17:30',
     badges: ['Abre ahora', 'Últimas plazas'],
+    cancelPolicy: 'Cancelación gratuita hasta 2 horas antes de la cita. Pasado ese plazo el salón puede aplicar un cargo del 50% del servicio.',
+    promotions: [
+      {
+        id: 'feromi-promo-1',
+        title: '20% dto. en Color + Corte',
+        description: 'Descuento especial en el pack Color + Corte para nuevos clientes.',
+        discountPct: 20,
+        startDate: '2026-06-01',
+        endDate: '2026-06-30',
+        conditions: 'Válido solo para nuevos clientes. No acumulable con otras ofertas.',
+      },
+      {
+        id: 'feromi-promo-2',
+        title: 'Manicura gratis con Mechas',
+        description: 'Reserva un servicio de mechas y llévate una manicura básica sin coste.',
+        startDate: '2026-06-15',
+        endDate: '2026-07-15',
+        conditions: 'Sujeto a disponibilidad. Cita previa obligatoria.',
+      },
+    ],
   },
   {
     id: 'lumiere-studio',
@@ -186,6 +221,10 @@ export const RECENT_REVIEWS: RecentReview[] = [
     text: 'Reserva rápida, trato cercano y el color quedó justo como quería.',
     service: 'Color y corte',
     date: 'Hace 2 días',
+    ownerReply: {
+      text: '¡Muchas gracias Laura! Fue un placer atenderte. Te esperamos pronto.',
+      date: 'Hace 1 día',
+    },
   },
   {
     id: 'review-lumiere-1',

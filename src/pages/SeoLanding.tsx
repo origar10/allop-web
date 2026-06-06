@@ -3,45 +3,64 @@ import { useEffect } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import SalonCard from '../components/SalonCard';
 import { SALONS } from '../data/salons';
-import { CITIES, EDITORIAL_FAQS, EDITORIAL_GUIDES, SERVICE_CITY_ROUTES, SERVICES, findCity, findService, matchesService, normalizeSearch } from '../lib/taxonomy';
+import { CATEGORIES, CITIES, EDITORIAL_FAQS, EDITORIAL_GUIDES, SERVICE_CITY_ROUTES, SERVICES, findCategory, findCity, findService, matchesService, normalizeSearch } from '../lib/taxonomy';
 import { setSeo } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
 
-type SeoLandingType = 'city' | 'service' | 'serviceCity';
+type SeoLandingType = 'city' | 'service' | 'serviceCity' | 'category';
 
 export default function SeoLanding({ type }: { type: SeoLandingType }) {
   const navigate = useNavigate();
   const { slug = '', serviceSlug = '', citySlug = '' } = useParams();
   const city = type === 'service' ? undefined : findCity(type === 'city' ? slug : citySlug);
   const service = type === 'city' ? undefined : findService(type === 'service' ? slug : serviceSlug);
-  const isInvalidLanding = (type === 'city' && !city) || (type === 'service' && !service) || (type === 'serviceCity' && (!city || !service));
+  const category = type === 'category' ? findCategory(slug) : undefined;
+  const categoryServices = category
+    ? SERVICES.filter((item) => category.serviceSlugs.includes(item.slug))
+    : [];
+  const isInvalidLanding = (type === 'city' && !city) ||
+    (type === 'service' && !service) ||
+    (type === 'serviceCity' && (!city || !service)) ||
+    (type === 'category' && !category);
 
   const filteredSalons = SALONS.filter((salon) => {
     const matchesCity = city ? normalizeSearch(salon.location).includes(normalizeSearch(city.label)) : true;
     const serviceText = [salon.category, ...salon.tags].join(' ');
     const matchesServiceQuery = service ? matchesService(serviceText, service) : true;
+    const matchesCategoryQuery = category
+      ? categoryServices.some((item) => matchesService(serviceText, item)) ||
+        normalizeSearch(salon.category).includes(normalizeSearch(category.label))
+      : true;
 
-    return matchesCity && matchesServiceQuery;
+    return matchesCity && matchesServiceQuery && matchesCategoryQuery;
   });
 
   const fallbackSalons = city
     ? SALONS.filter((salon) => normalizeSearch(salon.location).includes(normalizeSearch(city.label)))
     : service
       ? SALONS.filter((salon) => matchesService([salon.category, ...salon.tags].join(' '), service))
+      : category
+        ? SALONS.filter((salon) => categoryServices.some((item) => matchesService([salon.category, ...salon.tags].join(' '), item)))
       : SALONS;
   const visibleSalons = (filteredSalons.length ? filteredSalons : fallbackSalons.length ? fallbackSalons : SALONS).slice(0, 4);
   const title = type === 'city'
     ? `Salones en ${city?.label}`
-    : type === 'service'
+    : type === 'category'
+      ? `${category?.label} en Allop`
+      : type === 'service'
       ? `${service?.label} en Allop`
       : `${service?.label} en ${city?.label}`;
   const subtitle = type === 'city'
     ? `${city?.description} Compara precio, disponibilidad y opiniones antes de reservar.`
+    : type === 'category'
+      ? `${category?.description} Compara salones verificados, precios desde y disponibilidad.`
     : type === 'service'
       ? `${service?.description} Encuentra salones verificados con disponibilidad online.`
       : `Reserva ${service?.label.toLowerCase()} en ${city?.label} con salones verificados, politica clara y soporte si algo falla.`;
   const canonicalPath = type === 'city'
     ? `/ciudad/${city?.slug}`
+    : type === 'category'
+      ? `/categoria/${category?.slug}`
     : type === 'service'
       ? `/servicios/${service?.slug}`
       : `/${service?.slug}/${city?.slug}`;
@@ -67,7 +86,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
     <section className="seo-landing">
       <div className="container">
         <div className="seo-landing-hero">
-          <p className="eyebrow">{type === 'serviceCity' ? 'Guia local' : type === 'city' ? 'Ciudad popular' : 'Servicio popular'}</p>
+          <p className="eyebrow">{type === 'serviceCity' ? 'Guia local' : type === 'city' ? 'Ciudad popular' : type === 'category' ? 'Categoria' : 'Servicio popular'}</p>
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="seo-landing-actions">
@@ -107,8 +126,16 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
           <article>
             <h2>Servicios relacionados</h2>
             <div className="profile-tags">
-              {SERVICES.filter((item) => item.slug !== service?.slug).slice(0, 7).map((item) => (
+              {(category ? categoryServices : SERVICES.filter((item) => item.slug !== service?.slug)).slice(0, 7).map((item) => (
                 <Link key={item.slug} to={`/servicios/${item.slug}`}>{item.label}</Link>
+              ))}
+            </div>
+          </article>
+          <article>
+            <h2>Categorias</h2>
+            <div className="profile-tags">
+              {CATEGORIES.map((item) => (
+                <Link key={item.slug} to={`/categoria/${item.slug}`}>{item.label}</Link>
               ))}
             </div>
           </article>

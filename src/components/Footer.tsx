@@ -68,11 +68,13 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
               allop
             </div>
             <p className="footer-desc">{t('footer.client.description')}</p>
+            <Link to={signupUrl} className="btn btn-primary footer-cta">{t('footer.salonCta')}</Link>
             <p className="footer-copy">{t('footer.copy')}</p>
           </div>
           <div className="footer-col">
             <h4>{t('footer.marketplace')}</h4>
             <a href="/#buscar">{t('footer.findSalon')}</a>
+            <Link to="/salones">Directorio de salones</Link>
             <a href="/#como-funciona">{t('footer.howItWorks')}</a>
             <Link to="/confianza">{t('footer.trust')}</Link>
             <Link to={`${signupUrl}#precios`}>{t('footer.rates')}</Link>

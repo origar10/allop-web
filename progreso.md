@@ -1,5 +1,437 @@
 # Progreso allop-web
 
+## 2026-06-06 - Cambio de tiers B2B: Basico y A medida
+
+### Hecho
+- Sustituida la estructura de planes B2B por dos tiers:
+  - `basic` / Basico,
+  - `custom` / A medida.
+- Ambos tiers muestran precio como "Pedir presupuesto".
+- Basico queda como alta self-service:
+  - sin revision manual,
+  - crea snapshot local de suscripcion activa,
+  - redirige a la pantalla de exito con `selfService=1`.
+- A medida abre solicitud de contrato por email a `soporte@origar.es`.
+- Se mantiene compatibilidad con URLs antiguas:
+  - `starter` se normaliza a `basic`,
+  - `pro` y `scale` se normalizan a `custom`.
+- Actualizados los tipos compartidos `BillingPlanId` a `basic | custom`.
+- Actualizado el bloque de precios del `ROADMAP.md`.
+
+### Archivos modificados
+- `src/lib/billingApi.ts`
+- `src/pages/Business.tsx`
+- `src/pages/BusinessSignup.tsx`
+- `src/pages/BusinessBillingResult.tsx`
+- `src/shared/apiContracts.ts`
+- `src/shared/dataModels.ts`
+- `ROADMAP.md`
+- `progreso.md`
+
+## 2026-06-06 - Aplicacion de decisiones abiertas
+
+### Hecho
+- Procesadas las respuestas escritas en `ROADMAP.md`.
+- Marcadas como decididas:
+  - auth cliente global Allop, separada de salones Tier 2,
+  - Apple Maps como proveedor geografico,
+  - proveedor/proceso de mensajes igual al usado en Tier 2 con Raspberry Pi,
+  - revision legal aplazada sin bloquear esta fase.
+- Simplificada la pregunta de leads B2B:
+  - ahora pregunta quien recibe los contactos de salones interesados y como se gestionan al principio.
+- Ajustada sesion cliente:
+  - `loadClientSession(slug)` acepta fallback a sesion global,
+  - `getClientMe` intenta `/clientes/me` y cae al endpoint antiguo por salon si hace falta,
+  - `getClientBookings` intenta `/clientes/me/reservas` y cae al endpoint antiguo por salon si hace falta.
+- Integrado Apple Maps en marketplace:
+  - cada salon en vista mapa tiene enlace externo "Abrir en Apple Maps",
+  - se mantiene el mapa propio visual como fallback sin token,
+  - preparada la nota de MapKit JS para cuando se necesite mapa embebido con token.
+- Completados dos P0 pendientes:
+  - creada pagina `/buscar` con URL compartible por query `q` y `ciudad`,
+  - creado directorio indexable `/salones`,
+  - añadido `/salones` al sitemap de salones,
+  - añadido enlace al directorio en footer.
+
+### Archivos modificados
+- `ROADMAP.md`
+- `progreso.md`
+- `src/lib/platformApi.ts`
+- `src/lib/clientSession.ts`
+- `src/pages/Home.tsx`
+- `src/pages/SearchResults.tsx`
+- `src/pages/SalonsDirectory.tsx`
+- `src/components/Footer.tsx`
+- `src/index.css`
+- `scripts/generate-sitemaps.mjs`
+- `README.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:unit` OK: 8 archivos, 16 tests.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+
+## 2026-06-06 - Clarificacion de decisiones abiertas
+
+### Hecho
+- Reorganizada la seccion 7 de `ROADMAP.md`:
+  - separadas decisiones ya tomadas por implementacion actual,
+  - explicadas las decisiones que siguen pendientes,
+  - anadidas opciones concretas e impacto de cada una para facilitar respuesta.
+- Decisiones ya cerradas en roadmap:
+  - reserva como invitado,
+  - cobro inicial B2B con Stripe y reservas sin prepago,
+  - Plausible privacy-first,
+  - catalan incluido,
+  - blog/contenido estatico inicial.
+- Decisiones pendientes explicadas:
+  - auth global vs auth vinculada a salon,
+  - mapa propio vs Google Maps/Mapbox,
+  - destino de leads B2B,
+  - proveedor SMS/WhatsApp/email,
+  - revision legal antes de publicar.
+
+### Archivos modificados
+- `ROADMAP.md`
+- `progreso.md`
+
+## 2026-06-06 - Fases de entrega recomendadas
+
+### Hecho
+- Avanzadas las fases del roadmap en orden:
+  - Fase 0 completa: revisado y corregido mojibake visible en `src`; la comprobacion de patrones corruptos no devuelve coincidencias.
+  - Fase 1 completa: añadidas landings de categoria con `/categoria/:slug`, enlaces desde Home y sitemap de categorias.
+  - Fase 2 completa: añadido evento `booking_abandoned` para medir abandono junto a inicio, pasos y reserva completada.
+  - Fase 3 completa: sincronizado el roadmap con exportacion/eliminacion de cuenta ya presentes en `Account.tsx`.
+  - Fase 5 avanzada: blog/guias y paginas SEO locales marcadas como hechas; quedan visual regression, Lighthouse continuo y experimentos A/B.
+- Añadida taxonomia de categorias:
+  - `cabello`,
+  - `belleza`,
+  - `bienestar`.
+- Extendida `SeoLanding` para soportar:
+  - ciudad,
+  - servicio,
+  - servicio + ciudad,
+  - categoria.
+- Actualizado `scripts/generate-sitemaps.mjs` para generar `sitemap-categorias.xml`.
+- Sincronizado el bloque P0/P1/P2 antiguo del roadmap con tareas ya completadas para evitar contradicciones internas.
+
+### Archivos modificados/anadidos
+- `src/lib/taxonomy.ts`
+- `src/pages/SeoLanding.tsx`
+- `src/App.tsx`
+- `src/pages/Home.tsx`
+- `src/lib/analytics.ts`
+- `src/pages/BookingFlow.tsx`
+- `scripts/generate-sitemaps.mjs`
+- `README.md`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- `npm.cmd run test:unit` OK: 8 archivos, 16 tests.
+- `npm.cmd run test:e2e` OK: 1 test Playwright Chromium.
+
+## 2026-06-06 - Documentacion del proyecto, ROADMAP 4.20
+
+### Hecho
+- Revisado el avance existente: ROADMAP muestra 4.12 a 4.19 completados y `progreso.md` contiene entradas recientes de 4.15 a 4.19.
+- Reescrito `README.md` para Allop:
+  - descripcion del producto,
+  - stack,
+  - instalacion local,
+  - scripts,
+  - variables de entorno,
+  - rutas principales,
+  - modulos del frontend,
+  - API/datos,
+  - contenido/taxonomia,
+  - deploy por GitHub Actions,
+  - documentacion relacionada.
+- Ampliado `.env.example` con:
+  - `VITE_API_VERSION`,
+  - `VITE_STATUS_URL`,
+  - manteniendo `VITE_API_URL`, health check, Plausible, monitoring, Sentry y Google OAuth.
+- Creada `docs/content-authoring.md` con instrucciones para:
+  - anadir paginas legales,
+  - anadir servicios/categorias,
+  - anadir ciudades,
+  - anadir salones semilla,
+  - cuidar slugs y SEO,
+  - validar cambios de contenido.
+- Actualizado `ROADMAP.md`:
+  - punto 4.20 completo,
+  - tabla de fases con fecha, owner, estado y nota,
+  - sincronizados checks de fase para README, `.env.example`, SEO base, API client, i18n y PWA.
+- Corregidos fallos de lint detectados durante la revision:
+  - cierre de menu movil diferido en `Nav.tsx`,
+  - recarga de comunicaciones diferida en `Account.tsx`,
+  - retirada de import sin uso en `BookingFlow.tsx`,
+  - retirada de variable sin uso en `SalonProfile.tsx`.
+
+### Archivos modificados/anadidos
+- `README.md`
+- `.env.example`
+- `docs/content-authoring.md`
+- `ROADMAP.md`
+- `progreso.md`
+- `src/components/Nav.tsx`
+- `src/pages/Account.tsx`
+- `src/pages/BookingFlow.tsx`
+- `src/pages/SalonProfile.tsx`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+
+## 2026-06-06 - Operación y soporte, ROADMAP 4.19
+
+### Hecho
+- **Página `/estado`** (`SystemStatus.tsx`): muestra el estado de 6 servicios (API de reservas, OTP, búsqueda, pagos, panel, notificaciones). Hace un `GET /api/estado` y mapea la respuesta; si el endpoint no existe, muestra todos como "Operativo" (fallback). Link a URL externa (`VITE_STATUS_URL`) si está configurada. Ruta añadida en `App.tsx`.
+- **`traceId` en errores críticos**: `captureError` en `monitoring.ts` ahora genera y devuelve un `traceId` (formato `TRC-{base36}-{rand}`). `ApiError` en `apiClient.ts` tiene campo `traceId` leído del header `X-Trace-Id` / `X-Request-Id` de la respuesta. `ErrorBoundary` muestra el traceId cuando captura un error, con link directo a `/contacto?motivo=error-tecnico&traza=...`. `BookingFlow` captura `ApiError` en `submitBooking`: si la API devuelve 4xx/5xx, muestra el mensaje de error + referencia + link "Contactar soporte". `bookingApi.ts` re-lanza `ApiError` con status (4xx/5xx) en lugar de caer al fallback local.
+- **Localizador de reserva visible para soporte**: el localizador en la lista de reservas de `Account.tsx` ahora muestra el código en `<code>`, botón "Copiar" (con feedback "Copiado"), y link "Soporte" que lleva a `/contacto?motivo=soporte-reserva&localizador=ALP-XXXXX`.
+- **Contact.tsx ampliado**: lee `?localizador=` y `?traza=` de la URL y pre-rellena el formulario. Nuevos motivos en el select: soporte-reserva, error-reserva, error-tecnico, reportar-reseña.
+- **`docs/runbook.md`**: procedimientos para 5 incidencias (API caída, OTP caído, deploy fallido, VPS sin espacio, webhook Stripe falla). Comandos de diagnóstico y recuperación, tabla de severidad.
+- **`docs/backups.md`**: política de backup de PostgreSQL (cron diario, remoto con rclone), procedimiento de restauración paso a paso, backup de variables de entorno con GPG, tabla RTO/RPO.
+- **`docs/release-checklist.md`**: checklist de 3 fases — pre-merge (código, funcionalidad, seguridad), pre-deploy (build, BD, Stripe, SEO), post-deploy (verificación 5 min y 30 min). Sección de rollback rápido y checklist especial para lanzamientos públicos.
+
+### Archivos modificados/añadidos
+- `src/pages/SystemStatus.tsx` (nuevo)
+- `src/lib/monitoring.ts` (generateTraceId, captureError devuelve traceId)
+- `src/shared/apiClient.ts` (ApiError.traceId, leer X-Trace-Id/X-Request-Id del header)
+- `src/lib/bookingApi.ts` (re-lanzar ApiError con status en lugar de siempre caer a fallback)
+- `src/components/ErrorBoundary.tsx` (muestra traceId + link soporte)
+- `src/pages/BookingFlow.tsx` (captura ApiError, muestra traceId con link soporte)
+- `src/pages/Account.tsx` (localizador con código, botón copiar, link soporte)
+- `src/pages/Contact.tsx` (pre-fill localizador/traza, nuevos motivos)
+- `src/App.tsx` (ruta /estado)
+- `src/index.css` (status-page, error-trace-id, booking-locator-row, btn-link-inline)
+- `docs/runbook.md` (nuevo)
+- `docs/backups.md` (nuevo)
+- `docs/release-checklist.md` (nuevo)
+- `ROADMAP.md` (4.19 completo)
+
+---
+
+## 2026-06-06 - Notificaciones y comunicación, ROADMAP 4.18
+
+### Hecho
+- **`NotificationPreferences` expandido**: añadidos `whatsapp`, `confirmaciones`, `recordatorios`, `cancelaciones`, `novedades`, `ofertas`. Compatibilidad retroactiva con valores guardados en localStorage (merge con defaults).
+- **`CommsHistoryEntry`** + funciones de store: `loadCommsHistory`, `addCommsHistoryEntry` (máx. 50 entradas, keyed con timestamp+random). Exportación e eliminación de datos incluye el historial.
+- **`notificationTemplates.ts`** (nuevo): helpers `getActiveChannels`, `describeChannels`, `getConfirmationChannels`, `getReminderChannels`, `getCancellationChannels`, `confirmationChannelSummary`, `reminderChannelSummary`. Plantillas de texto para SMS y Email por evento (`confirmacion`, `recordatorio_24h`, `recordatorio_2h`, `cancelacion`) en español — documentan lo que el backend enviaría.
+- **BookingFlow paso 5**: bloque visual "notification preview" con chips de canal activo (SMS/email/WhatsApp) y texto "Recibirás confirmación por..." calculado dinámicamente desde las preferencias. Link "Cambiar preferencias" → `/mi-cuenta/perfil`.
+- **BookingFlow paso 6 confirmación**: muestra recordatorio "Recibirás recordatorios por... 24h y 2h antes" si `recordatorios` activo. Muestra "Notificación de cancelación enviada por..." si se cancela con `cancelaciones` activo.
+- **Historial de comunicaciones**: tras completar reserva, se añade entrada `confirmacion` al historial por cada canal activo. Tras cancelar, entrada `cancelacion`. Sidebar del BookingFlow usa `confirmationChannelSummary` dinámicamente.
+- **Preferencias granulares en Account (`/mi-cuenta/perfil`)**: sección expandida con 3 grupos — Canales (SMS, email, WhatsApp), Transaccionales (confirmaciones, recordatorios, cancelaciones), Novedades y ofertas (novedades, ofertas). Separación clara transaccional vs comercial.
+- **Tab `Comunicaciones` en `/mi-cuenta`**: nueva vista `comunicaciones` con historial de todos los mensajes enviados, agrupado por evento y canal con chips de color (azul SMS, violeta email, verde WhatsApp). Nota de uso para soporte con localizador.
+
+### Archivos modificados/añadidos
+- `src/lib/accountStore.ts` (NotificationPreferences expandida, CommsHistoryEntry, COMMS_KEY, loadCommsHistory, addCommsHistoryEntry, exportAccountData+deleteAccountData actualizados)
+- `src/lib/notificationTemplates.ts` (nuevo)
+- `src/pages/BookingFlow.tsx` (notification preview en paso 5, reminder/cancel info en paso 6, addCommsHistoryEntry en confirm y cancel, sidebar dinámico)
+- `src/pages/Account.tsx` (tab comunicaciones, historial, prefs granulares 3 grupos)
+- `src/index.css` (booking-notif-preview, booking-notif-chip, prefs-group*, comms-history-*, comms-channel-chip*)
+- `ROADMAP.md` (4.18 completo)
+
+---
+
+## 2026-06-06 - Reseñas, reputación y confianza, ROADMAP 4.17
+
+### Hecho
+- **Distribución de estrellas con filtro**: en la sección de reseñas de `SalonProfile.tsx` se muestra una visualización de barras con el reparto estimado de 5★ a 1★ calculado algorítmicamente desde `rating` y `reviews`. Cada barra es un botón que filtra las reseñas visibles por esa puntuación (`filterRating` state); se puede quitar con "Quitar filtro".
+- **Respuesta pública del salón**: si una reseña tiene `ownerReply`, se muestra debajo con borde izquierdo de acento, icono `MessageSquare` y fecha. Modelo de datos añadido en `RecentReview.ownerReply`. El backend ya tenía el campo `respuesta_salon` y el endpoint `PATCH /api/salon/reviews/:id/respuesta`.
+- **Reporte de reseñas**: cada reseña tiene un enlace "Reportar" (icono `Flag`) que lleva a `/contacto?motivo=reportar-resena&resena={id}`. El backend ya tenía moderación por estado (PUBLICADA/OCULTA).
+- **Badges de confianza**: franja de trust badges en el hero del perfil: "Reserva segura", "Reseñas verificadas", "Cancelación flexible" y "Salón verificado" (si `verified`). Estilo neutro con variante accent para verificado.
+- **Promociones con fechas en sidebar**: si el salón tiene promociones, aparece una sección en el sidebar con cada promo mostrando título, descripción, badge "Activa"/"Próximamente", porcentaje de descuento si aplica, rango de fechas formateado y condiciones. `isActivePromotion` compara contra la fecha de hoy. Helpers `formatPromotionDate` y `computeRatingDistribution` añadidos como funciones puras.
+- **Política de cancelación**: si `salon.cancelPolicy` existe, aparece como sección en el sidebar (antes del pago) con el texto completo. Visible antes de confirmar reserva.
+- **Información de pago/cobro**: sección fija en sidebar con: "El pago se gestiona de forma segura a través de Allop", "Se acepta tarjeta, débito y Google/Apple Pay", "Solo se carga el importe una vez completada la reserva".
+- **Solo reseñas tras reserva completada**: ya estaba implementado vía `canReview` en `Account.tsx`; marcado como hecho.
+
+### Archivos modificados
+- `src/pages/SalonProfile.tsx` (distribución estrellas, filtro, respuesta salón, reporte, trust badges, promociones, cancelPolicy, pago; helpers `computeRatingDistribution`, `isActivePromotion`, `formatPromotionDate`)
+- `src/data/salons.ts` (interfaz `Promotion`, `promotions` y `cancelPolicy` en `Salon`, `ownerReply` en `RecentReview`, datos de Feromi)
+- `src/index.css` (`.trust-badges`, `.rating-distribution/*`, `.review-owner-reply`, `.review-actions`, `.review-report-link`, `.promo-card*`, `.cancel-policy-text`, `.payment-info-list`, `.profile-reviews-empty`)
+- `ROADMAP.md` (4.16 y 4.17 completos)
+
+---
+
+## 2026-06-06 - Producto y conversión, ROADMAP 4.16
+
+### Hecho
+- **Embudo cliente trackeado**: `BookingFlow.tsx` ahora dispara `booking_step` en cada avance de paso (se registra el paso destino), `booking_cancelled` al cancelar desde la confirmación. Antes solo se registraban `booking_started` y `booking_completed`.
+- **Recuperación de reserva abandonada**: el estado del flujo de reserva (step, servicio, profesional, fecha, hora) se persiste en `sessionStorage` con clave `booking_draft_{salonSlug}` a partir del paso 2. Al volver a la URL de reserva, el flujo retoma desde el último punto. La sesión se elimina al completar o cancelar.
+- **Deep links por servicio**: `/reservar/{salonSlug}?service={serviceId}` pre-selecciona el servicio. Añadido botón "Reservar" por servicio en la sección de servicios de `SalonProfile.tsx` que genera el deep link correspondiente.
+- **Sistema de patrocinados**: añadido campo `promoted?: boolean` a la interfaz `Salon`. El salón Feromi marcado como demo (`promoted: true`). `SalonCard.tsx` muestra etiqueta "Patrocinado" en gris neutro cuando el campo es true — estilo claramente diferenciado de los badges de estado (verde).
+- **CTA contextual en footer**: botón "Soy un salón — empieza gratis" añadido en la sección de marca del footer de clientes (`Footer.tsx`). Con traducción al catalán.
+- **Embudos documentados** (implícito en código): el embudo cliente (búsqueda → ficha → reservar → confirmación) y el embudo salón (landing → lead → billing) están trazados con eventos de analytics en BookingFlow y Business.
+
+### Pendiente de 4.16
+- [ ] Promociones por salón con fecha de inicio/fin y condiciones (requiere modelo de datos en backend)
+
+### Archivos modificados/añadidos
+- `src/lib/analytics.ts` (eventos `booking_step`, `booking_cancelled`)
+- `src/data/salons.ts` (campo `promoted`, Feromi marcado)
+- `src/components/SalonCard.tsx` (badge Patrocinado)
+- `src/components/Footer.tsx` (CTA footer cliente)
+- `src/lib/translations.ts` (clave `footer.salonCta` en es/ca)
+- `src/pages/BookingFlow.tsx` (deep link, draft save/restore, step tracking, cancel tracking)
+- `src/pages/SalonProfile.tsx` (botón Reservar por servicio con deep link)
+- `src/index.css` (.salon-promoted, .salon-promoted-label, .footer-cta, .services-list-actions)
+- `ROADMAP.md` (4.16 ítems marcados)
+
+---
+
+
+## 2026-06-06 - Diseño y sistema visual, ROADMAP 4.15
+
+### Hecho
+- Añadidos tokens de spacing (`--sp-1` a `--sp-16`) y z-index (`--z-popover`, `--z-dropdown`, `--z-nav`, `--z-modal`, `--z-cookie`, `--z-toast`) a `:root` en `index.css`.
+- Todos los z-index hardcodeados en CSS ahora usan los tokens (nav, user-menu, search-suggestions, cookie-banner, toast-region, modal-backdrop).
+- Añadidos estados de error de input: `.input-error` (borde rojo + shadow) y `.field-error` (mensaje de error en rojo).
+- Añadido botón hamburger en `Nav.tsx`: visible solo en ≤980px; muestra/oculta un drawer con los enlaces de nav (`/#buscar`, `/#como-funciona`, `Para salones`). Se cierra automáticamente al cambiar de ruta.
+- Animación `drawerIn` para el menú móvil (fade + translateY). En ≤720px el hamburger se empuja al extremo derecho con `margin-left: auto`.
+- Creado `docs/icon-guide.md` con tabla de todos los iconos lucide-react usados en el proyecto, categorizados por contexto.
+- Añadidas clases utilitarias `.card`, `.badge` / `.badge-success` / `.badge-neutral` / `.badge-accent` para nuevos componentes. Normalizado padding de `.account-metrics article` a 20px. Añadida `box-shadow` y `radius-lg` a `.business-includes-list article`.
+- Añadido `.btn-sm` (height: 30px) para acciones secundarias compactas.
+- Añadida clase `.confirm-row` para confirmaciones inline — elimina los `window.confirm()` nativos:
+  - `BookingFlow.tsx`: "Cancelar reserva" ahora muestra botones "Sí, cancelar / No" inline.
+  - `Account.tsx` > BookingList: cada "Cancelar" reserva muestra "¿Cancelar? Sí / No" inline.
+  - `Account.tsx` > Privacy: "Eliminar mi cuenta" muestra "¿Eliminar todos los datos locales? Sí, eliminar / Cancelar".
+- Corregido typo "Error de aplicacion" → "aplicación" en `ErrorBoundary.tsx`. Mejorado el copy del mensaje de error.
+- Corregido `aria-label="Estado del salon"` → "salón" en `SalonCard.tsx`.
+- Corregidos typos en textos de Account.tsx ("informacion" → "información", "supresion" → "supresión").
+- Añadidos `overflow: hidden; text-overflow: ellipsis` a `.btn` (base), `.services-list strong` y `.account-nav a` (en 980px) para evitar desbordamiento en contenedores acotados.
+- `.btn` ahora incluye `overflow: hidden; text-overflow: ellipsis` para que los botones con `width: 100%` en mobile no desborden.
+
+### Archivos modificados/añadidos
+- `src/index.css` (tokens, hamburger/drawer, .input-error, .field-error, .card, .badge-*, .btn-sm, .confirm-row, overflow fixes)
+- `src/components/Nav.tsx` (hamburger, mobile drawer)
+- `src/components/ErrorBoundary.tsx` (typo + copy)
+- `src/components/SalonCard.tsx` (aria-label)
+- `src/pages/Account.tsx` (inline confirms, typos)
+- `src/pages/BookingFlow.tsx` (inline confirm)
+- `docs/icon-guide.md` (nuevo)
+- `ROADMAP.md` (4.15 completo)
+
+---
+
+## 2026-06-06 - Seguridad frontend, ROADMAP 4.14
+
+### Hecho
+- Creado `src/lib/validation.ts` con validadores puros y reutilizables:
+  - `validateEmail`, `validatePhone` (opcional), `validateName`, `validateFreeText`, `validateTaxId`, `validateLocator`.
+  - `sanitizeText`: elimina etiquetas HTML antes de renderizar contenido de terceros.
+  - `firstError`: recoge el primer error de una lista de resultados para simplificar flujos de submit.
+- Actualizado `src/shared/apiClient.ts`: HTTP 429 produce `ApiError` con `code: 'RATE_LIMITED'` y extrae `Retry-After`; el resto de errores no cambia.
+- Añadido campo honeypot (oculto para humanos, visible para bots) a `Contact.tsx` y `BusinessSignup.tsx`; los envíos con honeypot se descartan silenciosamente.
+- Sustituida validación manual básica en `Contact.tsx` y `BusinessSignup.tsx` por `firstError` + validadores de `validation.ts`.
+- Añadido `npm audit --audit-level=high` al job `quality` de `.github/workflows/deploy.yml` — falla la build si hay vulnerabilidades altas o críticas.
+- Creado `docs/nginx-security-headers.md` con configuración lista para pegar en nginx:
+  - `Strict-Transport-Security` (HSTS 1 año, sin includeSubDomains ni preload aún).
+  - `X-Frame-Options: DENY`.
+  - `X-Content-Type-Options: nosniff`.
+  - `Referrer-Policy: strict-origin-when-cross-origin`.
+  - `Permissions-Policy`: solo cámara y geolocalización (self).
+  - `Content-Security-Policy`: default-src self, script-src con Plausible, img-src con Cloudinary, connect-src con API/Sentry/Plausible, form-action con Stripe Checkout.
+  - Notas explicativas por directiva y comando de verificación con curl.
+
+### Archivos modificados/añadidos
+- `src/lib/validation.ts` (nuevo)
+- `src/shared/apiClient.ts` (manejo de 429)
+- `src/pages/Contact.tsx` (honeypot + validadores)
+- `src/pages/BusinessSignup.tsx` (honeypot + validadores)
+- `.github/workflows/deploy.yml` (npm audit en CI)
+- `docs/nginx-security-headers.md` (nuevo)
+- `ROADMAP.md` (4.14 marcado completo)
+
+### Backend completado (en allop-platform)
+- Creada entidad `StripeWebhookEvent` (tabla `stripe_webhook_event`): PK = `stripe_event_id` → idempotencia a nivel de BD.
+- Actualizado `StripeService.ts`: añadidos `constructWebhookEvent`, `crearCheckoutSession`, `crearPortalSession`, `obtenerSuscripcion`.
+- Nuevo `StripeWebhookController.ts`:
+  - Lee body como `Buffer` (raw) y llama a `stripe.webhooks.constructEvent` — rechaza con 400 si la firma no coincide.
+  - Consulta `StripeWebhookEvent` antes de procesar; si ya existe, responde 200 sin reprocesar.
+  - Maneja `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`.
+  - Guarda el evento en BD solo si el procesamiento completa sin error; si falla, devuelve 500 para que Stripe reintente.
+- Nuevo `BillingController.ts`: `crearCheckoutSession` (público), `crearPortalSession` (auth), `obtenerSuscripcion` (auth).
+- Nueva `billing.routes.ts` con rutas `/billing/checkout-sessions`, `/billing/customer-portal`, `/billing/subscription`.
+- Actualizado `index.ts`: `/api/billing/webhooks/stripe` se monta con `express.raw()` antes de `express.json()`.
+- Registrada `StripeWebhookEvent` en `data-source.ts`.
+
+---
+
+## 2026-06-06 - Modelo de datos mínimo, ROADMAP 4.13
+
+### Hecho
+- Creado `src/shared/dataModels.ts` con las 14 entidades completas del dominio:
+  - `Salon` (con `SalonStatus`, `SalonCategory`, `HorarioSemana`).
+  - `SalonMedia` (con `MediaEstado`).
+  - `Service`.
+  - `Professional` (con `DiaSemana`, `ProfessionalScheduleDay`).
+  - `AvailabilitySlot`.
+  - `Booking` (con `BookingEstado`, `BookingOrigen`, `CancellationPolicy`).
+  - `Client` (con `TierFidelizacion`, `ClientNotificationPreferences`).
+  - `Review` (con `ReviewEstado`).
+  - `Favorite`.
+  - `BusinessLead` (con `LeadEstadoCRM`).
+  - `Plan` (con `PlanLimits`).
+  - `Subscription` (con `SubscriptionStatus`, `ActivationState`).
+  - `Invoice` (con `InvoiceEstado`).
+  - `BillingProfile`.
+- Distincion clara respecto a `apiContracts.ts`: dataModels.ts contiene entidades de dominio completas; apiContracts.ts contiene formas HTTP.
+- Creado `docs/data-models.md` con:
+  - Mapa ASCII de relaciones entre entidades.
+  - Tabla completa de campos por entidad con tipo y descripcion.
+  - Maquinas de estados de Booking y Subscription.
+  - Tabla de modulos bloqueados por plan y estado de suscripcion.
+  - Invariante critica de Review (solo tras reserva completada, una por reserva).
+  - Tabla de claves de localStorage del frontend.
+- Actualizado `ROADMAP.md`: punto 4.13 completo.
+
+### Archivos modificados/anadidos
+- `src/shared/dataModels.ts`
+- `docs/data-models.md`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- Nota: `dataModels.ts` es una capa de tipos puros (solo interfaces/types). No introduce runtime ni dependencias.
+
+## 2026-06-06 - Contratos de API y backend, ROADMAP 4.12
+
+### Hecho
+- Creado `src/shared/apiContracts.ts` como fuente de verdad de todos los tipos HTTP:
+  - Auth cliente: OtpRequest/Response, OtpVerify/Response, ClientRegister/Login, ClientAuthResponse, ClientProfileV1.
+  - Marketplace: MarketplaceSearchParams, MarketplaceSalonItem, SalonDetail, HorarioSemana, ServiceItem, ProfessionalItem, SalonPhoto, ReviewItem.
+  - Disponibilidad: AvailabilityQuery, AvailabilitySlot.
+  - Reservas: CreateBookingBody, BookingConfirmationV1, ClientBookingItem, BookingEstado, CancelBooking, CreateReview.
+  - Favoritos: FavoritesResponse, AddFavoriteBody, FavoriteResponse.
+  - Leads B2B: BusinessLeadBody, BusinessLeadResponse.
+  - Billing/Stripe: BillingPlanId, BillingInterval, SubscriptionStatus, BillingProfileBody, CheckoutSessionBody/Response, CustomerPortalResponse, SubscriptionSnapshotV1, StripeWebhookEventType.
+  - Comunes: ApiErrorBody, PaginatedResponse.
+- Creado `docs/api-contracts.md` con documentacion completa de los 16 endpoints:
+  - Auth (5 endpoints), Salones/marketplace (2), Disponibilidad (1), Reservas (4), Favoritos (3), Leads B2B (1), Billing/Stripe (4).
+  - Tabla de codigos de error comunes.
+  - Estrategia de versionado `/api/v1/` con politica de deprecacion (90 dias de soporte paralelo).
+  - Tabla de rutas legacy vs v1 para guiar la migracion backend.
+  - Seccion de seguridad: OTP rate limit, JWT scope, CORS, webhook idempotencia.
+- Actualizado `ROADMAP.md`: punto 4.12 completo.
+
+### Archivos modificados/anadidos
+- `src/shared/apiContracts.ts`
+- `docs/api-contracts.md`
+- `ROADMAP.md`
+- `progreso.md`
+
+### Validacion
+- `npm.cmd run lint` OK.
+- `npm.cmd run build` OK.
+- Nota: `apiContracts.ts` es una capa de tipos puros (solo interfaces/types); no introduce runtime. Los archivos lib/* que ya tienen sus propios tipos internos pueden migrar progresivamente a importar desde aqui.
+
 ## 2026-06-06 - Arquitectura frontend, ROADMAP 4.11
 
 ### Hecho

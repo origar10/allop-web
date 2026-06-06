@@ -12,6 +12,7 @@ interface SalonCardProps {
   badges?: string[];
   imageClass?: string;
   verified?: boolean;
+  promoted?: boolean;
   onSelect: () => void;
 }
 
@@ -40,6 +41,7 @@ export default function SalonCard({
   badges = [],
   imageClass = '',
   verified = true,
+  promoted = false,
   onSelect,
 }: SalonCardProps) {
   const imageUrl = SALON_IMAGES[imageClass];
@@ -66,8 +68,13 @@ export default function SalonCard({
           {verified && <span className="salon-verified"><BadgeCheck size={15} /></span>}
         </div>
         <div className="salon-loc">{location} · {distance}</div>
+        {promoted && (
+          <div className="salon-promoted" aria-label="Resultado patrocinado">
+            <span className="salon-promoted-label">Patrocinado</span>
+          </div>
+        )}
         {!!badges.length && (
-          <div className="salon-badges" aria-label="Estado del salon">
+          <div className="salon-badges" aria-label="Estado del salón">
             {badges.slice(0, 2).map((badge) => <span key={badge}>{badge}</span>)}
           </div>
         )}
