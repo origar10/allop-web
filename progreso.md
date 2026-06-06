@@ -27,6 +27,9 @@
 ### Validacion
 - `npm.cmd run predeploy:health` OK con fallback automatico a `https://api.allop.es/health`.
 - `VITE_HEALTH_CHECK_URL=https://api.allop.es/api/health npm.cmd run predeploy:health` OK, normalizado a `/health`.
+- Revisado el run GitHub Actions `27063251832`: fallaba porque la variable ya correcta `https://api.allop.es/health` se transformaba por error en `https://api.allop.es/health/health`.
+- Corregido `predeploy-health-check.mjs` para respetar URLs explicitas que ya terminan en `/health`.
+- Validado tambien `VITE_HEALTH_CHECK_URL=https://api.allop.es/health npm.cmd run predeploy:health` OK.
 
 ## 2026-06-06 - Cambio de tiers B2B: Basico y A medida
 

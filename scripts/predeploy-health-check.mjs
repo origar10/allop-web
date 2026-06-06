@@ -7,6 +7,13 @@ function buildHealthUrl(baseUrl) {
     const parsed = new URL(baseUrl);
     const pathname = parsed.pathname.replace(/\/$/, '');
 
+    if (pathname === '/health') {
+      parsed.pathname = '/health';
+      parsed.search = '';
+      parsed.hash = '';
+      return parsed.toString();
+    }
+
     if (pathname === '/api' || pathname === '/api/v1' || pathname === '/api/health' || pathname === '/api/v1/health') {
       parsed.pathname = '/health';
       parsed.search = '';
