@@ -35,20 +35,6 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const DASHBOARD_URL = 'https://dashboard.allop.es';
 const BUSINESS_URL = '/business';
 const SUPPORT_EMAIL = 'soporte@allop.es';
-const HOME_RESULTS_ID = 'marketplace-results';
-
-function scrollToHomeResults(attempts = 12) {
-  const target = document.getElementById(HOME_RESULTS_ID) || document.getElementById('buscar');
-
-  if (target) {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-
-  if (attempts > 0) {
-    window.setTimeout(() => scrollToHomeResults(attempts - 1), 50);
-  }
-}
 
 function HashScroller() {
   const location = useLocation();
@@ -177,11 +163,17 @@ export default function App() {
   const closeSalonPreview = useCallback(() => setSelectedSalon(null), []);
   useFocusTrap(salonModalRef, Boolean(selectedSalon), closeSalonPreview);
 
-  const handleSearch = (query: string) => {
-    setSearchTerm(query);
-    trackEvent('search', { query: query || 'empty', source: 'nav_or_home' });
-    navigate('/');
-    window.setTimeout(() => scrollToHomeResults(), 0);
+  const handleSearch = (query: string, city = '') => {
+    const nextQuery = query.trim();
+    const nextCity = city.trim();
+    const params = new URLSearchParams();
+
+    if (nextQuery) params.set('q', nextQuery);
+    if (nextCity) params.set('ciudad', nextCity);
+
+    setSearchTerm(nextQuery);
+    trackEvent('search', { query: nextQuery || 'empty', city: nextCity || null, source: 'nav_or_home' });
+    navigate(`/buscar${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
   const openBusiness = () => {

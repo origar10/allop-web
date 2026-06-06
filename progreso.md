@@ -1,5 +1,29 @@
 # Progreso allop-web
 
+## 2026-06-06 - Busqueda separada en `/buscar`
+
+### Hecho
+- Cambiada la busqueda global para navegar a URLs compartibles:
+  - `/buscar?q=servicio`,
+  - `/buscar?q=servicio&ciudad=ciudad`.
+- Convertida la pagina `/buscar` en la vista completa de resultados:
+  - formulario propio,
+  - filtros de precio, valoracion, distancia, disponibilidad y orden,
+  - selector lista/mapa,
+  - Apple Maps embebido,
+  - carga desde API publica con fallback local,
+  - paginacion "Cargar mas",
+  - estados vacios y loading.
+- Retirada de la home la seccion de filtros/resultados para dejar la portada enfocada en entrada, categorias y destacados.
+- Actualizada la prueba e2e para verificar que la home abre la pagina dedicada.
+
+### Archivos modificados
+- `src/App.tsx`
+- `src/pages/Home.tsx`
+- `src/pages/SearchResults.tsx`
+- `tests/e2e/marketplace-search.spec.ts`
+- `progreso.md`
+
 ## 2026-06-06 - Refresco de cache PWA para MapKit
 
 ### Hecho
