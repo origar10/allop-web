@@ -336,9 +336,9 @@ Plan de suscripción disponible para salones.
 
 ```json
 {
-  "empleados": "Hasta 3",
-  "seats": "1 usuario gestor",
-  "reservasMes": "300/mes",
+  "empleados": "Hasta 7",
+  "seats": "Gestor + cuentas de empleados",
+  "reservasMes": "Sin limite",
   "recordatorios": "Basicos",
   "sedes": "1",
   "soporte": "Estandar"

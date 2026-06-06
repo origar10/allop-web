@@ -32,11 +32,11 @@ interface BusinessProps {
 const plans = [
   {
     name: 'Basico',
-    price: 'Pedir presupuesto',
-    period: '',
+    price: '39 €',
+    period: '/mes',
     detail: 'Para salones que quieren crear su cuenta y empezar sin revision manual.',
-    features: ['Alta self-service', 'Marketplace publico', 'Agenda online', 'Recordatorios basicos', 'Ficha del salon'],
-    limits: ['1 sede', 'Hasta 3 empleados', 'Soporte estandar'],
+    features: ['Alta self-service', 'Marketplace publico', 'Agenda online', 'Cuentas para empleados', 'Recordatorios basicos', 'Ficha del salon'],
+    limits: ['1 sede', 'Hasta 7 empleados', 'Reservas ilimitadas', 'Soporte estandar'],
     selfService: true,
     cta: 'Crear cuenta',
     href: '/business/alta?plan=basic',
@@ -123,10 +123,10 @@ const comparisonRows = [
 ];
 
 const planLimitRows = [
-  ['Usuarios', '1 usuario gestor', 'A medida'],
-  ['Empleados', 'Hasta 3', 'A medida'],
+  ['Usuarios', 'Gestor + cuentas de empleados', 'A medida'],
+  ['Empleados', 'Hasta 7', 'A medida'],
   ['Sedes', '1', 'Varias sedes'],
-  ['Reservas/mes', '300', 'A medida'],
+  ['Reservas/mes', 'Sin limite', 'A medida'],
   ['Recordatorios', 'Basicos', 'SMS/email segun contrato'],
   ['Soporte', 'Estandar', 'Prioritario'],
 ];
@@ -159,7 +159,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
     phone: '',
     email: '',
     city: '',
-    teamSize: '1-3',
+    teamSize: '1-7',
     message: '',
   });
   const [leadMessage, setLeadMessage] = useState('');
@@ -201,7 +201,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       phone: '',
       email: '',
       city: '',
-      teamSize: '1-3',
+      teamSize: '1-7',
       message: '',
     });
   };
@@ -565,9 +565,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
             <div className="auth-two-cols">
               <label>Ciudad<input value={lead.city} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
               <label>Equipo<select value={lead.teamSize} onChange={(event) => setLead({ ...lead, teamSize: event.target.value })}>
-                <option value="1-3">1-3 personas</option>
-                <option value="4-12">4-12 personas</option>
-                <option value="13+">13+ personas</option>
+                <option value="1-7">1-7 personas</option>
+                <option value="8+">8+ personas</option>
               </select></label>
             </div>
             <label>Mensaje<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={4} /></label>

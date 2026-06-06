@@ -9,8 +9,8 @@ import {
   type BillingPlanId,
   type BillingProfile,
   buildContractMailto,
-  buildSelfServiceSignup,
   calculateVat,
+  createCheckoutSession,
   formatPlanPrice,
   getBillingPlan,
   normalizeBillingPlanId,
@@ -46,7 +46,7 @@ export default function BusinessSignup() {
   const basePrice = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
   const vat = basePrice === null ? null : calculateVat(basePrice);
   const finalPrice = basePrice === null || vat === null ? null : basePrice + vat;
-  const messageIsError = Boolean(message);
+  const messageIsError = Boolean(message && !message.startsWith('Alta'));
 
   useEffect(() => {
     setSeo({
@@ -94,9 +94,16 @@ export default function BusinessSignup() {
       return;
     }
 
-    buildSelfServiceSignup(profile, planId, interval);
+    const result = await createCheckoutSession(planId, interval, profile);
     setSubmitting(false);
-    navigate(`/business/alta/success?plan=${planId}&interval=${interval}&selfService=1`);
+
+    if (result.localFallback) {
+      setMessage('Alta self-service guardada. Cuando el backend Stripe responda, esta accion redirigira a Stripe Checkout.');
+      navigate(result.url);
+      return;
+    }
+
+    window.location.assign(result.url);
   };
 
   return (
@@ -180,10 +187,10 @@ export default function BusinessSignup() {
           <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
             {submitting && <span className="inline-spinner" aria-hidden="true" />}
             {plan.selfService ? <CreditCard size={16} /> : <MessageCircle size={16} />}
-            {submitting ? 'Preparando...' : plan.selfService ? 'Crear cuenta Basico' : 'Enviar correo a contratos'}
+            {submitting ? 'Preparando...' : plan.selfService ? 'Ir a Stripe Checkout' : 'Enviar correo a contratos'}
           </button>
           {plan.selfService
-            ? <p className="billing-note"><FileText size={14} /> Sin revision manual: al completar el alta se crea la cuenta y puedes configurar servicios, horarios y equipo.</p>
+            ? <p className="billing-note"><FileText size={14} /> Sin revision manual: Stripe gestiona el pago de Basico y Allop no guarda datos de tarjeta.</p>
             : <p className="billing-note"><FileText size={14} /> A medida se solicita por contrato. El formulario abrira un correo a {CONTRACT_EMAIL} con tus datos.</p>
           }
         </form>

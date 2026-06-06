@@ -63,7 +63,7 @@ Para salones
 │   ├── Gestión de clientes
 │   └── Operativa e inventario
 ├── Precios
-│   ├── Básico — Pedir presupuesto
+│   ├── Básico — 39 €/mes
 │   └── A medida — Pedir presupuesto
 ├── Recursos
 │   ├── Cómo funciona el alta

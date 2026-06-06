@@ -1,5 +1,28 @@
 # Progreso allop-web
 
+## 2026-06-06 - Correccion precio plan Basico
+
+### Hecho
+- Corregido Basico para que tenga precio cerrado:
+  - mensual: 39 EUR/mes,
+  - anual: 390 EUR/año.
+- Ajustados limites de Basico:
+  - hasta 7 empleados,
+  - sin limite de reservas,
+  - el usuario gestor puede crear cuentas para sus empleados.
+- A medida queda como el unico tier con "Pedir presupuesto".
+- El alta Basico vuelve a usar Stripe Checkout self-service, manteniendo fallback local si el backend aun no responde.
+- Actualizados textos de la landing, pantalla de alta, pantalla de exito, `ROADMAP.md` y guia de self-service.
+
+### Archivos modificados
+- `src/lib/billingApi.ts`
+- `src/pages/Business.tsx`
+- `src/pages/BusinessSignup.tsx`
+- `src/pages/BusinessBillingResult.tsx`
+- `ROADMAP.md`
+- `docs/stripe-self-service.md`
+- `progreso.md`
+
 ## 2026-06-06 - Correccion deploy GitHub Actions health check
 
 ### Hecho
@@ -37,7 +60,7 @@
 - Sustituida la estructura de planes B2B por dos tiers:
   - `basic` / Basico,
   - `custom` / A medida.
-- Ambos tiers muestran precio como "Pedir presupuesto".
+- Basico se dejo inicialmente como presupuesto, corregido despues a 39 EUR/mes.
 - Basico queda como alta self-service:
   - sin revision manual,
   - crea snapshot local de suscripcion activa,

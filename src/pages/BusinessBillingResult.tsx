@@ -71,7 +71,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
           ? (
             <div className="billing-alerts">
               <span>Básico no queda en revisión: la cuenta se ha guardado como activa.</span>
-              <span>El precio final se confirma antes de contratar servicios de pago.</span>
+              <span>El plan Básico es 39 €/mes y el pago lo gestiona Stripe.</span>
               <span>Para contratos o plan A medida se usa soporte@origar.es.</span>
             </div>
           )

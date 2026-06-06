@@ -458,7 +458,7 @@ Recoge un lead del formulario de `/business`.
   "phone": "+34937001234",
   "email": "marcel@example.com",
   "city": "Terrassa",
-  "teamSize": "3-5",
+  "teamSize": "1-7",
   "message": "Quiero presupuesto para el plan A medida.",
   "source": "business_landing"
 }
