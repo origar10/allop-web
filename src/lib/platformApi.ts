@@ -84,6 +84,12 @@ export async function getClientMe(slug: string, token: string, signal?: AbortSig
   }
 }
 
+export function exchangeAppleBridge(bridgeToken: string) {
+  return apiGet<ClientAuthResponse>(
+    `/salones/marketplace/auth/cliente/apple/exchange?t=${encodeURIComponent(bridgeToken)}`,
+  );
+}
+
 export async function getClientBookings(slug: string, token: string, signal?: AbortSignal) {
   try {
     return await apiGet<ClientBooking[]>('/clientes/me/reservas', { token, signal });

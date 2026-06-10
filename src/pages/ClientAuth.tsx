@@ -26,6 +26,8 @@ const MARKETPLACE_SLUG = 'marketplace';
 const RESEND_SECONDS = 60;
 
 const GOOGLE_AUTH_URL = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined;
+const APPLE_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined;
+const APPLE_REDIRECT_URI = import.meta.env.VITE_APPLE_REDIRECT_URI as string | undefined;
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/mi-cuenta';
@@ -204,6 +206,18 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     window.location.href = `${GOOGLE_AUTH_URL}?next=${encodeURIComponent(nextPath)}`;
   };
 
+  const startAppleLogin = () => {
+    const params = new URLSearchParams({
+      response_type: 'code id_token',
+      client_id: APPLE_CLIENT_ID!,
+      redirect_uri: APPLE_REDIRECT_URI!,
+      scope: 'name email',
+      response_mode: 'form_post',
+      state: nextPath,
+    });
+    window.location.href = `https://appleid.apple.com/auth/authorize?${params.toString()}`;
+  };
+
   return (
     <section className="client-auth">
       <div className="container client-auth-grid">
@@ -226,6 +240,15 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             <button className="btn btn-ghost btn-lg auth-google" type="button" onClick={startGoogleLogin} disabled={loading}>
               <span>G</span>
               Continuar con Google
+            </button>
+          )}
+
+          {APPLE_CLIENT_ID && APPLE_REDIRECT_URI && (
+            <button className="btn btn-ghost btn-lg auth-apple" type="button" onClick={startAppleLogin} disabled={loading}>
+              <svg width="17" height="20" viewBox="0 0 814 1000" aria-hidden="true" focusable="false">
+                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-47.4-148.2-107.8c-50.2-70.8-102.3-181.9-102.3-287.7 0-219.1 143.6-335.2 284.2-335.2 74.9 0 137.5 49.2 184.1 49.2 44.6 0 115.7-52.6 201.7-52.6 32.8 0 134.2 2.6 198.4 101.9zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" />
+              </svg>
+              Continuar con Apple
             </button>
           )}
 

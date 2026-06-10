@@ -29,6 +29,7 @@ const Guides = lazy(() => import('./pages/Guides'));
 const Press = lazy(() => import('./pages/Press'));
 const BusinessSignup = lazy(() => import('./pages/BusinessSignup'));
 const BusinessBillingResult = lazy(() => import('./pages/BusinessBillingResult'));
+const AppleCallback = lazy(() => import('./pages/AppleCallback'));
 const SystemStatus = lazy(() => import('./pages/SystemStatus'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -233,6 +234,7 @@ export default function App() {
             <Route path="/salones" element={<SalonsDirectory />} />
             <Route path="/login" element={<ClientAuth key="login" mode="login" />} />
             <Route path="/register" element={<ClientAuth key="register" mode="register" />} />
+            <Route path="/auth/apple/resultado" element={<AppleCallback />} />
             <Route path="/salones/:slug" element={<SalonProfile />} />
             <Route path="/reservar/:salonSlug" element={<BookingFlow />} />
             <Route path="/mi-cuenta" element={<Account />} />

@@ -1021,6 +1021,8 @@ section[id] { scroll-margin-top: 84px; }
 .auth-help { color: var(--fg-3); font-size: 12px; font-weight: 600; line-height: 1.45; }
 .auth-google { width: 100%; }
 .auth-google span { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-full); background: #fff; color: var(--brand); font-size: 13px; font-weight: 900; }
+.auth-apple { width: 100%; }
+.auth-apple svg { flex-shrink: 0; fill: currentColor; }
 .auth-message { border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; font-weight: 600; }
 .auth-message.ok { color: #166534; background: #DCFCE7; }
 .auth-message.err { color: #991B1B; background: #FEE2E2; }
