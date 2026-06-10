@@ -84,7 +84,15 @@ export default function BookingFlow() {
     if (!salonSlug || fetchedServicesSlug.current === salonSlug) return;
     fetchedServicesSlug.current = salonSlug;
     const controller = new AbortController();
-    listApiServices(salonSlug, controller.signal).then((s) => { if (s.length) setApiServices(s); });
+    listApiServices(salonSlug, controller.signal).then((s) => {
+      if (s.length) {
+        setApiServices(s);
+        setSelectedServiceId((prev) => {
+          const ids = s.map((x) => x.id);
+          return ids.includes(prev) ? prev : (s[0]?.id ?? prev);
+        });
+      }
+    });
     return () => controller.abort();
   }, [salonSlug]);
 
