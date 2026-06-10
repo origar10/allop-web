@@ -69,6 +69,7 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
           </Link>
           <div className="nav-actions">
             <ThemeToggle />
+            <Link to="/" className="btn btn-ghost">{t('nav.business.backToMarketplace')}</Link>
             <a className="btn btn-primary" href={dashboardUrl}>{t('nav.business.dashboard')}</a>
           </div>
         </div>

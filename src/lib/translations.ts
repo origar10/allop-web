@@ -9,6 +9,7 @@ export const translations = {
     'theme.light': 'Modo claro',
     'skip.main': 'Saltar al contenido principal',
     'nav.business.dashboard': 'Acceder al panel',
+    'nav.business.backToMarketplace': 'Ir a allop',
     'nav.marketplace.searchSalon': 'Buscar salón',
     'nav.marketplace.howItWorks': 'Cómo funciona',
     'nav.marketplace.forSalons': 'Para salones',
