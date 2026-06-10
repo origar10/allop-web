@@ -98,7 +98,6 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
             aria-label={t('nav.search.aria')}
           />
         </form>
-        <LanguageSelect />
         <ThemeToggle />
         <button
           className="nav-hamburger"
