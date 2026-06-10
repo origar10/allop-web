@@ -37,7 +37,9 @@ describe('Nav i18n', () => {
     const user = userEvent.setup();
     renderNav();
 
-    await user.selectOptions(screen.getByLabelText('Seleccionar idioma'), 'ca');
+    // The language toggle is now a button that cycles ES→CA; default locale in
+    // the test environment is 'es' so one click switches to 'ca'.
+    await user.click(screen.getByLabelText('Seleccionar idioma'));
 
     expect(screen.getByText('Buscar saló')).toBeInTheDocument();
     expect(screen.getByText('Com funciona')).toBeInTheDocument();
