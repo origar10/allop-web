@@ -2,8 +2,6 @@ import { CheckCircle, LogIn, RotateCcw, ShieldCheck, UserPlus } from 'lucide-rea
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  loginClient,
-  registerClient,
   requestClientOtp,
   verifyClientOtp,
   emailLoginClient,
@@ -22,8 +20,8 @@ interface ClientAuthProps {
   mode: 'login' | 'register';
 }
 
-type AuthStep = 'phone' | 'code';
-type AuthMethod = 'sms' | 'email';
+// register steps: 'form' → fill all fields, 'otp' → verify SMS code
+type RegisterStep = 'form' | 'otp';
 
 const MARKETPLACE_SLUG = 'marketplace';
 const RESEND_SECONDS = 60;
@@ -42,100 +40,110 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isRegister = mode === 'register';
-  const purpose: ClientAuthPurpose = isRegister ? 'REGISTER' : 'LOGIN';
+  const purpose: ClientAuthPurpose = 'REGISTER';
   const nextPath = getSafeNext(searchParams.get('next'));
-  const [method, setMethod] = useState<AuthMethod>('email');
-  const [step, setStep] = useState<AuthStep>('phone');
+
+  // form fields
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // register OTP step
+  const [registerStep, setRegisterStep] = useState<RegisterStep>('form');
+  const [otpCode, setOtpCode] = useState('');
   const [challengeId, setChallengeId] = useState<number | null>(null);
   const [debugCode, setDebugCode] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
+
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const { notify } = useToast();
 
   const title = isRegister ? 'Crea tu cuenta de cliente' : 'Accede a tu cuenta';
   const Icon = isRegister ? UserPlus : LogIn;
-  const subtitle = isRegister
-    ? 'Registra tu cuenta con email, teléfono y contraseña para reservar más rápido en Allop.'
-    : 'Entra con tu email o teléfono para ver tus reservas y continuar como cliente.';
 
-  // Redirect if already logged in
   useEffect(() => {
-    if (loadClientSession()) {
-      navigate(nextPath, { replace: true });
-    }
+    if (loadClientSession()) navigate(nextPath, { replace: true });
   }, [navigate, nextPath]);
 
   useEffect(() => {
     if (resendCountdown <= 0) return undefined;
-
-    const timer = window.setInterval(() => {
-      setResendCountdown((value) => Math.max(0, value - 1));
-    }, 1000);
-
+    const timer = window.setInterval(() => setResendCountdown((v) => Math.max(0, v - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [resendCountdown]);
 
   function authErrorText(error: unknown, fallback: string) {
     const text = error instanceof Error ? error.message : fallback;
     const normalized = text.toLowerCase();
-
-    if (normalized.includes('otp') || normalized.includes('code') || normalized.includes('código')) {
-      return 'El código no es correcto o ha caducado. Revisa el SMS o solicita uno nuevo.';
-    }
-
-    if (normalized.includes('phone') || normalized.includes('tel')) {
-      return 'El teléfono no parece válido. Usa prefijo si estás fuera de España.';
-    }
-
     if (normalized.includes('network') || normalized.includes('fetch')) {
       return 'No hay conexión con Allop ahora mismo. Inténtalo de nuevo en unos segundos.';
     }
-
     return text || fallback;
   }
 
-  const requestCode = async () => {
-    const telefono = normalizePhone(phone);
+  // ── Login ────────────────────────────────────────────────────────────────
 
-    if (telefono.length < 8) {
-      setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
+  const submitLogin = async () => {
+    if (!email.trim() || !password) {
+      setMessage({ ok: false, text: 'Introduce tu email o teléfono y contraseña.' });
       return;
     }
+    setLoading(true);
+    setMessage(null);
+    try {
+      const auth = await emailLoginClient({ identifier: email.trim(), password });
+      saveClientSession({ ...auth, salonSlug: MARKETPLACE_SLUG, salonName: 'Allop', createdAt: new Date().toISOString() });
+      notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
+      navigate(nextPath, { replace: true });
+    } catch (error) {
+      setMessage({ ok: false, text: authErrorText(error, 'Email/teléfono o contraseña incorrectos.') });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (isRegister && name.trim().length < 2) {
+  // ── Register: step 1 — send OTP ──────────────────────────────────────────
+
+  const sendOtp = async () => {
+    if (!name.trim() || name.trim().length < 2) {
       setMessage({ ok: false, text: 'Introduce tu nombre.' });
       return;
     }
-
-    if (isRegister && !acceptedTerms) {
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setMessage({ ok: false, text: 'Email no válido.' });
+      return;
+    }
+    const tel = normalizePhone(phone);
+    if (tel.length < 8) {
+      setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
+      return;
+    }
+    if (password.length < 8) {
+      setMessage({ ok: false, text: 'La contraseña debe tener al menos 8 caracteres.' });
+      return;
+    }
+    if (!acceptedTerms) {
       setMessage({ ok: false, text: 'Acepta los términos y la política de privacidad para crear la cuenta.' });
       return;
     }
-
     setLoading(true);
     setMessage(null);
-
     try {
-      const response = await requestClientOtp(MARKETPLACE_SLUG, telefono, purpose);
-      setPhone(telefono);
+      const response = await requestClientOtp(MARKETPLACE_SLUG, tel, purpose);
+      setPhone(tel);
       setChallengeId(response.challengeId);
       setDebugCode(import.meta.env.DEV ? response.debugCode || '' : '');
-      setCode(import.meta.env.DEV ? response.debugCode || '' : '');
-      setStep('code');
+      setOtpCode(import.meta.env.DEV ? response.debugCode || '' : '');
+      setRegisterStep('otp');
       setResendCountdown(RESEND_SECONDS);
       setMessage({
         ok: true,
         text: import.meta.env.DEV && response.debugCode
           ? `Código generado para pruebas: ${response.debugCode}`
-          : 'Te hemos enviado un código por SMS. Puede tardar unos segundos.',
+          : 'Te hemos enviado un código de verificación por SMS.',
       });
     } catch (error) {
       setMessage({ ok: false, text: authErrorText(error, 'No se pudo enviar el código.') });
@@ -144,121 +152,62 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     }
   };
 
-  const completeAuth = async () => {
-    if (!challengeId) {
-      setMessage({ ok: false, text: 'Vuelve a solicitar el código.' });
+  // ── Register: step 2 — verify OTP + create account ───────────────────────
+
+  const confirmRegister = async () => {
+    if (!challengeId || otpCode.trim().length < 4) {
+      setMessage({ ok: false, text: 'Introduce el código recibido por SMS.' });
       return;
     }
-
-    if (code.trim().length < 4) {
-      setMessage({ ok: false, text: 'Introduce el código recibido.' });
-      return;
-    }
-
     setLoading(true);
     setMessage(null);
-
     try {
       const verified = await verifyClientOtp(MARKETPLACE_SLUG, {
         challengeId,
         telefono: phone,
-        code: code.trim(),
+        code: otpCode.trim(),
         purpose,
       });
-
-      const auth = isRegister
-        ? await registerClient(MARKETPLACE_SLUG, {
-          nombre: name.trim(),
-          apellidos: lastName.trim() || undefined,
-          email: email.trim() || undefined,
-          telefono: phone,
-          verificationToken: verified.verificationToken,
-        })
-        : await loginClient(MARKETPLACE_SLUG, {
-          telefono: phone,
-          verificationToken: verified.verificationToken,
-        });
-
-      saveClientSession({
-        ...auth,
-        salonSlug: MARKETPLACE_SLUG,
-        salonName: 'Allop',
-        createdAt: new Date().toISOString(),
+      const auth = await emailRegisterClient({
+        nombre: name.trim(),
+        apellidos: lastName.trim() || undefined,
+        email: email.trim(),
+        telefono: phone,
+        password,
+        verificationToken: verified.verificationToken,
       });
-
-      if (isRegister) {
-        trackEvent('registration_completed', { salonSlug: MARKETPLACE_SLUG, hasEmail: Boolean(email.trim()) });
-      }
-
-      notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
+      saveClientSession({ ...auth, salonSlug: MARKETPLACE_SLUG, salonName: 'Allop', createdAt: new Date().toISOString() });
+      trackEvent('registration_completed', { salonSlug: MARKETPLACE_SLUG, hasEmail: true });
+      notify(`Cuenta creada. Bienvenido/a, ${auth.cliente.nombre}.`, 'success');
       navigate(nextPath, { replace: true });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'No se pudo iniciar la sesión.') });
+      setMessage({ ok: false, text: authErrorText(error, 'No se pudo verificar el código.') });
     } finally {
       setLoading(false);
     }
   };
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (method === 'email') {
-      completeEmailAuth();
-      return;
-    }
-    if (step === 'phone') {
-      requestCode();
-      return;
-    }
-    completeAuth();
-  };
-
-  const completeEmailAuth = async () => {
-    if (isRegister) {
-      if (!name.trim() || name.trim().length < 2) {
-        setMessage({ ok: false, text: 'Introduce tu nombre.' });
-        return;
-      }
-      if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setMessage({ ok: false, text: 'Email no válido.' });
-        return;
-      }
-      const tel = normalizePhone(phone);
-      if (tel.length < 8) {
-        setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
-        return;
-      }
-      if (password.length < 8) {
-        setMessage({ ok: false, text: 'La contraseña debe tener al menos 8 caracteres.' });
-        return;
-      }
-      if (!acceptedTerms) {
-        setMessage({ ok: false, text: 'Acepta los términos y la política de privacidad para crear la cuenta.' });
-        return;
-      }
-    }
-
+  const resendOtp = async () => {
     setLoading(true);
     setMessage(null);
     try {
-      const auth = isRegister
-        ? await emailRegisterClient({
-            nombre: name.trim(),
-            apellidos: lastName.trim() || undefined,
-            email: email.trim(),
-            telefono: normalizePhone(phone),
-            password,
-          })
-        : await emailLoginClient({ identifier: email.trim(), password });
-
-      saveClientSession({ ...auth, salonSlug: MARKETPLACE_SLUG, salonName: 'Allop', createdAt: new Date().toISOString() });
-      if (isRegister) trackEvent('registration_completed', { salonSlug: MARKETPLACE_SLUG, hasEmail: true });
-      notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
-      navigate(nextPath, { replace: true });
+      const response = await requestClientOtp(MARKETPLACE_SLUG, phone, purpose);
+      setChallengeId(response.challengeId);
+      setDebugCode(import.meta.env.DEV ? response.debugCode || '' : '');
+      setResendCountdown(RESEND_SECONDS);
+      setMessage({ ok: true, text: 'Nuevo código enviado por SMS.' });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, isRegister ? 'No se pudo crear la cuenta.' : 'Email/teléfono o contraseña incorrectos.') });
+      setMessage({ ok: false, text: authErrorText(error, 'No se pudo reenviar el código.') });
     } finally {
       setLoading(false);
     }
+  };
+
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!isRegister) { submitLogin(); return; }
+    if (registerStep === 'form') { sendOtp(); return; }
+    confirmRegister();
   };
 
   const startGoogleLogin = () => {
@@ -290,10 +239,14 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
         <div className="client-auth-copy">
           <p className="eyebrow">Allop clientes</p>
           <h1>{title}</h1>
-          <p>{subtitle}</p>
+          <p>
+            {isRegister
+              ? 'Registra tu cuenta con email, teléfono y contraseña. Verificamos el teléfono una sola vez.'
+              : 'Entra con tu email o teléfono y contraseña para ver tus reservas y continuar como cliente.'}
+          </p>
           <div className="client-auth-points">
             <span><CheckCircle size={16} /> Reservas más rápidas</span>
-            <span><ShieldCheck size={16} /> Acceso con código SMS</span>
+            <span><ShieldCheck size={16} /> Teléfono verificado</span>
             <span><CheckCircle size={16} /> Historial global</span>
           </div>
         </div>
@@ -323,99 +276,85 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </button>
           )}
 
-          <div className="auth-method-tabs" role="tablist">
-            <button
-              className={`auth-method-tab${method === 'email' ? ' active' : ''}`}
-              type="button"
-              role="tab"
-              aria-selected={method === 'email'}
-              onClick={() => { setMethod('email'); setMessage(null); }}
-              disabled={loading}
-            >
-              Email y contraseña
-            </button>
-            <button
-              className={`auth-method-tab${method === 'sms' ? ' active' : ''}`}
-              type="button"
-              role="tab"
-              aria-selected={method === 'sms'}
-              onClick={() => { setMethod('sms'); setMessage(null); }}
-              disabled={loading}
-            >
-              Código SMS
-            </button>
-          </div>
-
-          {isRegister && (
-            <div className="auth-two-cols">
+          {/* ── Login form ── */}
+          {!isRegister && (
+            <>
               <label>
-                Nombre
-                <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" disabled={loading || step === 'code'} />
+                Email o teléfono
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  autoComplete="email"
+                  disabled={loading}
+                />
               </label>
               <label>
-                Apellidos
-                <input value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" disabled={loading || step === 'code'} />
+                Contraseña
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type="password"
+                  autoComplete="current-password"
+                  disabled={loading}
+                />
               </label>
-            </div>
+            </>
           )}
 
-          {method === 'email' && (
-            <label>
-              {isRegister ? 'Email' : 'Email o teléfono'}
-              <input
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                type={isRegister ? 'email' : 'text'}
-                autoComplete="email"
-                disabled={loading}
-              />
-            </label>
+          {/* ── Register: step 1 — form ── */}
+          {isRegister && registerStep === 'form' && (
+            <>
+              <div className="auth-two-cols">
+                <label>
+                  Nombre
+                  <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" disabled={loading} />
+                </label>
+                <label>
+                  Apellidos
+                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" disabled={loading} />
+                </label>
+              </div>
+              <label>
+                Email
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" disabled={loading} />
+              </label>
+              <label>
+                Teléfono
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" disabled={loading} />
+                <span className="auth-help">Con prefijo si estás fuera de España (+34…). Recibirás un código de verificación.</span>
+              </label>
+              <label>
+                Contraseña
+                <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="new-password" disabled={loading} />
+                <span className="auth-help">Mínimo 8 caracteres.</span>
+              </label>
+              <label className="auth-check">
+                <input checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} type="checkbox" disabled={loading} />
+                <span>
+                  Acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
+                </span>
+              </label>
+            </>
           )}
 
-          {method === 'email' && isRegister && (
-            <label>
-              Teléfono
-              <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading} />
-              <span className="auth-help">Con prefijo si estás fuera de España (+34…).</span>
-            </label>
-          )}
-
-          {method === 'email' && (
-            <label>
-              Contraseña
-              <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete={isRegister ? 'new-password' : 'current-password'} disabled={loading} />
-              {isRegister && <span className="auth-help">Mínimo 8 caracteres.</span>}
-            </label>
-          )}
-
-          {method === 'sms' && (
-            <label>
-              Teléfono
-              <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
-              <span className="auth-help">Usaremos este número para enviarte un código SMS de un solo uso.</span>
-            </label>
-          )}
-
-          {isRegister && (method === 'email' || (method === 'sms' && step === 'phone')) && (
-            <label className="auth-check">
-              <input
-                checked={acceptedTerms}
-                onChange={(event) => setAcceptedTerms(event.target.checked)}
-                type="checkbox"
-                disabled={loading}
-              />
-              <span>
-                Acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
-              </span>
-            </label>
-          )}
-
-          {method === 'sms' && step === 'code' && (
-            <label>
-              Código SMS
-              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" disabled={loading} />
-              <span className="auth-help">Introduce el código recibido por SMS. Caduca por seguridad.</span>
-            </label>
+          {/* ── Register: step 2 — OTP verification ── */}
+          {isRegister && registerStep === 'otp' && (
+            <>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
+                Hemos enviado un código de 6 dígitos al número <strong>{phone}</strong>. Introdúcelo para verificar tu teléfono.
+              </p>
+              <label>
+                Código SMS
+                <input
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  disabled={loading}
+                />
+              </label>
+            </>
           )}
 
           {message && (
@@ -428,37 +367,35 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </p>
           )}
 
-          {method === 'email' && (
+          {/* ── Submit button ── */}
+          {(!isRegister || registerStep === 'form') && (
             <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
               {loading && <span className="inline-spinner" aria-hidden="true" />}
-              {loading ? (isRegister ? 'Creando cuenta...' : 'Entrando...') : isRegister ? 'Crear cuenta' : 'Entrar'}
+              {loading
+                ? (isRegister ? 'Enviando código...' : 'Entrando...')
+                : (isRegister ? 'Continuar' : 'Entrar')}
             </button>
           )}
 
-          {method === 'sms' && step === 'phone' && (
-            <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
-              {loading && <span className="inline-spinner" aria-hidden="true" />}
-              {loading ? 'Enviando...' : 'Enviar código'}
-            </button>
-          )}
-
-          {method === 'sms' && step === 'code' && (
+          {isRegister && registerStep === 'otp' && (
             <div className="auth-actions">
               <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
                 {loading && <span className="inline-spinner" aria-hidden="true" />}
-                {loading ? 'Verificando...' : isRegister ? 'Crear cuenta' : 'Entrar'}
+                {loading ? 'Verificando...' : 'Crear cuenta'}
               </button>
-              <button className="btn btn-ghost btn-lg" type="button" onClick={() => setStep('phone')} disabled={loading}>
+              <button className="btn btn-ghost btn-lg" type="button" onClick={() => { setRegisterStep('form'); setMessage(null); }} disabled={loading}>
                 <RotateCcw size={16} />
-                Cambiar teléfono
+                Cambiar datos
               </button>
-              <button className="btn btn-ghost btn-lg" type="button" onClick={requestCode} disabled={loading || resendCountdown > 0}>
+              <button className="btn btn-ghost btn-lg" type="button" onClick={resendOtp} disabled={loading || resendCountdown > 0}>
                 {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : 'Reenviar código'}
               </button>
             </div>
           )}
 
-          {import.meta.env.DEV && debugCode && method === 'sms' && step === 'code' && <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>}
+          {import.meta.env.DEV && debugCode && isRegister && registerStep === 'otp' && (
+            <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>
+          )}
 
           <p className="auth-switch">
             {isRegister ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'}{' '}

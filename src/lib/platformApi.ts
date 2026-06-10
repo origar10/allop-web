@@ -89,7 +89,7 @@ export interface OAuthExchangeResponse extends ClientAuthResponse {
 }
 
 export function emailRegisterClient(
-  params: { nombre: string; apellidos?: string; email: string; telefono: string; password: string },
+  params: { nombre: string; apellidos?: string; email: string; telefono: string; password: string; verificationToken: string },
 ) {
   return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/register`, params);
 }
