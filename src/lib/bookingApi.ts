@@ -45,7 +45,7 @@ function localConfirmation(params: BookingRequest): BookingConfirmation {
 export async function createBooking(params: BookingRequest): Promise<BookingConfirmation> {
   try {
     const payload = await apiPost<Partial<BookingConfirmation>>(
-      '/reservas',
+      `/salones/${encodeURIComponent(params.salonSlug)}/reservas`,
       {
         salonSlug: params.salonSlug,
         serviceId: params.service.id,

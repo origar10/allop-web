@@ -33,11 +33,6 @@ import { ApiError } from '../shared/apiClient';
 
 type BookingStep = 1 | 2 | 3 | 4 | 5 | 6;
 
-function normalizePhone(value: string) {
-  const trimmed = value.trim();
-  if (trimmed.startsWith('+')) return `+${trimmed.slice(1).replace(/\D/g, '')}`;
-  return trimmed.replace(/\D/g, '');
-}
 
 function buildIdempotencyKey() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -99,8 +94,6 @@ export default function BookingFlow() {
   const [selectedProfessionalId, setSelectedProfessionalId] = useState(draft?.selectedProfessionalId ?? 'any');
   const [selectedDate, setSelectedDate] = useState(draft?.selectedDate || dates[0]?.id || '');
   const [selectedTime, setSelectedTime] = useState(draft?.selectedTime || salon?.nextSlot || TIME_SLOTS[0]);
-  const [guestName, setGuestName] = useState(session?.cliente.nombre || '');
-  const [guestPhone, setGuestPhone] = useState(session?.cliente.telefono || '');
   const [guestEmail, setGuestEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
@@ -209,20 +202,8 @@ export default function BookingFlow() {
     event.preventDefault();
     setError('');
 
-    const phone = normalizePhone(guestPhone);
-
     if (!selectedService || !selectedProfessional) {
       setError('Selecciona servicio y profesional.');
-      return;
-    }
-
-    if (!canUseSession && guestName.trim().length < 2) {
-      setError('Introduce tu nombre para reservar como invitado.');
-      return;
-    }
-
-    if (!canUseSession && phone.length < 8) {
-      setError('Introduce un teléfono válido para confirmar la reserva.');
       return;
     }
 
@@ -237,8 +218,8 @@ export default function BookingFlow() {
         professional: selectedProfessional,
         date: selectedDate,
         time: selectedTime,
-        clientName: canUseSession ? session?.cliente.nombre || guestName : guestName.trim(),
-        phone: canUseSession ? session?.cliente.telefono || phone : phone,
+        clientName: session?.cliente.nombre || '',
+        phone: session?.cliente.telefono || '',
         email: guestEmail.trim() || undefined,
         notes: notes.trim() || undefined,
         token: session?.token,
@@ -429,31 +410,27 @@ export default function BookingFlow() {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 5 && !canUseSession && (
+            <div className="booking-card">
+              <h2><LogIn size={20} /> Inicia sesión para reservar</h2>
+              <div className="booking-session">
+                <LogIn size={18} />
+                Necesitas una cuenta de cliente para completar la reserva.
+              </div>
+              <div className="booking-nav">
+                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
+                <Link className="btn btn-primary btn-lg" to={`/login?next=/reservar/${salon.slug}`}>Iniciar sesión</Link>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && canUseSession && (
             <form className="booking-card" onSubmit={submitBooking}>
               <h2><ShieldCheck size={20} /> Confirma la reserva</h2>
-              {canUseSession ? (
-                <div className="booking-session">
-                  <CheckCircle size={18} />
-                  Reservarás como {session?.cliente.nombre}. También puedes añadir un email de confirmación.
-                </div>
-              ) : (
-                <div className="booking-guest">
-                  <div className="booking-session muted">
-                    <LogIn size={18} />
-                    Puedes reservar como invitado o iniciar sesión para guardar el historial.
-                    <Link to={`/login?next=/reservar/${salon.slug}`}>Entrar</Link>
-                  </div>
-                  <label>
-                    Nombre
-                    <input value={guestName} onChange={(event) => setGuestName(event.target.value)} autoComplete="given-name" />
-                  </label>
-                  <label>
-                    Teléfono
-                    <input value={guestPhone} onChange={(event) => setGuestPhone(event.target.value)} type="tel" autoComplete="tel" />
-                  </label>
-                </div>
-              )}
+              <div className="booking-session">
+                <CheckCircle size={18} />
+                Reservarás como {session?.cliente.nombre}. También puedes añadir un email de confirmación.
+              </div>
               <label>
                 Email opcional
                 <input value={guestEmail} onChange={(event) => setGuestEmail(event.target.value)} type="email" autoComplete="email" />
