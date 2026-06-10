@@ -46,15 +46,6 @@ export interface RecentReview {
   ownerReply?: { text: string; date: string };
 }
 
-export interface PromoBanner {
-  enabled: boolean;
-  eyebrow: string;
-  title: string;
-  text: string;
-  cta: string;
-  query: string;
-}
-
 export const SALONS: Salon[] = [
   {
     id: 'feromi',
@@ -247,12 +238,3 @@ export const RECENT_REVIEWS: RecentReview[] = [
     date: 'Esta semana',
   },
 ];
-
-export const PROMO_BANNER: PromoBanner = {
-  enabled: true,
-  eyebrow: 'Promoción activa',
-  title: 'Huecos con descuento esta semana',
-  text: 'Encuentra salones con últimas plazas y precios especiales en servicios de corte, color y manicura.',
-  cta: 'Ver ofertas',
-  query: 'Últimas plazas',
-};

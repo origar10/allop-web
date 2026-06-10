@@ -319,10 +319,6 @@ section[id] { scroll-margin-top: 84px; }
 .commercial-link-grid div { display: flex; flex-wrap: wrap; gap: 8px; }
 .commercial-link-grid a, .profile-tags a { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--surface); color: var(--fg-3); font-size: 12px; font-weight: 800; }
 .commercial-link-grid a:hover, .profile-tags a:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
-.promo-banner { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 32px; border-radius: var(--radius-lg); color: #fff; background: linear-gradient(135deg, var(--brand), var(--accent)); box-shadow: var(--shadow-md); }
-.promo-banner .eyebrow { color: rgba(255,255,255,.92); }
-.promo-banner h2 { font-size: 24px; line-height: 1.15; margin-bottom: 8px; }
-.promo-banner p:not(.eyebrow) { max-width: 680px; color: rgba(255,255,255,.92); font-size: 14px; line-height: 1.6; }
 .filters-panel { display: grid; grid-template-columns: auto minmax(160px, 1fr) repeat(4, minmax(150px, 1fr)); gap: 14px; align-items: end; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
 .filters-title { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--fg-1); }
 .filters-title svg { color: var(--accent); }
@@ -1060,7 +1056,6 @@ section[id] { scroll-margin-top: 84px; }
   .salons-grid { grid-template-columns: repeat(2,1fr); }
   .filters-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .filters-title { grid-column: 1 / -1; }
-  .promo-banner { align-items: flex-start; flex-direction: column; }
   .commercial-link-grid { grid-template-columns: 1fr; }
   .market-map-layout { grid-template-columns: 1fr; }
   .market-map-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1148,9 +1143,6 @@ section[id] { scroll-margin-top: 84px; }
   .salon-tags { max-height: 50px; overflow: hidden; }
   .tag { font-size: 10px; padding: 3px 7px; }
   .filters-panel { grid-template-columns: 1fr; padding: 14px; border-radius: var(--radius-md); }
-  .promo-banner { padding: 24px 20px; border-radius: var(--radius-md); }
-  .promo-banner h2 { font-size: 22px; }
-  .promo-banner .btn { width: 100%; }
   .commercial-links { padding: 24px 0; }
   .commercial-link-grid article, .after-booking-grid article, .marketplace-ctas article, .seo-landing-grid article { border-radius: var(--radius-md); }
   .market-lead-modal { padding: 18px; border-radius: var(--radius-md); }
