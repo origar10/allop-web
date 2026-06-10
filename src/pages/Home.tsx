@@ -17,7 +17,7 @@ import {
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SalonCard from '../components/SalonCard';
-import { PROMO_BANNER, RECENT_REVIEWS, SALONS, type Salon } from '../data/salons';
+import { RECENT_REVIEWS, SALONS, type Salon } from '../data/salons';
 import { saveMarketplaceLead, type MarketplaceLead } from '../lib/marketplaceLeads';
 import { listMarketplaceSalons } from '../lib/salonsApi';
 import { setSeo } from '../lib/seo';
@@ -183,12 +183,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
     [salons],
   );
 
-  const offerSalons = useMemo(
-    () => salons.filter((salon) => salon.badges?.includes('Últimas plazas')).slice(0, 4),
-    [salons],
-  );
-
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextQuery = searchTerm.trim();
 
@@ -339,42 +334,6 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
           </div>
         </div>
       </section>
-
-      {PROMO_BANNER.enabled && (
-        <section className="promo-section" style={{ paddingTop: 0 }}>
-          <div className="container">
-            <div className="promo-banner">
-              <div>
-                <p className="eyebrow">{PROMO_BANNER.eyebrow}</p>
-                <h2>{PROMO_BANNER.title}</h2>
-                <p>{PROMO_BANNER.text}</p>
-              </div>
-              <button className="btn btn-white" type="button" onClick={() => runQuickSearch(PROMO_BANNER.query)}>
-                {PROMO_BANNER.cta}
-                <ArrowRight size={16} />
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {!!offerSalons.length && (
-        <section className="offers-section" style={{ paddingTop: 0 }}>
-          <div className="container">
-            <div className="section-header">
-              <div>
-                <h2 className="section-title">Ofertas cerca de ti</h2>
-                <p className="section-subtitle">Promociones y últimas plazas disponibles</p>
-              </div>
-            </div>
-            <div className="salons-grid compact">
-              {offerSalons.map((salon) => (
-                <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {!!newSalons.length && (
         <section style={{ paddingTop: 0 }}>
