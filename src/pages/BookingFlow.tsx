@@ -80,6 +80,14 @@ export default function BookingFlow() {
   const [apiServices, setApiServices] = useState<import('../lib/salonDetails').ServiceItem[]>([]);
   const fetchedServicesSlug = useRef('');
 
+  const draftKey = `booking_draft_${salonSlug}`;
+  const [draft] = useState(() => loadDraft(draftKey));
+
+  const services = apiServices.length ? apiServices : staticServices;
+  const [selectedServiceId, setSelectedServiceId] = useState(
+    searchParams.get('service') || draft?.selectedServiceId || services[0]?.id || '',
+  );
+
   useEffect(() => {
     if (!salonSlug || fetchedServicesSlug.current === salonSlug) return;
     fetchedServicesSlug.current = salonSlug;
@@ -96,21 +104,14 @@ export default function BookingFlow() {
     return () => controller.abort();
   }, [salonSlug]);
 
-  const services = apiServices.length ? apiServices : staticServices;
   const professionals = useMemo(() => salon ? getProfessionals(salon) : [], [salon]);
   const fallbackDates = useMemo<AvailabilityDay[]>(() => getAvailableDates().map((date) => ({
     ...date,
     times: salon ? [salon.nextSlot, ...TIME_SLOTS].slice(0, 7) : TIME_SLOTS,
   })), [salon]);
 
-  const draftKey = `booking_draft_${salonSlug}`;
-  const [draft] = useState(() => loadDraft(draftKey));
-
   const [dates, setDates] = useState<AvailabilityDay[]>(fallbackDates);
   const [step, setStep] = useState<BookingStep>(draft?.step ?? 1);
-  const [selectedServiceId, setSelectedServiceId] = useState(
-    searchParams.get('service') || draft?.selectedServiceId || services[0]?.id || '',
-  );
   const [selectedProfessionalId, setSelectedProfessionalId] = useState(draft?.selectedProfessionalId ?? 'any');
   const [selectedDate, setSelectedDate] = useState(draft?.selectedDate || dates[0]?.id || '');
   const [selectedTime, setSelectedTime] = useState(draft?.selectedTime || salon?.nextSlot || TIME_SLOTS[0]);
