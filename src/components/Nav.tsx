@@ -3,7 +3,6 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearClientSession, useClientSession } from '../lib/clientSession';
 import { useI18n } from '../lib/useI18n';
-import type { Locale } from '../lib/translations';
 import { useTheme } from '../lib/useTheme';
 import { useToast } from '../lib/useToast';
 
@@ -17,23 +16,6 @@ interface NavProps {
 
 function isBusinessPath(pathname: string) {
   return pathname === '/bussiness' || pathname === '/buissiness' || pathname === '/business';
-}
-
-function LanguageSelect() {
-  const { locale, setLocale, t } = useI18n();
-  const next: Locale = locale === 'es' ? 'ca' : 'es';
-
-  return (
-    <button
-      className="language-toggle"
-      type="button"
-      onClick={() => setLocale(next)}
-      aria-label={t('language.aria')}
-      title={t(`language.${next}`)}
-    >
-      {locale.toUpperCase()}
-    </button>
-  );
 }
 
 function ThemeToggle() {
@@ -86,7 +68,6 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
             <span>allop business</span>
           </Link>
           <div className="nav-actions">
-            <LanguageSelect />
             <ThemeToggle />
             <a className="btn btn-primary" href={dashboardUrl}>{t('nav.business.dashboard')}</a>
           </div>
