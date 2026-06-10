@@ -23,6 +23,19 @@ function slugPart(value: string) {
 }
 
 export function getServices(salon: Salon): ServiceItem[] {
+  const real = salon.serviciosBasicos?.filter((s) => s.visible);
+  if (real && real.length > 0) {
+    return real.map((s) => ({
+      id: `${salon.slug}-${slugPart(s.nombre)}`,
+      name: s.nombre,
+      duration: s.duracion_min >= 60
+        ? `${Math.floor(s.duracion_min / 60)}h${s.duracion_min % 60 ? ` ${s.duracion_min % 60}min` : ''}`
+        : `${s.duracion_min} min`,
+      durationMinutes: s.duracion_min,
+      price: s.precio ?? salon.desde,
+    }));
+  }
+
   const base = [
     { name: salon.tags[0] || salon.category, duration: '45 min', durationMinutes: 45, price: salon.desde },
     { name: salon.tags[1] || `Servicio ${salon.category}`, duration: '60 min', durationMinutes: 60, price: salon.desde + 12 },

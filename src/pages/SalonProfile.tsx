@@ -615,10 +615,14 @@ export default function SalonProfile() {
             <section className="profile-side-card">
               <h2>Horarios</h2>
               <div className="hours-list">
-                {WEEK_DAYS.map((day, index) => (
-                  <div key={day}>
-                    <span>{day}</span>
-                    <strong>{index === 6 ? 'Cerrado' : index === 5 ? '10:00 - 14:00' : '09:30 - 20:00'}</strong>
+                {(salon.horarioApertura && salon.horarioApertura.length > 0 ? salon.horarioApertura : WEEK_DAYS.map((dia, i) => ({ dia, abierto: i !== 0 && i !== 6, franjas: [{ inicio: '09:30', fin: '20:00' }] }))).map((entry) => (
+                  <div key={entry.dia}>
+                    <span>{entry.dia}</span>
+                    <strong>
+                      {!entry.abierto || entry.franjas.length === 0
+                        ? 'Cerrado'
+                        : entry.franjas.map(f => `${f.inicio} - ${f.fin}`).join(' / ')}
+                    </strong>
                   </div>
                 ))}
               </div>

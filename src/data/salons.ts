@@ -33,6 +33,8 @@ export interface Salon {
   badges?: string[];
   promotions?: Promotion[];
   cancelPolicy?: string;
+  serviciosBasicos?: Array<{ nombre: string; duracion_min: number; precio: number | null; visible: boolean }>;
+  horarioApertura?: Array<{ dia: string; abierto: boolean; franjas: Array<{ inicio: string; fin: string }> }>;
 }
 
 export interface RecentReview {

@@ -29,6 +29,8 @@ type PublicSalonPayload = Partial<{
   foto_portada: string | null;
   galeria: string[];
   nextSlot: string;
+  servicios_basicos: Array<{ nombre: string; duracion_min: number; precio: number | null; visible: boolean }> | null;
+  horario_apertura: Array<{ dia: string; abierto: boolean; franjas: Array<{ inicio: string; fin: string }> }> | null;
   proximoHueco: string;
   badges: string[];
   tags: string[];
@@ -88,6 +90,8 @@ function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
     photos: buildPhotos(item.foto_portada, item.galeria),
     nextSlot: item.nextSlot || item.proximoHueco || fallback?.nextSlot || '',
     badges: Array.isArray(item.badges) ? item.badges : (fallback?.badges ?? []),
+    serviciosBasicos: Array.isArray(item.servicios_basicos) ? item.servicios_basicos : undefined,
+    horarioApertura: Array.isArray(item.horario_apertura) ? item.horario_apertura : undefined,
   };
 }
 
