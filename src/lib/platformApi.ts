@@ -98,7 +98,7 @@ export function emailLoginClient(params: { identifier: string; password: string 
   return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/login`, params);
 }
 
-export function completeProfileClient(params: { telefono: string; password: string }, token: string) {
+export function completeProfileClient(params: { telefono: string; password?: string }, token: string) {
   return apiPost<ClientAuthResponse['cliente']>(`/salones/marketplace/auth/cliente/complete-profile`, params, { token });
 }
 

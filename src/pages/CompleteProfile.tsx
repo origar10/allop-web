@@ -14,6 +14,7 @@ export default function CompleteProfile() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const next = getSafeNext(searchParams.get('next'));
+  const isGoogle = searchParams.get('provider') === 'google';
   const { notify } = useToast();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -33,7 +34,7 @@ export default function CompleteProfile() {
       setError('Introduce un teléfono válido.');
       return;
     }
-    if (password.length < 8) {
+    if (!isGoogle && password.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
@@ -41,7 +42,7 @@ export default function CompleteProfile() {
     setError(null);
     try {
       const session = loadClientSession();
-      await completeProfileClient({ telefono, password }, session!.token);
+      await completeProfileClient({ telefono, ...(isGoogle ? {} : { password }) }, session!.token);
       notify('Perfil completado correctamente.', 'success');
       navigate(next, { replace: true });
     } catch (err) {
@@ -66,7 +67,9 @@ export default function CompleteProfile() {
           </div>
           <h2>Completa tu perfil</h2>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-            Añade tu teléfono y elige una contraseña para poder acceder con email o teléfono en el futuro.
+            {isGoogle
+              ? 'Añade tu teléfono para completar el registro.'
+              : 'Añade tu teléfono y elige una contraseña para poder acceder con email o teléfono en el futuro.'}
           </p>
 
           <label>
@@ -81,17 +84,19 @@ export default function CompleteProfile() {
             <span className="auth-help">Con prefijo internacional si estás fuera de España (+34…).</span>
           </label>
 
-          <label>
-            Contraseña
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              autoComplete="new-password"
-              disabled={loading}
-            />
-            <span className="auth-help">Mínimo 8 caracteres.</span>
-          </label>
+          {!isGoogle && (
+            <label>
+              Contraseña
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                autoComplete="new-password"
+                disabled={loading}
+              />
+              <span className="auth-help">Mínimo 8 caracteres.</span>
+            </label>
+          )}
 
           {error && (
             <p className="auth-message err" role="alert" aria-live="assertive">{error}</p>
