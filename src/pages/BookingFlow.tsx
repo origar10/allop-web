@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { SALONS } from '../data/salons';
+import { SALONS, type Salon } from '../data/salons';
+import { getSalonBySlug } from '../lib/salonsApi';
 import { createBooking, listAvailability, type AvailabilityDay, type BookingConfirmation } from '../lib/bookingApi';
 import { addCommsHistoryEntry, addStoredBooking, createLocalBooking, loadNotificationPreferences } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
@@ -61,7 +62,24 @@ function loadDraft(key: string): BookingDraft | null {
 export default function BookingFlow() {
   const { salonSlug = '' } = useParams();
   const [searchParams] = useSearchParams();
-  const salon = useMemo(() => SALONS.find((item) => item.slug === salonSlug), [salonSlug]);
+  const staticSalon = useMemo(() => SALONS.find((item) => item.slug === salonSlug), [salonSlug]);
+  const [apiSalon, setApiSalon] = useState<Salon | null>(null);
+  const [salonLoading, setSalonLoading] = useState(!staticSalon);
+  const [salonError, setSalonError] = useState(false);
+  const fetchedSlug = useRef('');
+
+  useEffect(() => {
+    if (staticSalon || fetchedSlug.current === salonSlug || !salonSlug) return;
+    fetchedSlug.current = salonSlug;
+    const controller = new AbortController();
+    setSalonLoading(true);
+    getSalonBySlug(salonSlug, controller.signal)
+      .then((s) => { setApiSalon(s); setSalonLoading(false); })
+      .catch(() => { setSalonError(true); setSalonLoading(false); });
+    return () => controller.abort();
+  }, [staticSalon, salonSlug]);
+
+  const salon = staticSalon ?? apiSalon;
   const session = salon ? loadClientSession(salon.slug) : null;
   const services = useMemo(() => salon ? getServices(salon) : [], [salon]);
   const professionals = useMemo(() => salon ? getProfessionals(salon) : [], [salon]);
@@ -169,7 +187,8 @@ export default function BookingFlow() {
     } catch { /* quota exceeded, ignore */ }
   }, [draftKey, step, selectedServiceId, selectedProfessionalId, selectedDate, selectedTime]);
 
-  if (!salon) {
+  if (salonLoading) return null;
+  if (!salon || salonError) {
     return <Navigate to="/404" replace />;
   }
 

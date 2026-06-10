@@ -218,7 +218,9 @@ export default function SalonProfile() {
   if (apiLoading) return null;
   if (!salon || apiError) return <Navigate to="/404" replace />;
 
-  const photos = [salon.imageClass, 'salon-gallery-detail', 'salon-gallery-work'];
+  const hasRealPhotos = salon.photos && salon.photos.length > 0;
+  const photoUrls = hasRealPhotos ? salon.photos! : [];
+  const photoCssClasses = [salon.imageClass, 'salon-gallery-detail', 'salon-gallery-work'];
   const canonicalUrl = `${window.location.origin}/salones/${salon.slug}`;
   const allPromotions = salon.promotions ?? [];
 
@@ -317,19 +319,42 @@ export default function SalonProfile() {
             {shareMessage && <p className="share-message">{shareMessage}</p>}
           </div>
           <div className="salon-profile-gallery" aria-label="Galería del salón">
-            <div className={`salon-profile-main-photo ${photos[selectedPhoto]}`} />
+            {hasRealPhotos ? (
+              <img
+                className="salon-profile-main-photo"
+                src={photoUrls[selectedPhoto]}
+                alt={`${salon.name} foto ${selectedPhoto + 1}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+              />
+            ) : (
+              <div className={`salon-profile-main-photo ${photoCssClasses[selectedPhoto]}`} />
+            )}
             <div className="salon-profile-thumbs">
-              {photos.map((photo, index) => (
-                <button
-                  key={photo}
-                  className={selectedPhoto === index ? 'active' : ''}
-                  type="button"
-                  onClick={() => setSelectedPhoto(index)}
-                  aria-label={`Ver foto ${index + 1}`}
-                >
-                  <span className={photo} />
-                </button>
-              ))}
+              {hasRealPhotos ? (
+                photoUrls.map((url, index) => (
+                  <button
+                    key={url}
+                    className={selectedPhoto === index ? 'active' : ''}
+                    type="button"
+                    onClick={() => setSelectedPhoto(index)}
+                    aria-label={`Ver foto ${index + 1}`}
+                  >
+                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </button>
+                ))
+              ) : (
+                photoCssClasses.map((photo, index) => (
+                  <button
+                    key={photo}
+                    className={selectedPhoto === index ? 'active' : ''}
+                    type="button"
+                    onClick={() => setSelectedPhoto(index)}
+                    aria-label={`Ver foto ${index + 1}`}
+                  >
+                    <span className={photo} />
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -576,10 +601,6 @@ export default function SalonProfile() {
             <section className="profile-side-card">
               <h2><CreditCard size={15} /> Pago y cobro</h2>
               <ul className="payment-info-list">
-                <li>
-                  <ShieldCheck size={14} />
-                  El pago se gestiona de forma segura a través de Allop
-                </li>
                 <li>
                   <CreditCard size={14} />
                   Se acepta tarjeta de crédito, débito y Google/Apple Pay

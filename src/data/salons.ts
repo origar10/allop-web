@@ -28,6 +28,7 @@ export interface Salon {
   lng: number;
   description: string;
   imageClass: string;
+  photos?: string[];
   nextSlot: string;
   badges?: string[];
   promotions?: Promotion[];

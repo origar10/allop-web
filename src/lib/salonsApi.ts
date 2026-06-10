@@ -26,6 +26,8 @@ type PublicSalonPayload = Partial<{
   descripcion: string;
   description: string;
   imageClass: string;
+  foto_portada: string | null;
+  galeria: string[];
   nextSlot: string;
   proximoHueco: string;
   badges: string[];
@@ -48,6 +50,15 @@ function asDistance(value: unknown, fallback: string) {
   if (typeof value === 'number' && Number.isFinite(value)) return `${value.toFixed(1)} km`;
   if (typeof value === 'string' && value.trim()) return value;
   return fallback;
+}
+
+function isRealUrl(url: string | null | undefined): url is string {
+  return typeof url === 'string' && url.startsWith('http') && !url.startsWith('data:');
+}
+
+function buildPhotos(portada: string | null | undefined, galeria: string[] | undefined): string[] | undefined {
+  const all = [portada, ...(galeria ?? [])].filter(isRealUrl);
+  return all.length > 0 ? all : undefined;
 }
 
 function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
@@ -74,6 +85,7 @@ function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
     lng: asNumber(item.lng, fallback.lng),
     description: item.descripcion || item.description || fallback.description,
     imageClass: item.imageClass || fallback.imageClass,
+    photos: buildPhotos(item.foto_portada, item.galeria),
     nextSlot: item.nextSlot || item.proximoHueco || fallback.nextSlot,
     badges: Array.isArray(item.badges) ? item.badges : fallback.badges,
   };
