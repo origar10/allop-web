@@ -20,26 +20,27 @@ export default function AppleCallback() {
     if (attempted.current) return;
     attempted.current = true;
 
-    const errorParam = searchParams.get('error');
-    if (errorParam) {
-      if (errorParam === 'cancelled') {
+    async function run() {
+      const errorParam = searchParams.get('error');
+      if (errorParam) {
+        if (errorParam === 'cancelled') {
+          navigate('/login', { replace: true });
+          return;
+        }
+        setError('No se pudo iniciar sesión con Apple. Por favor, inténtalo de nuevo.');
+        return;
+      }
+
+      const bridgeToken = searchParams.get('t');
+      const next = getSafeNext(searchParams.get('next'));
+
+      if (!bridgeToken) {
         navigate('/login', { replace: true });
         return;
       }
-      setError('No se pudo iniciar sesión con Apple. Por favor, inténtalo de nuevo.');
-      return;
-    }
 
-    const bridgeToken = searchParams.get('t');
-    const next = getSafeNext(searchParams.get('next'));
-
-    if (!bridgeToken) {
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    exchangeAppleBridge(bridgeToken)
-      .then((auth) => {
+      try {
+        const auth = await exchangeAppleBridge(bridgeToken);
         saveClientSession({
           ...auth,
           salonSlug: 'marketplace',
@@ -48,11 +49,13 @@ export default function AppleCallback() {
         });
         notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
         navigate(next, { replace: true });
-      })
-      .catch(() => {
+      } catch {
         setError('Error al completar el inicio de sesión con Apple. Inténtalo de nuevo.');
-      });
-  }, []);
+      }
+    }
+
+    run();
+  }, [navigate, notify, searchParams]);
 
   if (error) {
     return (
