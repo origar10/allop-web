@@ -16,7 +16,7 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { SALONS, type Salon } from '../data/salons';
 import { getSalonBySlug } from '../lib/salonsApi';
-import { createBooking, listAvailability, type AvailabilityDay, type BookingConfirmation } from '../lib/bookingApi';
+import { createBooking, listAvailability, listApiServices, type AvailabilityDay, type BookingConfirmation } from '../lib/bookingApi';
 import { addCommsHistoryEntry, addStoredBooking, createLocalBooking, loadNotificationPreferences } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getAvailableDates, getProfessionals, getServices, TIME_SLOTS } from '../lib/salonDetails';
@@ -76,7 +76,19 @@ export default function BookingFlow() {
 
   const salon = staticSalon ?? apiSalon;
   const session = salon ? loadClientSession(salon.slug) : null;
-  const services = useMemo(() => salon ? getServices(salon) : [], [salon]);
+  const staticServices = useMemo(() => salon ? getServices(salon) : [], [salon]);
+  const [apiServices, setApiServices] = useState<import('../lib/salonDetails').ServiceItem[]>([]);
+  const fetchedServicesSlug = useRef('');
+
+  useEffect(() => {
+    if (!salonSlug || fetchedServicesSlug.current === salonSlug) return;
+    fetchedServicesSlug.current = salonSlug;
+    const controller = new AbortController();
+    listApiServices(salonSlug, controller.signal).then((s) => { if (s.length) setApiServices(s); });
+    return () => controller.abort();
+  }, [salonSlug]);
+
+  const services = apiServices.length ? apiServices : staticServices;
   const professionals = useMemo(() => salon ? getProfessionals(salon) : [], [salon]);
   const fallbackDates = useMemo<AvailabilityDay[]>(() => getAvailableDates().map((date) => ({
     ...date,

@@ -78,6 +78,36 @@ export async function createBooking(params: BookingRequest): Promise<BookingConf
   }
 }
 
+export async function listApiServices(salonSlug: string, signal?: AbortSignal): Promise<ServiceItem[]> {
+  try {
+    const path = `/salones/${encodeURIComponent(salonSlug)}/servicios`;
+    const items = await apiGet<unknown>(path, { signal });
+    const arr = Array.isArray(items) ? items : [];
+    return arr
+      .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null && !(item as Record<string, unknown>).archivado && (item as Record<string, unknown>).activo !== false)
+      .map((item) => {
+        const bloques = Array.isArray(item.bloques) ? item.bloques : [];
+        const totalMin = bloques.reduce((s: number, b: unknown) => {
+          const block = b as Record<string, unknown>;
+          return s + (Number(block.duracion_min) || 0);
+        }, 0) || 30;
+        const duration = totalMin >= 60
+          ? `${Math.floor(totalMin / 60)}h${totalMin % 60 ? ` ${totalMin % 60}min` : ''}`
+          : `${totalMin} min`;
+        return {
+          id: String(item.id),
+          name: String(item.nombre || ''),
+          duration,
+          durationMinutes: totalMin,
+          price: parseFloat(String(item.precio_base || '0')),
+        } as ServiceItem;
+      })
+      .filter((s) => s.name && s.price > 0);
+  } catch {
+    return [];
+  }
+}
+
 export async function listAvailability(
   salonSlug: string,
   params: { serviceId?: string; professionalId?: string },
