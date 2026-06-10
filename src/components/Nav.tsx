@@ -21,17 +21,18 @@ function isBusinessPath(pathname: string) {
 
 function LanguageSelect() {
   const { locale, setLocale, t } = useI18n();
+  const next: Locale = locale === 'es' ? 'ca' : 'es';
 
   return (
-    <select
-      className="language-select"
-      value={locale}
-      onChange={(event) => setLocale(event.target.value as Locale)}
+    <button
+      className="language-toggle"
+      type="button"
+      onClick={() => setLocale(next)}
       aria-label={t('language.aria')}
+      title={t(`language.${next}`)}
     >
-      <option value="es">{t('language.es')}</option>
-      <option value="ca">{t('language.ca')}</option>
-    </select>
+      {locale.toUpperCase()}
+    </button>
   );
 }
 

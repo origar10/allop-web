@@ -164,7 +164,8 @@ main:focus { outline: none; }
 .nav-search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
 .nav-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--fg-4); pointer-events: none; }
 .nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.language-select { height: 34px; min-width: 62px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0 8px; background: var(--surface); color: var(--fg-2); font-size: 12px; font-weight: 900; }
+.language-toggle { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--fg-2); font-size: 11px; font-weight: 700; letter-spacing: .03em; }
+.language-toggle:hover { color: var(--accent); background: var(--surface-2); }
 .theme-toggle { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--fg-2); }
 .theme-toggle:hover { color: var(--accent); background: var(--surface-2); }
 .nav-user { position: relative; flex-shrink: 0; }
@@ -1110,9 +1111,8 @@ section[id] { scroll-margin-top: 84px; }
   .nav-search { order: 2; flex-basis: 100%; max-width: none; margin-left: 0; }
   .nav-actions { order: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin-left: 0; gap: 8px; }
   .nav-actions .btn { width: 100%; height: 36px; padding: 0 11px; font-size: 13px; }
-  .language-select { order: 3; height: 36px; }
+  .language-toggle { order: 3; width: 36px; height: 36px; }
   .theme-toggle { order: 3; width: 36px; height: 36px; }
-  .nav > .nav-inner > .language-select { width: 100%; }
   .nav-user { order: 3; width: 100%; }
   .nav-user > .btn { width: 100%; max-width: none; height: 36px; }
   .nav-user-menu { position: static; display: none; width: 100%; margin-top: 8px; }
