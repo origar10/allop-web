@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { ClientAuthResponse } from './platformApi';
 
 export interface ClientSession extends ClientAuthResponse {
@@ -7,6 +8,7 @@ export interface ClientSession extends ClientAuthResponse {
 }
 
 const CURRENT_SESSION_KEY = 'allop.client.session';
+const SESSION_CHANGE_EVENT = 'allop:session-change';
 
 export function clientSessionKey(slug: string) {
   return `allop.client.session.${slug}`;
@@ -25,6 +27,8 @@ export function saveClientSession(session: ClientSession) {
     token: session.token,
     cliente: session.cliente,
   }));
+
+  window.dispatchEvent(new CustomEvent(SESSION_CHANGE_EVENT));
 }
 
 export function loadClientSession(slug?: string): ClientSession | null {
@@ -52,4 +56,22 @@ export function clearClientSession(slug?: string) {
     localStorage.removeItem(clientSessionKey(targetSlug));
     localStorage.removeItem(legacyClientSessionKey(targetSlug));
   }
+
+  window.dispatchEvent(new CustomEvent(SESSION_CHANGE_EVENT));
+}
+
+export function useClientSession(): ClientSession | null {
+  const [session, setSession] = useState(() => loadClientSession());
+
+  useEffect(() => {
+    const sync = () => setSession(loadClientSession());
+    window.addEventListener(SESSION_CHANGE_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(SESSION_CHANGE_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  return session;
 }

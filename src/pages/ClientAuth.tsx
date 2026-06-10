@@ -1,26 +1,18 @@
-﻿import { CheckCircle, LogIn, LogOut, RotateCcw, ShieldCheck, UserPlus } from 'lucide-react';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { CheckCircle, LogIn, RotateCcw, ShieldCheck, UserPlus } from 'lucide-react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { SALONS } from '../data/salons';
 import {
-  getClientBookings,
-  getClientMe,
-  listPublicSalons,
   loginClient,
   registerClient,
   requestClientOtp,
   verifyClientOtp,
-  type ClientBooking,
   type ClientAuthPurpose,
 } from '../lib/platformApi';
 import {
-  clearClientSession,
   loadClientSession,
   saveClientSession,
-  type ClientSession,
 } from '../lib/clientSession';
 import { trackEvent } from '../lib/analytics';
-import { formatBookingDate } from '../lib/dateFormat';
 import { useToast } from '../lib/useToast';
 import { normalizePhone } from '../shared/formatters';
 
@@ -28,21 +20,12 @@ interface ClientAuthProps {
   mode: 'login' | 'register';
 }
 
-interface SalonOption {
-  slug: string;
-  name: string;
-  city?: string | null;
-}
+type AuthStep = 'phone' | 'code';
 
-type AuthStep = 'phone' | 'code' | 'done';
-
-const FALLBACK_SALONS: SalonOption[] = SALONS.map((salon) => ({
-  slug: salon.slug,
-  name: salon.name,
-  city: salon.location,
-}));
-const INITIAL_SALON_SLUG = FALLBACK_SALONS[0]?.slug || '';
+const MARKETPLACE_SLUG = 'marketplace';
 const RESEND_SECONDS = 60;
+
+const GOOGLE_AUTH_URL = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined;
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/mi-cuenta';
@@ -55,9 +38,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const isRegister = mode === 'register';
   const purpose: ClientAuthPurpose = isRegister ? 'REGISTER' : 'LOGIN';
   const nextPath = getSafeNext(searchParams.get('next'));
-  const [salons, setSalons] = useState<SalonOption[]>(FALLBACK_SALONS);
-  const [salonSlug, setSalonSlug] = useState(INITIAL_SALON_SLUG);
-  const [step, setStep] = useState<AuthStep>(() => (loadClientSession() ? 'done' : 'phone'));
+  const [step, setStep] = useState<AuthStep>('phone');
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -69,14 +50,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const [resendCountdown, setResendCountdown] = useState(0);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState<ClientSession | null>(() => loadClientSession());
-  const [bookings, setBookings] = useState<ClientBooking[]>([]);
   const { notify } = useToast();
-
-  const selectedSalon = useMemo(
-    () => salons.find((salon) => salon.slug === salonSlug) || salons[0],
-    [salonSlug, salons],
-  );
 
   const title = isRegister ? 'Crea tu cuenta de cliente' : 'Accede a tu cuenta';
   const Icon = isRegister ? UserPlus : LogIn;
@@ -84,42 +58,12 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     ? 'Registra tu cuenta global por teléfono para reservar más rápido en Allop.'
     : 'Entra con código SMS para ver tus reservas y continuar como cliente.';
 
-  async function refreshSession(currentSession: ClientSession) {
-    const [profile, nextBookings] = await Promise.all([
-      getClientMe(currentSession.salonSlug, currentSession.token),
-      getClientBookings(currentSession.salonSlug, currentSession.token).catch(() => []),
-    ]);
-
-    const updatedSession = { ...currentSession, cliente: profile };
-    saveClientSession(updatedSession);
-    setSession(updatedSession);
-    setBookings(nextBookings);
-  }
-
+  // Redirect if already logged in
   useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-
-    listPublicSalons(controller.signal)
-      .then((items) => {
-        if (!mounted || !items.length) return;
-
-        const options = items
-          .filter((salon) => salon.slug && salon.nombre)
-          .map((salon) => ({ slug: salon.slug, name: salon.nombre, city: salon.ciudad }));
-
-        if (!options.length) return;
-
-        setSalons(options);
-        setSalonSlug((current) => current || options[0].slug);
-      })
-      .catch(() => undefined);
-
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, []);
+    if (loadClientSession()) {
+      navigate(nextPath, { replace: true });
+    }
+  }, [navigate, nextPath]);
 
   useEffect(() => {
     if (resendCountdown <= 0) return undefined;
@@ -153,11 +97,6 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const requestCode = async () => {
     const telefono = normalizePhone(phone);
 
-    if (!selectedSalon) {
-      setMessage({ ok: false, text: 'Selecciona un salón.' });
-      return;
-    }
-
     if (telefono.length < 8) {
       setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
       return;
@@ -177,7 +116,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     setMessage(null);
 
     try {
-      const response = await requestClientOtp(selectedSalon.slug, telefono, purpose);
+      const response = await requestClientOtp(MARKETPLACE_SLUG, telefono, purpose);
       setPhone(telefono);
       setChallengeId(response.challengeId);
       setDebugCode(import.meta.env.DEV ? response.debugCode || '' : '');
@@ -198,7 +137,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   };
 
   const completeAuth = async () => {
-    if (!selectedSalon || !challengeId) {
+    if (!challengeId) {
       setMessage({ ok: false, text: 'Vuelve a solicitar el código.' });
       return;
     }
@@ -212,7 +151,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     setMessage(null);
 
     try {
-      const verified = await verifyClientOtp(selectedSalon.slug, {
+      const verified = await verifyClientOtp(MARKETPLACE_SLUG, {
         challengeId,
         telefono: phone,
         code: code.trim(),
@@ -220,33 +159,30 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       });
 
       const auth = isRegister
-        ? await registerClient(selectedSalon.slug, {
+        ? await registerClient(MARKETPLACE_SLUG, {
           nombre: name.trim(),
           apellidos: lastName.trim() || undefined,
           email: email.trim() || undefined,
           telefono: phone,
           verificationToken: verified.verificationToken,
         })
-        : await loginClient(selectedSalon.slug, {
+        : await loginClient(MARKETPLACE_SLUG, {
           telefono: phone,
           verificationToken: verified.verificationToken,
         });
 
-      const nextSession: ClientSession = {
+      saveClientSession({
         ...auth,
-        salonSlug: selectedSalon.slug,
-        salonName: selectedSalon.name,
+        salonSlug: MARKETPLACE_SLUG,
+        salonName: 'Allop',
         createdAt: new Date().toISOString(),
-      };
+      });
 
-      saveClientSession(nextSession);
-      setSession(nextSession);
-      setStep('done');
-      setMessage({ ok: true, text: `Sesión iniciada como ${auth.cliente.nombre}.` });
       if (isRegister) {
-        trackEvent('registration_completed', { salonSlug: selectedSalon.slug, hasEmail: Boolean(email.trim()) });
+        trackEvent('registration_completed', { salonSlug: MARKETPLACE_SLUG, hasEmail: Boolean(email.trim()) });
       }
-      await refreshSession(nextSession);
+
+      notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
       navigate(nextPath, { replace: true });
     } catch (error) {
       setMessage({ ok: false, text: authErrorText(error, 'No se pudo iniciar la sesión.') });
@@ -261,34 +197,11 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       requestCode();
       return;
     }
-
-    if (step === 'code') {
-      completeAuth();
-    }
-  };
-
-  const logout = () => {
-    clearClientSession(salonSlug);
-    clearClientSession();
-    setSession(null);
-    setBookings([]);
-    setStep('phone');
-    setMessage({ ok: true, text: 'Sesión cerrada.' });
-    notify('Sesión cerrada.', 'success');
+    completeAuth();
   };
 
   const startGoogleLogin = () => {
-    const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined;
-
-    if (!googleAuthUrl) {
-      setMessage({
-        ok: false,
-        text: 'Login con Google preparado. Falta configurar VITE_GOOGLE_AUTH_URL para activar OAuth.',
-      });
-      return;
-    }
-
-    window.location.href = `${googleAuthUrl}?next=${encodeURIComponent(nextPath)}`;
+    window.location.href = `${GOOGLE_AUTH_URL}?next=${encodeURIComponent(nextPath)}`;
   };
 
   return (
@@ -308,77 +221,60 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
         <form className="client-auth-card" onSubmit={submit}>
           <div className="client-auth-icon"><Icon size={22} /></div>
           <h2>{isRegister ? 'Registro cliente' : 'Inicio de sesión'}</h2>
-          <button className="btn btn-ghost btn-lg auth-google" type="button" onClick={startGoogleLogin} disabled={loading}>
-            <span>G</span>
-            Continuar con Google
-          </button>
 
-          {step !== 'done' && (
-            <>
-              {isRegister && (
-                <div className="auth-two-cols">
-                  <label>
-                    Nombre
-                    <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" disabled={loading || step === 'code'} />
-                  </label>
-                  <label>
-                    Apellidos
-                    <input value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" disabled={loading || step === 'code'} />
-                  </label>
-                </div>
-              )}
-
-              {isRegister && (
-                <label>
-                  Email opcional
-                  <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" disabled={loading || step === 'code'} />
-                </label>
-              )}
-
-              <label>
-                Teléfono
-                <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
-                <span className="auth-help">Usaremos este número para enviarte un código SMS de un solo uso.</span>
-              </label>
-
-              {isRegister && step === 'phone' && (
-                <label className="auth-check">
-                  <input
-                    checked={acceptedTerms}
-                    onChange={(event) => setAcceptedTerms(event.target.checked)}
-                    type="checkbox"
-                    disabled={loading}
-                  />
-                  <span>
-                    Acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
-                  </span>
-                </label>
-              )}
-
-              {step === 'code' && (
-                <label>
-                  Código SMS
-                  <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" disabled={loading} />
-                  <span className="auth-help">Introduce el código recibido por SMS. Caduca por seguridad.</span>
-                </label>
-              )}
-            </>
+          {GOOGLE_AUTH_URL && (
+            <button className="btn btn-ghost btn-lg auth-google" type="button" onClick={startGoogleLogin} disabled={loading}>
+              <span>G</span>
+              Continuar con Google
+            </button>
           )}
 
-          {step === 'done' && session && (
-            <div className="auth-session">
-              <strong>{session.cliente.nombre} {session.cliente.apellidos || ''}</strong>
-              <span>{session.cliente.telefono || phone}</span>
-              <span>{session.salonName}</span>
-              <div className="auth-bookings">
-                <strong>Reservas</strong>
-                {bookings.length ? bookings.slice(0, 3).map((booking) => (
-                  <p key={booking.id}>
-                    {booking.servicio?.nombre || 'Reserva'} · {formatBookingDate(booking.fecha_hora_inicio)} · {booking.estado || 'pendiente'}
-                  </p>
-                )) : <p>Aún no tienes reservas en este salón.</p>}
-              </div>
+          {isRegister && (
+            <div className="auth-two-cols">
+              <label>
+                Nombre
+                <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="given-name" disabled={loading || step === 'code'} />
+              </label>
+              <label>
+                Apellidos
+                <input value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" disabled={loading || step === 'code'} />
+              </label>
             </div>
+          )}
+
+          {isRegister && (
+            <label>
+              Email opcional
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" disabled={loading || step === 'code'} />
+            </label>
+          )}
+
+          <label>
+            Teléfono
+            <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
+            <span className="auth-help">Usaremos este número para enviarte un código SMS de un solo uso.</span>
+          </label>
+
+          {isRegister && step === 'phone' && (
+            <label className="auth-check">
+              <input
+                checked={acceptedTerms}
+                onChange={(event) => setAcceptedTerms(event.target.checked)}
+                type="checkbox"
+                disabled={loading}
+              />
+              <span>
+                Acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
+              </span>
+            </label>
+          )}
+
+          {step === 'code' && (
+            <label>
+              Código SMS
+              <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" disabled={loading} />
+              <span className="auth-help">Introduce el código recibido por SMS. Caduca por seguridad.</span>
+            </label>
           )}
 
           {message && (
@@ -414,21 +310,6 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </div>
           )}
 
-          {step === 'done' && (
-            <div className="auth-actions">
-              <button className="btn btn-primary btn-lg" type="button" onClick={() => navigate('/')}>
-                Ir al marketplace
-              </button>
-              <button className="btn btn-ghost btn-lg" type="button" onClick={() => navigate('/mi-cuenta')}>
-                Mi cuenta
-              </button>
-              <button className="btn btn-ghost btn-lg" type="button" onClick={logout}>
-                <LogOut size={16} />
-                Cerrar sesión
-              </button>
-            </div>
-          )}
-
           {import.meta.env.DEV && debugCode && step === 'code' && <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>}
 
           <p className="auth-switch">
@@ -440,4 +321,3 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     </section>
   );
 }
-

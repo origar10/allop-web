@@ -1,7 +1,7 @@
 import { ChevronDown, LogOut, Menu, Moon, Search, Sun, UserRound, X } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { clearClientSession, loadClientSession } from '../lib/clientSession';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearClientSession, useClientSession } from '../lib/clientSession';
 import { useI18n } from '../lib/useI18n';
 import type { Locale } from '../lib/translations';
 import { useTheme } from '../lib/useTheme';
@@ -49,9 +49,10 @@ function ThemeToggle() {
 
 export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboardUrl }: NavProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isBusiness = isBusinessPath(location.pathname);
   const [query, setQuery] = useState('');
-  const [session, setSession] = useState(() => loadClientSession());
+  const session = useClientSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useI18n();
 
@@ -69,8 +70,10 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
   const logout = () => {
     clearClientSession(session?.salonSlug);
     clearClientSession();
-    setSession(null);
     notify('Sesión cerrada.', 'success');
+    if (location.pathname.startsWith('/mi-cuenta')) {
+      navigate('/');
+    }
   };
 
   if (isBusiness) {
