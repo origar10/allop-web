@@ -62,32 +62,32 @@ function buildPhotos(portada: string | null | undefined, galeria: string[] | und
 }
 
 function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
-  const fallback = SALONS[index % SALONS.length];
-  const slug = item.slug || fallback.slug;
-  const name = item.nombre || item.name || fallback.name;
+  const fallback = SALONS.length > 0 ? SALONS[index % SALONS.length] : undefined;
+  const slug = item.slug || fallback?.slug || `salon-${index}`;
+  const name = item.nombre || item.name || fallback?.name || slug;
 
   return {
     id: String(item.id || slug),
     slug,
     name,
-    category: item.categoria || item.category || fallback.category,
-    location: item.ciudad || item.location || fallback.location,
-    distance: asDistance(item.distancia || item.distance, fallback.distance),
-    rating: asNumber(item.rating, fallback.rating),
-    reviews: asNumber(item.reviews, fallback.reviews),
-    desde: asNumber(item.desde || item.precioDesde, fallback.desde),
-    tags: Array.isArray(item.tags) && item.tags.length ? item.tags : fallback.tags,
-    verified: typeof item.verified === 'boolean' ? item.verified : fallback.verified,
-    featured: typeof item.featured === 'boolean' ? item.featured : fallback.featured,
-    phone: item.telefono || item.phone || fallback.phone,
-    address: item.direccion || item.address || fallback.address,
-    lat: asNumber(item.lat, fallback.lat),
-    lng: asNumber(item.lng, fallback.lng),
-    description: item.descripcion || item.description || fallback.description,
-    imageClass: item.imageClass || fallback.imageClass,
+    category: item.categoria || item.category || fallback?.category || 'Peluquería',
+    location: item.ciudad || item.location || fallback?.location || '',
+    distance: asDistance(item.distancia || item.distance, fallback?.distance ?? ''),
+    rating: asNumber(item.rating, fallback?.rating ?? 0),
+    reviews: asNumber(item.reviews, fallback?.reviews ?? 0),
+    desde: asNumber(item.desde || item.precioDesde, fallback?.desde ?? 0),
+    tags: Array.isArray(item.tags) && item.tags.length ? item.tags : (fallback?.tags ?? []),
+    verified: typeof item.verified === 'boolean' ? item.verified : (fallback?.verified ?? false),
+    featured: typeof item.featured === 'boolean' ? item.featured : (fallback?.featured ?? false),
+    phone: item.telefono || item.phone || fallback?.phone || '',
+    address: item.direccion || item.address || fallback?.address || '',
+    lat: asNumber(item.lat, fallback?.lat ?? 0),
+    lng: asNumber(item.lng, fallback?.lng ?? 0),
+    description: item.descripcion || item.description || fallback?.description || '',
+    imageClass: item.imageClass || fallback?.imageClass || '',
     photos: buildPhotos(item.foto_portada, item.galeria),
-    nextSlot: item.nextSlot || item.proximoHueco || fallback.nextSlot,
-    badges: Array.isArray(item.badges) ? item.badges : fallback.badges,
+    nextSlot: item.nextSlot || item.proximoHueco || fallback?.nextSlot || '',
+    badges: Array.isArray(item.badges) ? item.badges : (fallback?.badges ?? []),
   };
 }
 
