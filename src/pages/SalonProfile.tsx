@@ -17,12 +17,13 @@ import {
   TrendingUp,
   UserRound,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppleMap from '../components/AppleMap';
 import { RECENT_REVIEWS, SALONS, type Promotion, type RecentReview, type Salon } from '../data/salons';
 import { isFavoriteSalon, toggleFavoriteSalon } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
+import { getSalonBySlug } from '../lib/salonsApi';
 import { getProfessionals, getServices, TIME_SLOTS, WEEK_DAYS } from '../lib/salonDetails';
 import { clearStructuredData, setSeo, setStructuredData } from '../lib/seo';
 import { useToast } from '../lib/useToast';
@@ -87,7 +88,25 @@ function formatPromotionDate(iso: string): string {
 export default function SalonProfile() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
-  const salon = useMemo(() => SALONS.find((item) => item.slug === slug), [slug]);
+  const staticSalon = useMemo(() => SALONS.find((item) => item.slug === slug), [slug]);
+  const [apiSalon, setApiSalon] = useState<Salon | null>(null);
+  const [apiLoading, setApiLoading] = useState(!staticSalon);
+  const [apiError, setApiError] = useState(false);
+  const fetchedSlug = useRef('');
+
+  useEffect(() => {
+    if (staticSalon || fetchedSlug.current === slug) return;
+    fetchedSlug.current = slug;
+    const controller = new AbortController();
+    setApiLoading(true);
+    setApiError(false);
+    getSalonBySlug(slug, controller.signal)
+      .then((s) => { setApiSalon(s); setApiLoading(false); })
+      .catch(() => { setApiError(true); setApiLoading(false); });
+    return () => controller.abort();
+  }, [slug, staticSalon]);
+
+  const salon = staticSalon ?? apiSalon;
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedTime, setSelectedTime] = useState(salon?.nextSlot || TIME_SLOTS[0]);
@@ -196,9 +215,8 @@ export default function SalonProfile() {
     return () => clearStructuredData('salon-profile');
   }, [salon]);
 
-  if (!salon) {
-    return <Navigate to="/404" replace />;
-  }
+  if (apiLoading) return null;
+  if (!salon || apiError) return <Navigate to="/404" replace />;
 
   const photos = [salon.imageClass, 'salon-gallery-detail', 'salon-gallery-work'];
   const canonicalUrl = `${window.location.origin}/salones/${salon.slug}`;

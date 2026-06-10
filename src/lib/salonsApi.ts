@@ -79,6 +79,11 @@ function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
   };
 }
 
+export async function getSalonBySlug(slug: string, signal?: AbortSignal): Promise<Salon> {
+  const item = await apiGet<PublicSalonPayload>(`/salones/${encodeURIComponent(slug)}`, signal ? { signal } : undefined);
+  return mapApiSalon(item, 0);
+}
+
 export async function listMarketplaceSalons(signal?: AbortSignal): Promise<Salon[]> {
   const payload = signal
     ? await apiGet<unknown>('/salones', { signal })
