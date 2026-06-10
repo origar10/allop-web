@@ -602,10 +602,6 @@ export default function SalonProfile() {
               <h2><CreditCard size={15} /> Pago y cobro</h2>
               <ul className="payment-info-list">
                 <li>
-                  <ShieldCheck size={14} />
-                  El pago se gestiona de forma segura a través de Allop
-                </li>
-                <li>
                   <CreditCard size={14} />
                   Se acepta tarjeta de crédito, débito y Google/Apple Pay
                 </li>
