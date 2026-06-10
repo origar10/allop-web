@@ -1020,7 +1020,7 @@ section[id] { scroll-margin-top: 84px; }
 .auth-check a { color: var(--accent); font-weight: 900; }
 .auth-help { color: var(--fg-3); font-size: 12px; font-weight: 600; line-height: 1.45; }
 .auth-google { width: 100%; }
-.auth-google span { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-full); background: #fff; color: var(--brand); font-size: 13px; font-weight: 900; }
+.auth-google svg { flex-shrink: 0; }
 .auth-apple { width: 100%; }
 .auth-apple svg { flex-shrink: 0; fill: currentColor; }
 .auth-method-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--zinc-100, #f4f4f5); border-radius: var(--radius-sm); padding: 3px; }

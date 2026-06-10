@@ -84,19 +84,33 @@ export async function getClientMe(slug: string, token: string, signal?: AbortSig
   }
 }
 
+export interface OAuthExchangeResponse extends ClientAuthResponse {
+  needsProfileCompletion?: boolean;
+}
+
 export function emailRegisterClient(
-  params: { nombre: string; apellidos?: string; email: string; password: string },
+  params: { nombre: string; apellidos?: string; email: string; telefono: string; password: string },
 ) {
   return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/register`, params);
 }
 
-export function emailLoginClient(params: { email: string; password: string }) {
+export function emailLoginClient(params: { identifier: string; password: string }) {
   return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/login`, params);
 }
 
+export function completeProfileClient(params: { telefono: string; password: string }, token: string) {
+  return apiPost<ClientAuthResponse['cliente']>(`/salones/marketplace/auth/cliente/complete-profile`, params, { token });
+}
+
 export function exchangeAppleBridge(bridgeToken: string) {
-  return apiGet<ClientAuthResponse>(
+  return apiGet<OAuthExchangeResponse>(
     `/salones/marketplace/auth/cliente/apple/exchange?t=${encodeURIComponent(bridgeToken)}`,
+  );
+}
+
+export function exchangeGoogleBridge(bridgeToken: string) {
+  return apiGet<OAuthExchangeResponse>(
+    `/salones/marketplace/auth/cliente/google/exchange?t=${encodeURIComponent(bridgeToken)}`,
   );
 }
 

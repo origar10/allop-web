@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { exchangeAppleBridge } from '../lib/platformApi';
+import { exchangeGoogleBridge } from '../lib/platformApi';
 import { saveClientSession } from '../lib/clientSession';
 import { useToast } from '../lib/useToast';
 
@@ -9,7 +9,7 @@ function getSafeNext(value: string | null) {
   return value;
 }
 
-export default function AppleCallback() {
+export default function GoogleCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { notify } = useToast();
@@ -27,7 +27,7 @@ export default function AppleCallback() {
           navigate('/login', { replace: true });
           return;
         }
-        setError('No se pudo iniciar sesión con Apple. Por favor, inténtalo de nuevo.');
+        setError('No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.');
         return;
       }
 
@@ -40,7 +40,7 @@ export default function AppleCallback() {
       }
 
       try {
-        const auth = await exchangeAppleBridge(bridgeToken);
+        const auth = await exchangeGoogleBridge(bridgeToken);
         saveClientSession({
           ...auth,
           salonSlug: 'marketplace',
@@ -54,7 +54,7 @@ export default function AppleCallback() {
           navigate(next, { replace: true });
         }
       } catch {
-        setError('Error al completar el inicio de sesión con Apple. Inténtalo de nuevo.');
+        setError('Error al completar el inicio de sesión con Google. Inténtalo de nuevo.');
       }
     }
 
@@ -81,7 +81,7 @@ export default function AppleCallback() {
       <div className="container client-auth-grid">
         <div className="client-auth-card" style={{ gridColumn: '1 / -1', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
           <span className="inline-spinner" aria-hidden="true" style={{ width: 28, height: 28 }} />
-          <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>Iniciando sesión con Apple…</p>
+          <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>Iniciando sesión con Google…</p>
         </div>
       </div>
     </section>
