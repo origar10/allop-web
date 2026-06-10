@@ -6,6 +6,8 @@ import {
   registerClient,
   requestClientOtp,
   verifyClientOtp,
+  emailLoginClient,
+  emailRegisterClient,
   type ClientAuthPurpose,
 } from '../lib/platformApi';
 import {
@@ -21,6 +23,7 @@ interface ClientAuthProps {
 }
 
 type AuthStep = 'phone' | 'code';
+type AuthMethod = 'sms' | 'email';
 
 const MARKETPLACE_SLUG = 'marketplace';
 const RESEND_SECONDS = 60;
@@ -40,10 +43,12 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const isRegister = mode === 'register';
   const purpose: ClientAuthPurpose = isRegister ? 'REGISTER' : 'LOGIN';
   const nextPath = getSafeNext(searchParams.get('next'));
+  const [method, setMethod] = useState<AuthMethod>('email');
   const [step, setStep] = useState<AuthStep>('phone');
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -195,11 +200,34 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (method === 'email') {
+      completeEmailAuth();
+      return;
+    }
     if (step === 'phone') {
       requestCode();
       return;
     }
     completeAuth();
+  };
+
+  const completeEmailAuth = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const auth = isRegister
+        ? await emailRegisterClient({ nombre: name.trim(), apellidos: lastName.trim() || undefined, email: email.trim(), password })
+        : await emailLoginClient({ email: email.trim(), password });
+
+      saveClientSession({ ...auth, salonSlug: MARKETPLACE_SLUG, salonName: 'Allop', createdAt: new Date().toISOString() });
+      if (isRegister) trackEvent('registration_completed', { salonSlug: MARKETPLACE_SLUG, hasEmail: true });
+      notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
+      navigate(nextPath, { replace: true });
+    } catch (error) {
+      setMessage({ ok: false, text: authErrorText(error, isRegister ? 'No se pudo crear la cuenta.' : 'Email o contraseña incorrectos.') });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const startGoogleLogin = () => {
@@ -252,6 +280,29 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </button>
           )}
 
+          <div className="auth-method-tabs" role="tablist">
+            <button
+              className={`auth-method-tab${method === 'email' ? ' active' : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={method === 'email'}
+              onClick={() => { setMethod('email'); setMessage(null); }}
+              disabled={loading}
+            >
+              Email y contraseña
+            </button>
+            <button
+              className={`auth-method-tab${method === 'sms' ? ' active' : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={method === 'sms'}
+              onClick={() => { setMethod('sms'); setMessage(null); }}
+              disabled={loading}
+            >
+              Código SMS
+            </button>
+          </div>
+
           {isRegister && (
             <div className="auth-two-cols">
               <label>
@@ -272,13 +323,30 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </label>
           )}
 
-          <label>
-            Teléfono
-            <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
-            <span className="auth-help">Usaremos este número para enviarte un código SMS de un solo uso.</span>
-          </label>
+          {method === 'email' && (
+            <label>
+              Email
+              <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" disabled={loading} />
+            </label>
+          )}
 
-          {isRegister && step === 'phone' && (
+          {method === 'email' && (
+            <label>
+              Contraseña
+              <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete={isRegister ? 'new-password' : 'current-password'} disabled={loading} />
+              {isRegister && <span className="auth-help">Mínimo 8 caracteres.</span>}
+            </label>
+          )}
+
+          {method === 'sms' && (
+            <label>
+              Teléfono
+              <input value={phone} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" disabled={loading || step === 'code'} />
+              <span className="auth-help">Usaremos este número para enviarte un código SMS de un solo uso.</span>
+            </label>
+          )}
+
+          {isRegister && (method === 'email' || step === 'phone') && (
             <label className="auth-check">
               <input
                 checked={acceptedTerms}
@@ -292,7 +360,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </label>
           )}
 
-          {step === 'code' && (
+          {method === 'sms' && step === 'code' && (
             <label>
               Código SMS
               <input value={code} onChange={(event) => setCode(event.target.value)} inputMode="numeric" autoComplete="one-time-code" disabled={loading} />
@@ -310,14 +378,21 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </p>
           )}
 
-          {step === 'phone' && (
+          {method === 'email' && (
+            <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
+              {loading && <span className="inline-spinner" aria-hidden="true" />}
+              {loading ? (isRegister ? 'Creando cuenta...' : 'Entrando...') : isRegister ? 'Crear cuenta' : 'Entrar'}
+            </button>
+          )}
+
+          {method === 'sms' && step === 'phone' && (
             <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
               {loading && <span className="inline-spinner" aria-hidden="true" />}
               {loading ? 'Enviando...' : 'Enviar código'}
             </button>
           )}
 
-          {step === 'code' && (
+          {method === 'sms' && step === 'code' && (
             <div className="auth-actions">
               <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
                 {loading && <span className="inline-spinner" aria-hidden="true" />}
@@ -333,7 +408,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             </div>
           )}
 
-          {import.meta.env.DEV && debugCode && step === 'code' && <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>}
+          {import.meta.env.DEV && debugCode && method === 'sms' && step === 'code' && <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>}
 
           <p className="auth-switch">
             {isRegister ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'}{' '}

@@ -84,6 +84,16 @@ export async function getClientMe(slug: string, token: string, signal?: AbortSig
   }
 }
 
+export function emailRegisterClient(
+  params: { nombre: string; apellidos?: string; email: string; password: string },
+) {
+  return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/register`, params);
+}
+
+export function emailLoginClient(params: { email: string; password: string }) {
+  return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/login`, params);
+}
+
 export function exchangeAppleBridge(bridgeToken: string) {
   return apiGet<ClientAuthResponse>(
     `/salones/marketplace/auth/cliente/apple/exchange?t=${encodeURIComponent(bridgeToken)}`,
