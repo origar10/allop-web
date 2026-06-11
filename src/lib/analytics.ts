@@ -1,5 +1,8 @@
+import { API_BASE_URL } from '../shared/apiClient';
+
 const ANALYTICS_EVENTS_KEY = 'allop.analytics.events';
 const ANALYTICS_CONSENT_KEY = 'allop.analytics.consent';
+const ANALYTICS_SESSION_KEY = 'allop.analytics.session';
 const PLAUSIBLE_DOMAIN = import.meta.env.VITE_PLAUSIBLE_DOMAIN as string | undefined;
 
 export type AnalyticsEventName =
@@ -26,6 +29,46 @@ export type AnalyticsConsent = 'accepted' | 'rejected' | null;
 declare global {
   interface Window {
     plausible?: (eventName: string, options?: { props?: AnalyticsProps }) => void;
+  }
+}
+
+// Mapeo de eventos del front a los tipos del embudo del backoffice (POST /api/eventos).
+const FUNNEL_EVENT_MAP: Partial<Record<AnalyticsEventName, string>> = {
+  search: 'busqueda',
+  salon_click: 'ver_ficha',
+  booking_started: 'reserva_iniciada',
+  booking_completed: 'reserva_completada',
+  registration_completed: 'registro_cliente',
+};
+
+// Identificador de sesión anónimo (sin datos personales) para agrupar el embudo.
+function getAnonSession(): string {
+  try {
+    let id = localStorage.getItem(ANALYTICS_SESSION_KEY);
+    if (!id) {
+      id = (crypto.randomUUID?.() || Math.random().toString(36).slice(2)) as string;
+      localStorage.setItem(ANALYTICS_SESSION_KEY, id);
+    }
+    return id;
+  } catch {
+    return 'anon';
+  }
+}
+
+// Envío anónimo de eventos de producto al backoffice (fire-and-forget).
+function forwardFunnelEvent(name: AnalyticsEventName, props: AnalyticsProps) {
+  const tipo = FUNNEL_EVENT_MAP[name];
+  if (!tipo) return;
+  const salonSlug = typeof props.salonSlug === 'string' ? props.salonSlug : undefined;
+  try {
+    void fetch(`${API_BASE_URL}/eventos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({ tipo, salon_slug: salonSlug, sesion_id: getAnonSession() }),
+    }).catch(() => {});
+  } catch {
+    // la analítica nunca debe romper la navegación
   }
 }
 
@@ -73,6 +116,7 @@ export function trackEvent(name: AnalyticsEventName, props: AnalyticsProps = {})
 
   storeEvent(name, cleanProps);
   window.plausible?.(name, { props: cleanProps });
+  forwardFunnelEvent(name, cleanProps);
 }
 
 export function trackPageView(pathname: string) {
