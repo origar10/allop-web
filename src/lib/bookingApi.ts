@@ -30,6 +30,19 @@ export interface AvailabilityDay {
   times: string[];
 }
 
+export type DayStatus = 'available' | 'full' | 'closed';
+
+export interface RangeDay {
+  fecha: string;
+  status: DayStatus;
+  slotCount: number;
+}
+
+export interface DaySlots {
+  status: DayStatus;
+  slots: string[];
+}
+
 function localConfirmation(params: BookingRequest): BookingConfirmation {
   const suffix = params.idempotencyKey.slice(-6).toUpperCase();
 
@@ -108,38 +121,70 @@ export async function listApiServices(salonSlug: string, signal?: AbortSignal): 
   }
 }
 
-export async function listAvailability(
-  salonSlug: string,
-  params: { serviceId?: string; professionalId?: string },
-  fallback: AvailabilityDay[],
-  signal?: AbortSignal,
-): Promise<AvailabilityDay[]> {
-  const query = new URLSearchParams();
+function isDayStatus(value: unknown): value is DayStatus {
+  return value === 'available' || value === 'full' || value === 'closed';
+}
 
+// Estado de cada día en un rango (qué días abre el salón / tienen hueco), usando el
+// MISMO endpoint que la app móvil del salón. Devuelve un mapa fecha -> {status, slotCount}.
+export async function listAvailabilityRange(
+  salonSlug: string,
+  params: { serviceId?: string; professionalId?: string; desde: string; hasta: string },
+  signal?: AbortSignal,
+): Promise<Record<string, RangeDay>> {
+  const query = new URLSearchParams();
   if (params.serviceId) query.set('serviceId', params.serviceId);
   if (params.professionalId && params.professionalId !== 'any') query.set('professionalId', params.professionalId);
+  query.set('desde', params.desde);
+  query.set('hasta', params.hasta);
 
-  try {
-    const path = `/salones/${encodeURIComponent(salonSlug)}/disponibilidad?${query.toString()}`;
-    const payload = signal
-      ? await apiGet<unknown>(path, { signal })
-      : await cachedRequest(`booking:availability:${path}`, () => apiGet<unknown>(path), 30000);
-    const items = Array.isArray(payload)
-      ? payload
-      : typeof payload === 'object' && payload !== null && 'items' in payload && Array.isArray(payload.items)
-        ? payload.items
-        : [];
+  const path = `/salones/${encodeURIComponent(salonSlug)}/disponibilidad/rango?${query.toString()}`;
+  const payload = signal
+    ? await apiGet<unknown>(path, { signal })
+    : await cachedRequest(`booking:range:${path}`, () => apiGet<unknown>(path), 30000);
 
-    const days = items
-      .map((item) => {
-        if (typeof item !== 'object' || item === null) return null;
-        const day = item as Partial<AvailabilityDay>;
-        return day.id && day.label && Array.isArray(day.times) ? { id: day.id, label: day.label, times: day.times } : null;
-      })
-      .filter((item): item is AvailabilityDay => Boolean(item));
+  const rawDays = (payload && typeof payload === 'object' && 'days' in payload && Array.isArray((payload as { days: unknown[] }).days))
+    ? (payload as { days: unknown[] }).days
+    : [];
 
-    return days.length ? days : fallback;
-  } catch {
-    return fallback;
+  const map: Record<string, RangeDay> = {};
+  for (const item of rawDays) {
+    if (typeof item !== 'object' || item === null) continue;
+    const day = item as Record<string, unknown>;
+    const fecha = typeof day.fecha === 'string' ? day.fecha : null;
+    if (!fecha) continue;
+    map[fecha] = {
+      fecha,
+      status: isDayStatus(day.status) ? day.status : 'closed',
+      slotCount: Number(day.slotCount) || 0,
+    };
   }
+  return map;
+}
+
+// Horas REALES disponibles de un día concreto (sólo huecos libres), usando el mismo
+// endpoint que la app móvil del salón. Devuelve los slots tal cual los calcula el core.
+export async function listDaySlots(
+  salonSlug: string,
+  params: { serviceId?: string; professionalId?: string; date: string },
+  signal?: AbortSignal,
+): Promise<DaySlots> {
+  const query = new URLSearchParams();
+  if (params.serviceId) query.set('serviceId', params.serviceId);
+  if (params.professionalId && params.professionalId !== 'any') query.set('professionalId', params.professionalId);
+  query.set('date', params.date);
+
+  const path = `/salones/${encodeURIComponent(salonSlug)}/disponibilidad?${query.toString()}`;
+  const payload = signal
+    ? await apiGet<unknown>(path, { signal })
+    : await cachedRequest(`booking:day:${path}`, () => apiGet<unknown>(path), 30000);
+
+  const obj = (payload && typeof payload === 'object') ? payload as Record<string, unknown> : {};
+  const slots = Array.isArray(obj.slots)
+    ? obj.slots.filter((s): s is string => typeof s === 'string')
+    : [];
+  return {
+    status: isDayStatus(obj.status) ? obj.status : (slots.length ? 'available' : 'closed'),
+    slots,
+  };
 }

@@ -78,10 +78,10 @@ export function getProfessionals(salon: Salon): ProfessionalItem[] {
   ];
 }
 
-export function getAvailableDates() {
+export function getAvailableDates(days = 14) {
   const formatter = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
 
-  return Array.from({ length: 5 }).map((_, index) => {
+  return Array.from({ length: days }).map((_, index) => {
     const date = new Date();
     date.setDate(date.getDate() + index);
 

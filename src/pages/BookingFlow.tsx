@@ -16,7 +16,7 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { SALONS, type Salon } from '../data/salons';
 import { getSalonBySlug } from '../lib/salonsApi';
-import { createBooking, listAvailability, listApiServices, type AvailabilityDay, type BookingConfirmation } from '../lib/bookingApi';
+import { createBooking, listAvailabilityRange, listDaySlots, listApiServices, type RangeDay, type BookingConfirmation } from '../lib/bookingApi';
 import { addCommsHistoryEntry, addStoredBooking, createLocalBooking, loadNotificationPreferences } from '../lib/accountStore';
 import { loadClientSession } from '../lib/clientSession';
 import { getAvailableDates, getProfessionals, getServices, TIME_SLOTS } from '../lib/salonDetails';
@@ -105,16 +105,19 @@ export default function BookingFlow() {
   }, [salonSlug]);
 
   const professionals = useMemo(() => salon ? getProfessionals(salon) : [], [salon]);
-  const fallbackDates = useMemo<AvailabilityDay[]>(() => getAvailableDates().map((date) => ({
-    ...date,
-    times: salon ? [salon.nextSlot, ...TIME_SLOTS].slice(0, 7) : TIME_SLOTS,
-  })), [salon]);
+  // Días candidatos (próximas 2 semanas). El estado real de cada día (abierto/lleno/cerrado)
+  // y las horas concretas las resuelve el core, igual que la app móvil del salón.
+  const dates = useMemo(() => getAvailableDates(14), []);
 
-  const [dates, setDates] = useState<AvailabilityDay[]>(fallbackDates);
   const [step, setStep] = useState<BookingStep>(draft?.step ?? 1);
   const [selectedProfessionalId, setSelectedProfessionalId] = useState(draft?.selectedProfessionalId ?? 'any');
   const [selectedDate, setSelectedDate] = useState(draft?.selectedDate || dates[0]?.id || '');
-  const [selectedTime, setSelectedTime] = useState(draft?.selectedTime || salon?.nextSlot || TIME_SLOTS[0]);
+  const [selectedTime, setSelectedTime] = useState(draft?.selectedTime || '');
+  // Disponibilidad real
+  const [dayStatus, setDayStatus] = useState<Record<string, RangeDay>>({});
+  const [daySlots, setDaySlots] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState(false);
   const [guestEmail, setGuestEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
@@ -135,28 +138,68 @@ export default function BookingFlow() {
   const { notify } = useToast();
   const notifPrefs = useMemo(() => loadNotificationPreferences(), []);
 
+  // Estado de los días del rango (qué días abre / tienen hueco), para el paso "Elige fecha".
   useEffect(() => {
-    if (!salon) return;
+    if (!salon || !selectedServiceId || dates.length === 0) return;
 
     const controller = new AbortController();
-
-    listAvailability(
+    listAvailabilityRange(
       salon.slug,
-      { serviceId: selectedServiceId, professionalId: selectedProfessionalId },
-      fallbackDates,
+      {
+        serviceId: selectedServiceId,
+        professionalId: selectedProfessionalId,
+        desde: dates[0].id,
+        hasta: dates[dates.length - 1].id,
+      },
       controller.signal,
-    ).then((items) => {
-      setDates(items);
-      if (!items.some((item) => item.id === selectedDate)) {
-        setSelectedDate(items[0]?.id || '');
+    ).then((map) => {
+      setDayStatus(map);
+      // Si el día seleccionado no abre, saltar al primer día con disponibilidad.
+      if (map[selectedDate] && map[selectedDate].status !== 'available') {
+        const firstOpen = dates.find((d) => map[d.id]?.status === 'available');
+        if (firstOpen) setSelectedDate(firstOpen.id);
       }
-      if (!items.some((item) => item.times.includes(selectedTime))) {
-        setSelectedTime(items[0]?.times[0] || salon.nextSlot);
-      }
-    }).catch(() => undefined);
+    }).catch(() => setDayStatus({}));
 
     return () => controller.abort();
-  }, [fallbackDates, salon, selectedDate, selectedProfessionalId, selectedServiceId, selectedTime]);
+  }, [salon, selectedServiceId, selectedProfessionalId, dates, selectedDate]);
+
+  // Horas reales del día seleccionado (sólo huecos libres), para el paso "Elige hora".
+  useEffect(() => {
+    if (!salon || !selectedServiceId || !selectedDate) {
+      setDaySlots([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    setSlotsLoading(true);
+    setSlotsError(false);
+    listDaySlots(
+      salon.slug,
+      { serviceId: selectedServiceId, professionalId: selectedProfessionalId, date: selectedDate },
+      controller.signal,
+    ).then((result) => {
+      setDaySlots(result.slots);
+      setSlotsLoading(false);
+      // Mantener la hora elegida si sigue disponible; si no, limpiar la selección.
+      setSelectedTime((prev) => (prev && result.slots.includes(prev) ? prev : ''));
+    }).catch((err) => {
+      if (controller.signal.aborted) return;
+      setSlotsLoading(false);
+      if (err instanceof ApiError && err.status) {
+        // El salón respondió con un error real: no inventamos horas.
+        setDaySlots([]);
+        setSlotsError(true);
+      } else {
+        // Sin conexión / timeout: modo degradado. Permitimos elegir una hora orientativa
+        // para crear la reserva como "pendiente" (el salón confirmará disponibilidad).
+        setDaySlots(TIME_SLOTS);
+        setSelectedTime((prev) => (prev && TIME_SLOTS.includes(prev) ? prev : TIME_SLOTS[0]));
+      }
+    });
+
+    return () => controller.abort();
+  }, [salon, selectedServiceId, selectedProfessionalId, selectedDate]);
 
   useEffect(() => {
     if (!salon || trackedStart.current) return;
@@ -209,7 +252,7 @@ export default function BookingFlow() {
   const selectedService = services.find((service) => service.id === selectedServiceId) || services[0];
   const selectedProfessional = professionals.find((professional) => professional.id === selectedProfessionalId) || professionals[0];
   const selectedDateLabel = dates.find((date) => date.id === selectedDate)?.label || selectedDate;
-  const availableTimes = dates.find((date) => date.id === selectedDate)?.times || TIME_SLOTS;
+  const availableTimes = daySlots;
   const canUseSession = Boolean(session);
 
   const goNext = () => setStep((current) => {
@@ -391,20 +434,38 @@ export default function BookingFlow() {
             <div className="booking-card">
               <h2><CalendarDays size={20} /> Elige fecha</h2>
               <div className="booking-date-grid">
-                {dates.map((date) => (
-                  <button
-                    key={date.id}
-                    className={selectedDate === date.id ? 'active' : ''}
-                    type="button"
-                    onClick={() => setSelectedDate(date.id)}
-                  >
-                    {date.label}
-                  </button>
-                ))}
+                {dates.map((date) => {
+                  const info = dayStatus[date.id];
+                  // Sin datos de rango aún → permitir seleccionar (se valida al cargar las horas).
+                  const cerrado = info ? info.status === 'closed' : false;
+                  const lleno = info ? info.status === 'full' : false;
+                  const deshabilitado = cerrado || lleno;
+                  return (
+                    <button
+                      key={date.id}
+                      className={selectedDate === date.id ? 'active' : ''}
+                      type="button"
+                      disabled={deshabilitado}
+                      title={cerrado ? 'Cerrado' : lleno ? 'Sin huecos' : undefined}
+                      onClick={() => setSelectedDate(date.id)}
+                    >
+                      {date.label}
+                      {lleno && <span className="booking-date-tag">Completo</span>}
+                      {cerrado && <span className="booking-date-tag">Cerrado</span>}
+                    </button>
+                  );
+                })}
               </div>
               <div className="booking-nav">
                 <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
-                <button className="btn btn-primary btn-lg" type="button" onClick={goNext}>Continuar</button>
+                <button
+                  className="btn btn-primary btn-lg"
+                  type="button"
+                  onClick={goNext}
+                  disabled={!selectedDate || dayStatus[selectedDate]?.status === 'closed' || dayStatus[selectedDate]?.status === 'full'}
+                >
+                  Continuar
+                </button>
               </div>
             </div>
           )}
@@ -412,21 +473,29 @@ export default function BookingFlow() {
           {step === 4 && (
             <div className="booking-card">
               <h2><Clock size={20} /> Elige hora</h2>
-              <div className="booking-time-grid">
-                {availableTimes.map((time) => (
-                  <button
-                    key={time}
-                    className={selectedTime === time ? 'active' : ''}
-                    type="button"
-                    onClick={() => setSelectedTime(time)}
-                  >
-                    {time}
-                  </button>
-                ))}
-              </div>
+              {slotsLoading ? (
+                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" /> Buscando horas disponibles…</p>
+              ) : slotsError ? (
+                <p className="booking-slots-state err">No se pudo cargar la disponibilidad. Inténtalo de nuevo.</p>
+              ) : availableTimes.length === 0 ? (
+                <p className="booking-slots-state">No quedan horas disponibles este día. Prueba con otra fecha.</p>
+              ) : (
+                <div className="booking-time-grid">
+                  {availableTimes.map((time) => (
+                    <button
+                      key={time}
+                      className={selectedTime === time ? 'active' : ''}
+                      type="button"
+                      onClick={() => setSelectedTime(time)}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="booking-nav">
                 <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
-                <button className="btn btn-primary btn-lg" type="button" onClick={goNext}>Continuar</button>
+                <button className="btn btn-primary btn-lg" type="button" onClick={goNext} disabled={!selectedTime}>Continuar</button>
               </div>
             </div>
           )}
