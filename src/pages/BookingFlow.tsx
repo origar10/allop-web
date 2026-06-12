@@ -165,40 +165,44 @@ export default function BookingFlow() {
   }, [salon, selectedServiceId, selectedProfessionalId, dates, selectedDate]);
 
   // Horas reales del día seleccionado (sólo huecos libres), para el paso "Elige hora".
+  // El trabajo va dentro de una función async (no setState síncrono en el cuerpo del efecto).
   useEffect(() => {
-    if (!salon || !selectedServiceId || !selectedDate) {
-      setDaySlots([]);
-      return;
-    }
+    if (!salon || !selectedServiceId || !selectedDate) return;
 
     const controller = new AbortController();
-    setSlotsLoading(true);
-    setSlotsError(false);
-    listDaySlots(
-      salon.slug,
-      { serviceId: selectedServiceId, professionalId: selectedProfessionalId, date: selectedDate },
-      controller.signal,
-    ).then((result) => {
-      setDaySlots(result.slots);
-      setSlotsLoading(false);
-      // Mantener la hora elegida si sigue disponible; si no, limpiar la selección.
-      setSelectedTime((prev) => (prev && result.slots.includes(prev) ? prev : ''));
-    }).catch((err) => {
-      if (controller.signal.aborted) return;
-      setSlotsLoading(false);
-      if (err instanceof ApiError && err.status) {
-        // El salón respondió con un error real: no inventamos horas.
-        setDaySlots([]);
-        setSlotsError(true);
-      } else {
-        // Sin conexión / timeout: modo degradado. Permitimos elegir una hora orientativa
-        // para crear la reserva como "pendiente" (el salón confirmará disponibilidad).
-        setDaySlots(TIME_SLOTS);
-        setSelectedTime((prev) => (prev && TIME_SLOTS.includes(prev) ? prev : TIME_SLOTS[0]));
-      }
-    });
+    let active = true;
 
-    return () => controller.abort();
+    (async () => {
+      setSlotsLoading(true);
+      setSlotsError(false);
+      try {
+        const result = await listDaySlots(
+          salon.slug,
+          { serviceId: selectedServiceId, professionalId: selectedProfessionalId, date: selectedDate },
+          controller.signal,
+        );
+        if (!active) return;
+        setDaySlots(result.slots);
+        // Mantener la hora elegida si sigue disponible; si no, limpiar la selección.
+        setSelectedTime((prev) => (prev && result.slots.includes(prev) ? prev : ''));
+      } catch (err) {
+        if (!active || controller.signal.aborted) return;
+        if (err instanceof ApiError && err.status) {
+          // El salón respondió con un error real: no inventamos horas.
+          setDaySlots([]);
+          setSlotsError(true);
+        } else {
+          // Sin conexión / timeout: modo degradado. Permitimos elegir una hora orientativa
+          // para crear la reserva como "pendiente" (el salón confirmará disponibilidad).
+          setDaySlots(TIME_SLOTS);
+          setSelectedTime((prev) => (prev && TIME_SLOTS.includes(prev) ? prev : TIME_SLOTS[0]));
+        }
+      } finally {
+        if (active) setSlotsLoading(false);
+      }
+    })();
+
+    return () => { active = false; controller.abort(); };
   }, [salon, selectedServiceId, selectedProfessionalId, selectedDate]);
 
   useEffect(() => {
