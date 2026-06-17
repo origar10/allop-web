@@ -72,6 +72,34 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
       { heading: 'Fin de servicio', text: ['Al terminar el servicio, el salon podra solicitar exportacion, devolucion o supresion de datos conforme a plazos legales y obligaciones fiscales.'] },
     ],
   },
+  'eliminar-cuenta': {
+    title: 'Eliminar tu cuenta y tus datos',
+    updatedAt: '2026-06-17',
+    intro: 'Esta pagina explica como solicitar la eliminacion de tu cuenta y de los datos asociados en las aplicaciones moviles de Origar SL (Allop y Feromi), tanto desde la propia app como escribiendo a soporte.',
+    sections: [
+      { heading: 'Responsable', text: ['Las apps Allop y Feromi son titularidad de Origar SL (desarrollador "Origar" en Google Play y App Store). Para cualquier solicitud sobre tus datos: soporte@allop.es.'] },
+      { heading: 'Eliminar la cuenta desde la app', text: [
+        'Abre la app (Allop o Feromi) e inicia sesion con tu numero de telefono.',
+        'Entra en la seccion "Mas" o "Perfil".',
+        'Pulsa "Eliminar cuenta" y confirma la accion.',
+        'Tu cuenta y los datos personales asociados se eliminan de forma permanente.',
+      ] },
+      { heading: 'Eliminar la cuenta por correo', text: [
+        'Si no puedes acceder a la app, escribe a soporte@allop.es con el asunto "Eliminar cuenta", indicando el numero de telefono asociado a tu cuenta.',
+        'Podemos pedir informacion adicional para verificar tu identidad antes de eliminar los datos.',
+        'Tramitamos la solicitud en un plazo maximo de 30 dias.',
+      ] },
+      { heading: 'Que datos se eliminan', text: [
+        'Datos de perfil: nombre y numero de telefono.',
+        'Actividad en la app: reservas, citas y notas que hayas creado.',
+        'Token de notificaciones push (Firebase Cloud Messaging) asociado a tu dispositivo.',
+      ] },
+      { heading: 'Que datos se conservan', text: [
+        'Podemos conservar registros minimos que la ley nos obliga a guardar (por ejemplo, obligaciones fiscales o contables cuando apliquen) durante los plazos legales correspondientes.',
+        'Transcurridos esos plazos, los datos se eliminan o anonimizan de forma definitiva.',
+      ] },
+    ],
+  },
 };
 
 export default function LegalPage() {
@@ -98,6 +126,7 @@ export default function LegalPage() {
           <Link to="/cookies">Cookies</Link>
           <Link to="/rgpd">RGPD</Link>
           <Link to="/dpa">DPA salones</Link>
+          <Link to="/eliminar-cuenta">Eliminar cuenta</Link>
         </div>
       </div>
     </section>

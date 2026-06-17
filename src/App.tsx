@@ -91,6 +91,7 @@ function RouteSeo() {
       '/aviso-legal': 'Aviso legal',
       '/rgpd': 'Informacion RGPD',
       '/dpa': 'DPA para salones',
+      '/eliminar-cuenta': 'Eliminar tu cuenta y tus datos',
     };
     const routeSeo: Record<string, { title: string; description: string }> = {
       '/login': {
