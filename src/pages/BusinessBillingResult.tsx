@@ -67,21 +67,6 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
           <article><Receipt size={18} /><strong>{selfService ? 'self-service' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripcion</span></article>
           <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>Activacion del salon</span></article>
         </div>
-        {selfService
-          ? (
-            <div className="billing-alerts">
-              <span>Básico no queda en revisión: la cuenta se ha guardado como activa.</span>
-              <span>El plan Básico es 39 €/mes y el pago lo gestiona Stripe.</span>
-              <span>Para contratos o plan A medida se usa soporte@origar.es.</span>
-            </div>
-          )
-          : (
-            <div className="billing-alerts">
-              <span>Pago fallido o tarjeta caducada: aviso inmediato y 7 dias de grace period.</span>
-              <span>Trial terminando: aviso 3 dias antes de la primera factura.</span>
-              <span>Suscripcion cancelada: acceso limitado al finalizar periodo vigente.</span>
-            </div>
-          )}
         {portalMessage && <p className="auth-message ok" role="status" aria-live="polite">{portalMessage}</p>}
         <div className="billing-result-actions">
           {!selfService && (
