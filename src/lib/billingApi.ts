@@ -135,6 +135,30 @@ function buildLocalSubscription(profile: BillingProfile, planId: BillingPlanId, 
   };
 }
 
+export interface PublicPricing {
+  basicoMonthly: number;
+  basicoAnnual: number;
+}
+
+/** Lee los importes publicados (editables desde admin.allop.es) del backend. */
+export async function fetchPublicPricing(): Promise<PublicPricing | null> {
+  try {
+    const data = await apiGet<{ basico: { monthly: number; annual: number } }>('/billing/planes');
+    if (typeof data?.basico?.monthly !== 'number') return null;
+    return { basicoMonthly: data.basico.monthly, basicoAnnual: data.basico.annual };
+  } catch {
+    return null;
+  }
+}
+
+/** Aplica los importes en vivo sobre BILLING_PLANS (plan Básico) para toda la web. */
+export function applyPublicPricing(pricing: PublicPricing) {
+  const basic = BILLING_PLANS.find((p) => p.id === 'basic');
+  if (!basic) return;
+  basic.monthlyPrice = pricing.basicoMonthly;
+  basic.annualPrice = pricing.basicoAnnual;
+}
+
 export function getBillingPlan(planId: BillingPlanId | string | null | undefined) {
   const normalizedPlanId = normalizeBillingPlanId(planId);
   return BILLING_PLANS.find((plan) => plan.id === normalizedPlanId) || BILLING_PLANS[0];

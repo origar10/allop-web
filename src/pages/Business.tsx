@@ -18,11 +18,11 @@ import {
   Store,
   Users,
 } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { submitBusinessLead } from '../lib/businessLeads';
 import { trackEvent } from '../lib/analytics';
-import { CONTRACT_EMAIL } from '../lib/billingApi';
+import { CONTRACT_EMAIL, fetchPublicPricing } from '../lib/billingApi';
 
 interface BusinessProps {
   supportEmail: string;
@@ -167,6 +167,13 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
   const [monthlyBookings, setMonthlyBookings] = useState(280);
   const [noShowRate, setNoShowRate] = useState(8);
   const [adminHours, setAdminHours] = useState(35);
+  const [basicoPrice, setBasicoPrice] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchPublicPricing().then((pricing) => {
+      if (pricing) setBasicoPrice(`${pricing.basicoMonthly} €`);
+    });
+  }, []);
   const demoHref = '#business-contact';
   const avoidedNoShows = Math.round(monthlyBookings * (noShowRate / 100) * 0.45);
   const savedHours = Math.round(adminHours * 0.35);
@@ -311,7 +318,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
               <article className={`business-plan ${plan.featured ? 'featured' : ''}`} key={plan.name}>
                 {plan.featured && <span className="plan-badge">Por contrato</span>}
                 <h3>{plan.name}</h3>
-                <div className="plan-price">{plan.price}{plan.period && <span>{plan.period}</span>}</div>
+                <div className="plan-price">{plan.selfService && basicoPrice ? basicoPrice : plan.price}{plan.period && <span>{plan.period}</span>}</div>
                 <p>{plan.detail}</p>
                 <ul>
                   {[...plan.features, ...plan.limits].map((feature) => (

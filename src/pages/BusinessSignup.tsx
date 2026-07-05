@@ -15,6 +15,8 @@ import {
   getBillingPlan,
   normalizeBillingPlanId,
   recordBillingEvent,
+  fetchPublicPricing,
+  applyPublicPricing,
 } from '../lib/billingApi';
 import { setSeo } from '../lib/seo';
 
@@ -41,6 +43,7 @@ export default function BusinessSignup() {
   const [honeypot, setHoneypot] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [, setPricingReady] = useState(0);
   const plan = getBillingPlan(planId);
   const canSelectInterval = plan.monthlyPrice !== null || plan.annualPrice !== null;
   const basePrice = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
@@ -59,6 +62,12 @@ export default function BusinessSignup() {
   useEffect(() => {
     recordBillingEvent('plan_viewed', { planId, interval });
   }, [planId, interval]);
+
+  useEffect(() => {
+    fetchPublicPricing().then((pricing) => {
+      if (pricing) { applyPublicPricing(pricing); setPricingReady((n) => n + 1); }
+    });
+  }, []);
 
   const planRows = [
     ['Usuarios', plan.seats],
