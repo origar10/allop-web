@@ -92,3 +92,26 @@ jobs:
           source: dist/*
           target: ${{ env.VPS_TARGET }}
           strip_components: 1
+
+      # ── Aviso a Discord (#despliegues) ──────────────────────────────────────
+      # `if: always()` para que también hable cuando el job FALLA, que es
+      # justamente cuando hace falta enterarse.
+      # Todos los valores entran por `env:` y nunca interpolados dentro del
+      # script: así el shell no interpreta acentos graves ni comillas de un
+      # nombre de rama, y no hay inyección posible desde el payload del evento.
+      - name: Avisar a Discord
+        if: always()
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_DEPLOYS }}
+          ESTADO: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          FLUJO: ${{ github.workflow }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "Sin DISCORD_WEBHOOK_DEPLOYS configurado, no aviso."; exit 0; fi
+          ICONO=$([ "$ESTADO" = "success" ] && echo "✅" || echo "❌")
+          MSG="$ICONO **$REPO** · $FLUJO · ${SHA:0:7}"$'\n'"$RUN_URL"
+          curl -sS -X POST -H 'Content-Type: application/json' \
+            --data "$(jq -nc --arg content "$MSG" '{content:$content}')" \
+            "$WEBHOOK" > /dev/null
