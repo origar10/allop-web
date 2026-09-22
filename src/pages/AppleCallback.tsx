@@ -5,7 +5,19 @@ import { saveClientSession } from '../lib/clientSession';
 import { useToast } from '../lib/useToast';
 
 function getSafeNext(value: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/mi-cuenta';
+  if (!value || !value.startsWith('/')) return '/mi-cuenta';
+  // Una barra invertida deja que el navegador lea la ruta como //host, asi que
+  // /\evil.com acaba resolviendo a https://evil.com pese a empezar por '/'.
+  if (value.includes('\\')) return '/mi-cuenta';
+  if (value.startsWith('//')) return '/mi-cuenta';
+  // Red final: tabuladores y saltos de linea embebidos los quita el navegador al
+  // parsear, asi que solo resolviendo contra nuestro origen se ve el destino real.
+  try {
+    const { origin } = window.location;
+    if (new URL(value, origin).origin !== origin) return '/mi-cuenta';
+  } catch {
+    return '/mi-cuenta';
+  }
   return value;
 }
 
