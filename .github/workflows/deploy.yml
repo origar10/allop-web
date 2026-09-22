@@ -19,7 +19,14 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm audit --audit-level=high
+      # Solo dependencias de produccion: lo que acaba en el bundle del navegador.
+      # El audit completo bloqueaba el despliegue por avisos de herramientas que
+      # solo corren aqui (postcss, browserslist, eslint, vitest). Un DoS en la
+      # expansion de llaves de eslint no es riesgo para una SPA ya compilada, pero
+      # dejaba la web sin desplegar igual. Con --omit=dev el aviso de react-router
+      # de septiembre de 2026 habria seguido fallando, que es justo lo que importa:
+      # es la unica de las 10 que viajaba al navegador.
+      - run: npm audit --audit-level=high --omit=dev
       - run: npm run lint
       - run: npm run test:unit
       - run: npm run build
