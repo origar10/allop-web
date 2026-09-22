@@ -93,25 +93,42 @@ jobs:
           target: ${{ env.VPS_TARGET }}
           strip_components: 1
 
-      # ── Aviso a Discord (#despliegues) ──────────────────────────────────────
-      # `if: always()` para que también hable cuando el job FALLA, que es
-      # justamente cuando hace falta enterarse.
+  avisar:
+    # El aviso vive en su PROPIO job. Este es el unico workflow con dos jobs, y
+    # `deploy` depende de `quality`: si la calidad falla, `deploy` se salta
+    # entero y con el cualquier paso que lleve dentro, asi que un `if: always()`
+    # a nivel de paso no sirve de nada aqui. Con `needs` a los dos jobs y
+    # `always()` a nivel de job, esto corre pase lo que pase.
+    #
+    # La condicion de evento repite la de `deploy` a proposito: en un
+    # pull_request `deploy` se salta porque toca, y eso no es un fallo del que
+    # haya que avisar.
+    needs: [quality, deploy]
+    if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
       # Todos los valores entran por `env:` y nunca interpolados dentro del
-      # script: así el shell no interpreta acentos graves ni comillas de un
-      # nombre de rama, y no hay inyección posible desde el payload del evento.
+      # script: asi el shell no interpreta acentos graves ni comillas de un
+      # nombre de rama, y no hay inyeccion posible desde el payload del evento.
       - name: Avisar a Discord
-        if: always()
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_DEPLOYS }}
-          ESTADO: ${{ job.status }}
+          CALIDAD: ${{ needs.quality.result }}
+          DESPLIEGUE: ${{ needs.deploy.result }}
           REPO: ${{ github.repository }}
           FLUJO: ${{ github.workflow }}
           SHA: ${{ github.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [ -z "$WEBHOOK" ]; then echo "Sin DISCORD_WEBHOOK_DEPLOYS configurado, no aviso."; exit 0; fi
-          ICONO=$([ "$ESTADO" = "success" ] && echo "✅" || echo "❌")
-          MSG="$ICONO **$REPO** · $FLUJO · ${SHA:0:7}"$'\n'"$RUN_URL"
+          if [ "$CALIDAD" = "success" ] && [ "$DESPLIEGUE" = "success" ]; then
+            ICONO="✅"; DETALLE=""
+          else
+            # Sin el detalle, un fallo en la puerta de calidad y uno en el
+            # despliegue se ven igual, y son dos problemas muy distintos.
+            ICONO="❌"; DETALLE=" · calidad: $CALIDAD · despliegue: $DESPLIEGUE"
+          fi
+          MSG="$ICONO **$REPO** · $FLUJO · ${SHA:0:7}$DETALLE"$'\n'"$RUN_URL"
           curl -sS -X POST -H 'Content-Type: application/json' \
             --data "$(jq -nc --arg content "$MSG" '{content:$content}')" \
             "$WEBHOOK" > /dev/null
