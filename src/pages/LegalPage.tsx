@@ -75,11 +75,11 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
   'eliminar-cuenta': {
     title: 'Eliminar tu cuenta y tus datos',
     updatedAt: '2026-06-17',
-    intro: 'Esta pagina explica como solicitar la eliminacion de tu cuenta y de los datos asociados en las aplicaciones moviles de Origar SL (Allop y Feromi), tanto desde la propia app como escribiendo a soporte.',
+    intro: 'Esta pagina explica como solicitar la eliminacion de tu cuenta y de los datos asociados en las aplicaciones moviles de Origar SL (Allop y las apps propias de cada salon, como Peluqueria Feromi, Jessica Portales, Pels Pels u Olga Calzado), tanto desde la propia app como escribiendo a soporte.',
     sections: [
-      { heading: 'Responsable', text: ['Las apps Allop y Feromi son titularidad de Origar SL (desarrollador "Origar" en Google Play y App Store). Para cualquier solicitud sobre tus datos: soporte@allop.es.'] },
+      { heading: 'Responsable', text: ['La app Allop y las apps propias de cada salon son titularidad de Origar SL (desarrollador "Origar" en Google Play y App Store). Para cualquier solicitud sobre tus datos: soporte@allop.es.'] },
       { heading: 'Eliminar la cuenta desde la app', text: [
-        'Abre la app (Allop o Feromi) e inicia sesion con tu numero de telefono.',
+        'Abre la app (Allop o la de tu salon) e inicia sesion con tu numero de telefono.',
         'Entra en la seccion "Mas" o "Perfil".',
         'Pulsa "Eliminar cuenta" y confirma la accion.',
         'Tu cuenta y los datos personales asociados se eliminan de forma permanente.',

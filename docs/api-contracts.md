@@ -185,8 +185,8 @@ Búsqueda paginada con filtros.
   "items": [
     {
       "id": "1",
-      "slug": "feromi",
-      "nombre": "Feromi",
+      "slug": "mi-salon",
+      "nombre": "Mi Salón",
       "categoria": "Peluquería",
       "ciudad": "Rubí",
       "direccion": "Carrer de l'Anoia, 12",
@@ -223,8 +223,8 @@ Detalle completo de un salón para su ficha pública.
 ```json
 {
   "id": "1",
-  "slug": "feromi",
-  "nombre": "Feromi",
+  "slug": "mi-salon",
+  "nombre": "Mi Salón",
   "categoria": "Peluquería",
   "ciudad": "Rubí",
   "direccion": "Carrer de l'Anoia, 12",
@@ -253,15 +253,15 @@ Detalle completo de un salón para su ficha pública.
     { "id": "pro1", "nombre": "Ana García", "foto": "https://...", "activo": true }
   ],
   "fotos": [
-    { "id": "f1", "url": "https://...", "alt": "Interior Feromi", "esPortada": true, "orden": 0 }
+    { "id": "f1", "url": "https://...", "alt": "Interior Mi Salón", "esPortada": true, "orden": 0 }
   ],
   "resenas": [ ... ],
   "resenaTotal": 132,
   "distribucionEstrellas": { "5": 98, "4": 24, "3": 8, "2": 2, "1": 0 },
-  "seoTitle": "Feromi — Peluquería en Rubí | Allop",
+  "seoTitle": "Mi Salón — Peluquería en Rubí | Allop",
   "seoDescription": "...",
-  "canonicalUrl": "https://allop.es/salones/feromi",
-  "redesSociales": { "instagram": "https://instagram.com/feromi" }
+  "canonicalUrl": "https://allop.es/salones/mi-salon",
+  "redesSociales": { "instagram": "https://instagram.com/misalon" }
 }
 ```
 
@@ -310,7 +310,7 @@ Crea una reserva. Requiere header `Idempotency-Key` para garantizar exactamente 
 **Body**
 ```json
 {
-  "salonSlug": "feromi",
+  "salonSlug": "mi-salon",
   "serviceId": "svc1",
   "professionalId": null,
   "date": "2026-06-10",
@@ -357,7 +357,7 @@ Lista todas las reservas del cliente en todos los salones.
       "estado": "confirmada",
       "fechaHoraInicio": "2026-06-10T10:00:00",
       "fechaHoraFin": "2026-06-10T10:45:00",
-      "salon": { "slug": "feromi", "nombre": "Feromi", "ciudad": "Rubí" },
+      "salon": { "slug": "mi-salon", "nombre": "Mi Salón", "ciudad": "Rubí" },
       "servicio": { "id": "svc1", "nombre": "Corte de pelo", "precio": 18 },
       "profesional": { "id": "pro1", "nombre": "Ana García" },
       "canCancel": true,
@@ -431,9 +431,9 @@ Crea una reseña asociada a una reserva completada. Solo se permite una por rese
 
 **Auth**: `Bearer <token>` obligatorio
 
-**Body**: `{ "salonSlug": "feromi" }`
+**Body**: `{ "salonSlug": "mi-salon" }`
 
-**Response 201**: `{ "salonSlug": "feromi", "createdAt": "2026-06-06T12:00:00Z" }`
+**Response 201**: `{ "salonSlug": "mi-salon", "createdAt": "2026-06-06T12:00:00Z" }`
 
 ---
 
