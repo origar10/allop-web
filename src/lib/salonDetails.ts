@@ -64,8 +64,10 @@ export function getServices(salon: Salon): ServiceItem[] {
 /** Agrupa por categoría manteniendo el orden en que las publica el salón. */
 export function groupByCategory<T extends { category: string | null }>(items: T[]) {
   const groups: Array<{ category: string | null; items: T[] }> = [];
+  // "Color" y "COLOR" son la misma categoría; se muestra el nombre del primero.
+  const key = (category: string | null) => category?.trim().toLowerCase() || null;
   for (const item of items) {
-    const group = groups.find((g) => g.category === item.category);
+    const group = groups.find((g) => key(g.category) === key(item.category));
     if (group) group.items.push(item);
     else groups.push({ category: item.category, items: [item] });
   }
