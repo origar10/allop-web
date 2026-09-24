@@ -35,6 +35,7 @@ import {
   groupByCategory,
   type ProfessionalItem,
   type ServiceItem,
+  WEEK_DAYS,
 } from '../lib/salonDetails';
 import { trackEvent } from '../lib/analytics';
 import { useToast } from '../lib/useToast';
@@ -128,6 +129,10 @@ export default function BookingFlow() {
   const [selectedServiceId, setSelectedServiceId] = useState(serviceFromUrl || draft?.selectedServiceId || '');
   const [selectedProfessionalId, setSelectedProfessionalId] = useState(draft?.selectedProfessionalId ?? 'any');
   const dates = useMemo(() => getAvailableDates(21), []);
+  const opensToday = useMemo(() => {
+    const today = WEEK_DAYS[(new Date().getDay() + 6) % 7];
+    return salon?.horarioApertura?.find((d) => d.dia === today)?.abierto ?? false;
+  }, [salon]);
   const [selectedDate, setSelectedDate] = useState(draft?.selectedDate || '');
   const [selectedTime, setSelectedTime] = useState(draft?.selectedTime || '');
 
@@ -500,8 +505,10 @@ export default function BookingFlow() {
               <div className="booking-day-strip" role="listbox" aria-label="Días">
                 {dates.map((date, index) => {
                   const info = dayStatus[date.id];
-                  const closed = info?.status === 'closed';
-                  const full = info?.status === 'full';
+                  // Hoy, pasada la última hora, la agenda lo da por "cerrado" aunque el salón abra: para el cliente está completo.
+                  const pastClosing = index === 0 && info?.status === 'closed' && opensToday;
+                  const closed = info?.status === 'closed' && !pastClosing;
+                  const full = info?.status === 'full' || pastClosing;
                   const disabled = rangeLoading || !info || closed || full;
                   return (
                     <button

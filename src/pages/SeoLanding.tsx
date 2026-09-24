@@ -2,7 +2,7 @@ import { ArrowRight, BookOpen, MapPin, Search, Star } from 'lucide-react';
 import { useEffect } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import SalonCard from '../components/SalonCard';
-import { SALONS } from '../data/salons';
+import { useMarketplaceSalons } from '../lib/useMarketplaceSalons';
 import { CATEGORIES, CITIES, EDITORIAL_FAQS, EDITORIAL_GUIDES, SERVICE_CITY_ROUTES, SERVICES, findCategory, findCity, findService, matchesService, normalizeSearch } from '../lib/taxonomy';
 import { setSeo } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
@@ -11,6 +11,7 @@ type SeoLandingType = 'city' | 'service' | 'serviceCity' | 'category';
 
 export default function SeoLanding({ type }: { type: SeoLandingType }) {
   const navigate = useNavigate();
+  const salons = useMarketplaceSalons();
   const { slug = '', serviceSlug = '', citySlug = '' } = useParams();
   const city = type === 'service' ? undefined : findCity(type === 'city' ? slug : citySlug);
   const service = type === 'city' ? undefined : findService(type === 'service' ? slug : serviceSlug);
@@ -23,7 +24,8 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
     (type === 'serviceCity' && (!city || !service)) ||
     (type === 'category' && !category);
 
-  const filteredSalons = SALONS.filter((salon) => {
+  // Solo salones que de verdad encajan: uno de otra ciudad bajo "Salones en Rubí" engaña.
+  const visibleSalons = (salons ?? []).filter((salon) => {
     const matchesCity = city ? normalizeSearch(salon.location).includes(normalizeSearch(city.label)) : true;
     const serviceText = [salon.category, ...salon.tags].join(' ');
     const matchesServiceQuery = service ? matchesService(serviceText, service) : true;
@@ -33,16 +35,8 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
       : true;
 
     return matchesCity && matchesServiceQuery && matchesCategoryQuery;
-  });
+  }).slice(0, 4);
 
-  const fallbackSalons = city
-    ? SALONS.filter((salon) => normalizeSearch(salon.location).includes(normalizeSearch(city.label)))
-    : service
-      ? SALONS.filter((salon) => matchesService([salon.category, ...salon.tags].join(' '), service))
-      : category
-        ? SALONS.filter((salon) => categoryServices.some((item) => matchesService([salon.category, ...salon.tags].join(' '), item)))
-      : SALONS;
-  const visibleSalons = (filteredSalons.length ? filteredSalons : fallbackSalons.length ? fallbackSalons : SALONS).slice(0, 4);
   const title = type === 'city'
     ? `Salones en ${city?.label}`
     : type === 'category'
@@ -107,6 +101,9 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
           </h2>
           <Link className="see-all" to="/#buscar">Ver marketplace <ArrowRight size={14} /></Link>
         </div>
+        {salons !== null && visibleSalons.length === 0 && (
+          <div className="account-loading">Todavía no hay salones publicados aquí. <Link to="/buscar">Ver todos los salones</Link></div>
+        )}
         <div className="salons-grid">
           {visibleSalons.map((salon) => (
             <SalonCard

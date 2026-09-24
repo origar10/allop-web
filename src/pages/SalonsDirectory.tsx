@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, MapPin, Scissors } from 'lucide-react';
 import SalonCard from '../components/SalonCard';
-import { SALONS } from '../data/salons';
+import { useMarketplaceSalons } from '../lib/useMarketplaceSalons';
 import { CATEGORIES, CITIES, SERVICES } from '../lib/taxonomy';
 import { setSeo } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
 
 export default function SalonsDirectory() {
   const navigate = useNavigate();
+  const salons = useMarketplaceSalons();
 
   useEffect(() => {
     setSeo({
@@ -58,13 +59,18 @@ export default function SalonsDirectory() {
         <div className="section-header">
           <div>
             <h2 className="section-title">Todos los salones</h2>
-            <p className="section-subtitle">{SALONS.length} fichas disponibles para reserva online</p>
+            <p className="section-subtitle">
+              {salons === null ? 'Cargando salones…' : `${salons.length} ${salons.length === 1 ? 'ficha disponible' : 'fichas disponibles'} para reserva online`}
+            </p>
           </div>
           <Link className="see-all" to="/buscar">Buscar <ArrowRight size={14} /></Link>
         </div>
 
+        {salons?.length === 0 && (
+          <div className="account-loading">Aún no hay salones publicados. <Link to="/business">¿Tienes un salón?</Link></div>
+        )}
         <div className="salons-grid">
-          {SALONS.map((salon) => (
+          {(salons ?? []).map((salon) => (
             <SalonCard
               key={salon.id}
               {...salon}

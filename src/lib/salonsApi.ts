@@ -83,7 +83,8 @@ function isRealUrl(url: string | null | undefined): url is string {
 }
 
 function buildPhotos(portada: string | null | undefined, galeria: string[] | undefined): string[] | undefined {
-  const all = [portada, ...(galeria ?? [])].filter(isRealUrl);
+  // La portada también viene en la galería: sin repetirla.
+  const all = [...new Set([portada, ...(galeria ?? [])].filter(isRealUrl))];
   return all.length > 0 ? all : undefined;
 }
 
