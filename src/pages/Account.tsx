@@ -26,7 +26,6 @@ import {
   loadFavoriteSlugs,
   loadNotificationPreferences,
   loadProfileDraft,
-  loadReviews,
   loadStoredBookings,
   saveFavoriteSlugs,
   saveNotificationPreferences,
@@ -39,7 +38,7 @@ import {
 } from '../lib/accountStore';
 import { getEventLabel } from '../lib/notificationTemplates';
 import { clearClientSession, loadClientSession } from '../lib/clientSession';
-import { cancelClientBooking, getMarketplaceBookings } from '../lib/platformApi';
+import { cancelClientBooking, createSalonReview, getMarketplaceBookings } from '../lib/platformApi';
 import { useToast } from '../lib/useToast';
 import { statusFromItems, type AsyncStatus } from '../shared/asyncState';
 import { formatDateTime } from '../shared/formatters';
@@ -85,8 +84,8 @@ export default function Account() {
   const [reviewBookingId, setReviewBookingId] = useState('');
   const [reviewText, setReviewText] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
+  const [sendingReview, setSendingReview] = useState(false);
   const [commsHistory, setCommsHistory] = useState<CommsHistoryEntry[]>(() => loadCommsHistory());
-  const reviews = loadReviews();
   const { notify } = useToast();
 
   // Reload comms history whenever the user navigates to the communicaciones tab
@@ -172,9 +171,22 @@ export default function Account() {
     saveNotificationPreferences(next);
   };
 
-  const submitReview = (event: FormEvent<HTMLFormElement>) => {
+  // La reseña se publica en la ficha del salón en allop.es; la plataforma comprueba con el salón
+  // que la cita es de este cliente y que está completada.
+  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!reviewBookingId || reviewText.trim().length < 4) return;
+    const booking = bookings.find((item) => `${item.salonSlug}:${item.id}` === reviewBookingId);
+    if (!booking || reviewText.trim().length < 4 || sendingReview) return;
+
+    setSendingReview(true);
+    try {
+      await createSalonReview(booking.salonSlug, booking.id, reviewRating, reviewText.trim(), session.token);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo publicar la reseña.', 'error');
+      return;
+    } finally {
+      setSendingReview(false);
+    }
 
     saveReview({
       bookingId: reviewBookingId,
@@ -182,10 +194,13 @@ export default function Account() {
       text: reviewText.trim(),
       createdAt: new Date().toISOString(),
     });
+    setBookings((current) => current.map((item) => (
+      item.id === booking.id && item.salonSlug === booking.salonSlug ? { ...item, canReview: false } : item
+    )));
     setReviewBookingId('');
     setReviewText('');
     setReviewRating(5);
-    notify('Reseña guardada.', 'success');
+    notify(`Reseña publicada en la ficha de ${booking.salonName}.`, 'success');
   };
 
   const logoutEverywhere = () => {
@@ -291,17 +306,21 @@ export default function Account() {
                 <h3><MessageSquare size={18} /> Añadir reseña</h3>
                 <select value={reviewBookingId} onChange={(event) => setReviewBookingId(event.target.value)}>
                   <option value="">Selecciona una visita completada</option>
-                  {bookings.filter((booking) => booking.canReview && !reviews.some((review) => review.bookingId === booking.id)).map((booking) => (
-                    <option key={booking.id} value={booking.id}>{booking.salonName} · {booking.serviceName}</option>
+                  {bookings.filter((booking) => booking.canReview).map((booking) => (
+                    <option key={`${booking.salonSlug}:${booking.id}`} value={`${booking.salonSlug}:${booking.id}`}>
+                      {booking.salonName} · {booking.serviceName}
+                    </option>
                   ))}
                 </select>
                 <select value={reviewRating} onChange={(event) => setReviewRating(Number(event.target.value))}>
-                  <option value={5}>5 estrellas</option>
-                  <option value={4}>4 estrellas</option>
-                  <option value={3}>3 estrellas</option>
+                  {[5, 4, 3, 2, 1].map((n) => (
+                    <option key={n} value={n}>{n} {n === 1 ? 'estrella' : 'estrellas'}</option>
+                  ))}
                 </select>
                 <textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} rows={3} placeholder="Cuenta brevemente cómo fue la visita" />
-                <button className="btn btn-primary" type="submit">Guardar reseña</button>
+                <button className="btn btn-primary" type="submit" disabled={sendingReview || !reviewBookingId || reviewText.trim().length < 4}>
+                  {sendingReview ? 'Publicando…' : 'Publicar reseña'}
+                </button>
               </form>
             </section>
           )}

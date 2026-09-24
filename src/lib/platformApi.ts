@@ -123,11 +123,21 @@ export interface MarketplaceBooking {
   empleado_nombre: string | null;
   precio: number | null;
   salon: { slug: string; nombre: string };
+  valorada?: boolean;
 }
 
 // Citas que el cliente ha pedido desde allop.es, en todos los salones.
 export function getMarketplaceBookings(token: string, signal?: AbortSignal) {
   return apiGet<MarketplaceBooking[]>('/salones/marketplace/clientes/me/reservas', { token, signal });
+}
+
+// Publica la reseña de una cita completada (la plataforma comprueba con el salón que es suya).
+export function createSalonReview(slug: string, reservaId: string, puntuacion: number, texto: string, token: string) {
+  return apiPost<unknown>(
+    `/salones/${encodeURIComponent(slug)}/reviews`,
+    { reserva_id: Number(reservaId), puntuacion, texto },
+    { token },
+  );
 }
 
 // Cancela de verdad en la agenda del salón (el core comprueba que la cita es de este cliente).

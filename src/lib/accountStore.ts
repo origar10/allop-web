@@ -147,7 +147,7 @@ export function bookingFromApi(item: MarketplaceBooking): AccountBooking {
     status,
     locator: `ALP-${String(item.id).padStart(6, '0').slice(-6)}`,
     price: item.precio,
-    canReview: status === 'completada',
+    canReview: status === 'completada' && !item.valorada,
   };
 }
 
