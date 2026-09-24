@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from '../shared/apiClient';
+import { apiGet, apiPatch, apiPost } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
 export type ClientAuthPurpose = 'LOGIN' | 'REGISTER';
@@ -98,7 +98,7 @@ export function emailLoginClient(params: { identifier: string; password: string 
   return apiPost<ClientAuthResponse>(`/salones/marketplace/auth/cliente/email/login`, params);
 }
 
-export function completeProfileClient(params: { telefono: string; password?: string }, token: string) {
+export function completeProfileClient(params: { telefono: string; verificationToken: string; password?: string }, token: string) {
   return apiPost<ClientAuthResponse['cliente']>(`/salones/marketplace/auth/cliente/complete-profile`, params, { token });
 }
 
@@ -114,11 +114,27 @@ export function exchangeGoogleBridge(bridgeToken: string) {
   );
 }
 
-export async function getClientBookings(slug: string, token: string, signal?: AbortSignal) {
-  try {
-    return await apiGet<ClientBooking[]>('/clientes/me/reservas', { token, signal });
-  } catch (error) {
-    if (signal?.aborted) throw error;
-    return apiGet<ClientBooking[]>(`/salones/${encodeURIComponent(slug)}/clientes/me/reservas`, { token, signal });
-  }
+export interface MarketplaceBooking {
+  id: number;
+  estado: string;
+  fecha: string;
+  hora: string;
+  servicio: { nombre: string };
+  empleado_nombre: string | null;
+  precio: number | null;
+  salon: { slug: string; nombre: string };
+}
+
+// Citas que el cliente ha pedido desde allop.es, en todos los salones.
+export function getMarketplaceBookings(token: string, signal?: AbortSignal) {
+  return apiGet<MarketplaceBooking[]>('/salones/marketplace/clientes/me/reservas', { token, signal });
+}
+
+// Cancela de verdad en la agenda del salón (el core comprueba que la cita es de este cliente).
+export function cancelClientBooking(slug: string, reservaId: string, token: string) {
+  return apiPatch<unknown>(
+    `/salones/${encodeURIComponent(slug)}/clientes/me/reservas/${encodeURIComponent(reservaId)}/cancelar`,
+    {},
+    { token },
+  );
 }

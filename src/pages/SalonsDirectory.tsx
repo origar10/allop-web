@@ -68,7 +68,6 @@ export default function SalonsDirectory() {
             <SalonCard
               key={salon.id}
               {...salon}
-              nextSlot={salon.nextSlot}
               badges={salon.badges}
               onSelect={() => {
                 trackEvent('salon_click', { salonSlug: salon.slug, source: 'salons_directory' });

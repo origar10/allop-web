@@ -102,12 +102,13 @@ export default function AppleMap({ salons, className = 'market-map', ariaLabel, 
           showsMapTypeControl: false,
         });
 
-        const annotations = salons.map((salon) => {
+        // 0,0 = el salón aún no tiene ubicación: no se pinta en medio del océano.
+        const annotations = salons.filter((salon) => salon.lat || salon.lng).map((salon) => {
           const annotation = new mapkit.MarkerAnnotation(
             new mapkit.Coordinate(salon.lat, salon.lng),
             {
               title: salon.name,
-              subtitle: `${salon.location} · desde ${salon.desde} €`,
+              subtitle: [salon.location, salon.desde > 0 ? `desde ${salon.desde} €` : ''].filter(Boolean).join(' · '),
               color: '#4F46E5',
             },
           );
@@ -140,17 +141,17 @@ export default function AppleMap({ salons, className = 'market-map', ariaLabel, 
       <div ref={containerRef} className="apple-map-canvas" aria-hidden={status !== 'ready'} />
       {status !== 'ready' && (
         <div className="apple-map-fallback" aria-hidden={status === 'loading' ? 'true' : undefined}>
-          {salons.map((salon) => (
+          {salons.filter((salon) => salon.lat || salon.lng).map((salon, _index, located) => (
             <button
               key={salon.id}
               className="market-map-pin"
-              style={getFallbackPinStyle(salon, salons)}
+              style={getFallbackPinStyle(salon, located)}
               type="button"
               onClick={() => onOpenSalon(salon)}
               aria-label={`Abrir ficha de ${salon.name}`}
             >
               <MapPin size={16} />
-              <span>{salon.desde} €</span>
+              <span>{salon.desde > 0 ? `${salon.desde} €` : salon.name}</span>
             </button>
           ))}
         </div>

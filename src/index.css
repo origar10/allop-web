@@ -1313,3 +1313,67 @@ section[id] { scroll-margin-top: 84px; }
   .modal-backdrop { align-items: stretch; padding: 10px; }
   .salon-modal { width: 100%; max-height: none; border-radius: var(--radius-md); }
 }
+
+/* ── Marketplace: ficha y reserva con datos reales ───────────────────────── */
+.salon-photo-empty { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--indigo-100), var(--accent-soft)); color: var(--accent); }
+.salon-photo-empty span { font-size: 44px; font-weight: 900; letter-spacing: .04em; opacity: .75; }
+.salon-img-initials { color: var(--accent); font-size: 30px; font-weight: 900; letter-spacing: .04em; opacity: .7; }
+.salon-img:has(.salon-img-initials) { background: linear-gradient(135deg, var(--indigo-100), var(--accent-soft)); }
+.salon-new { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 800; }
+.salon-meta .salon-price { margin-left: auto; }
+img.salon-profile-main-photo { display: block; width: 100%; height: 420px; object-fit: cover; }
+.salon-profile-thumbs img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.salon-profile-meta a { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--fg-2); background: var(--zinc-50); font-size: 13px; font-weight: 700; text-decoration: none; }
+.salon-profile-meta a:hover { border-color: var(--accent); color: var(--accent); }
+.salon-profile-description { color: var(--fg-3); line-height: 1.65; max-width: 62ch; white-space: pre-line; }
+.service-groups { display: grid; gap: 22px; }
+.service-group { display: grid; gap: 10px; }
+.service-group-title, .booking-service-group h3 { color: var(--fg-2); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.review-stars { display: inline-flex; gap: 1px; color: #F59E0B; }
+.hours-list div.is-today { margin: 0 -8px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--fg-1); font-weight: 800; }
+.hours-list div.is-today strong { color: var(--accent); }
+.profile-book-card { display: grid; gap: 10px; border-color: var(--accent); background: linear-gradient(180deg, var(--accent-soft), var(--surface) 70%); }
+.profile-book-card h2 { margin-bottom: 0; }
+.profile-book-card .btn { justify-content: center; }
+.account-favorite-media { overflow: hidden; }
+.account-favorite-media img, .salon-modal-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.salon-modal-media { overflow: hidden; }
+
+.booking-steps-labeled { display: flex; gap: 6px; margin: 0 0 18px; padding: 0; list-style: none; overflow-x: auto; }
+.booking-steps-labeled li { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px 7px 7px; border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--fg-3); background: var(--surface); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.booking-steps-labeled li span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); color: var(--fg-3); font-size: 12px; font-weight: 900; }
+.booking-steps-labeled li.current { border-color: var(--accent); color: var(--fg-1); }
+.booking-steps-labeled li.current span { background: var(--accent); color: #fff; }
+.booking-steps-labeled li.done span { background: var(--accent-soft); color: var(--accent); }
+.booking-service-group { display: grid; gap: 10px; }
+.booking-options button > span { display: inline-flex; align-items: center; gap: 5px; }
+.booking-pros { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.booking-pros button { display: flex; align-items: center; gap: 12px; }
+.pro-avatar { display: inline-grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: var(--indigo-100); color: var(--accent); font-size: 15px; font-weight: 900; object-fit: cover; }
+.pro-avatar-any { background: var(--accent-soft); }
+.pro-text { display: grid; gap: 2px; }
+.booking-day-strip { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; }
+.booking-day-strip button { display: grid; justify-items: center; gap: 2px; flex: 0 0 64px; padding: 10px 4px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--zinc-50); scroll-snap-align: start; }
+.booking-day-strip button small { color: var(--fg-3); font-size: 11px; font-weight: 700; text-transform: capitalize; }
+.booking-day-strip button strong { color: var(--fg-1); font-size: 20px; line-height: 1.1; }
+.booking-day-strip button:hover:not(:disabled), .booking-day-strip button.active { border-color: var(--accent); }
+.booking-day-strip button.active { background: var(--accent); }
+.booking-day-strip button.active small, .booking-day-strip button.active strong { color: #fff; }
+.booking-day-strip button:disabled { opacity: .45; cursor: not-allowed; }
+.booking-slot-groups { display: grid; gap: 16px; }
+.booking-slot-groups h3 { margin-bottom: 8px; color: var(--fg-3); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.booking-lead { color: var(--fg-3); line-height: 1.6; }
+.booking-review { display: grid; gap: 0; margin: 0; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.booking-review div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.booking-review div:last-child { border-bottom: 0; }
+.booking-review dt { color: var(--fg-3); font-size: 13px; font-weight: 700; }
+.booking-review dd { margin: 0; color: var(--fg-1); font-size: 14px; font-weight: 800; text-align: right; }
+.booking-review dd::first-letter { text-transform: uppercase; }
+.booking-summary-media.salon-photo-empty span { font-size: 36px; }
+img.booking-summary-media { display: block; width: 100%; height: 170px; object-fit: cover; }
+@media (max-width: 720px) {
+  img.salon-profile-main-photo { height: 260px; }
+  .booking-pros { grid-template-columns: 1fr; }
+  .booking-nav { flex-direction: column-reverse; }
+  .booking-nav .btn { width: 100%; justify-content: center; }
+}

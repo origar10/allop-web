@@ -11,6 +11,7 @@ import { CITIES, SERVICES } from './lib/taxonomy';
 import { trackEvent, trackPageView } from './lib/analytics';
 import { useFocusTrap } from './hooks/useFocusTrap';
 import { useI18n } from './lib/useI18n';
+import { formatPrice } from './lib/salonDetails';
 
 const Home = lazy(() => import('./pages/Home'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
@@ -285,25 +286,28 @@ export default function App() {
             <button className="modal-close" type="button" aria-label="Cerrar ficha" onClick={closeSalonPreview}>
               <X size={18} />
             </button>
-            <div className={`salon-modal-media ${selectedSalon.imageClass}`} />
+            <div className={`salon-modal-media ${selectedSalon.photos?.[0] ? '' : selectedSalon.imageClass}`}>
+              {selectedSalon.photos?.[0] && <img src={selectedSalon.photos[0]} alt="" />}
+            </div>
             <div className="salon-modal-body">
-              <p className="eyebrow">{selectedSalon.category} · {selectedSalon.location}</p>
+              <p className="eyebrow">{[selectedSalon.category, selectedSalon.location].filter(Boolean).join(' · ')}</p>
               <h2 id="salon-modal-title">{selectedSalon.name}</h2>
               <p>{selectedSalon.description}</p>
               <div className="modal-facts">
-                <span><CalendarDays size={16} /> Próximo hueco: {selectedSalon.nextSlot}</span>
-                <span>Desde {selectedSalon.desde} €</span>
-                <span>{selectedSalon.rating.toFixed(1)} · {selectedSalon.reviews} reseñas</span>
+                {selectedSalon.desde > 0 && <span>Desde {formatPrice(selectedSalon.desde)}</span>}
+                <span>{selectedSalon.reviews > 0 ? `★ ${selectedSalon.rating.toFixed(1)} · ${selectedSalon.reviews} reseñas` : 'Nuevo en Allop'}</span>
               </div>
               <div className="modal-actions">
                 <button className="btn btn-primary" type="button" onClick={() => openSalonProfile(selectedSalon)}>
                   <CalendarDays size={16} />
                   Reservar
                 </button>
-                <a className="btn btn-ghost" href={`tel:${selectedSalon.phone}`}>
-                  <Phone size={16} />
-                  Llamar
-                </a>
+                {selectedSalon.phone && (
+                  <a className="btn btn-ghost" href={`tel:${selectedSalon.phone.replace(/\s/g, '')}`}>
+                    <Phone size={16} />
+                    Llamar
+                  </a>
+                )}
                 <button className="btn btn-ghost" type="button" onClick={() => openSalonProfile(selectedSalon)}>
                   <ExternalLink size={16} />
                   Ver perfil

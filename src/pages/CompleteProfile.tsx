@@ -1,9 +1,11 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { completeProfileClient } from '../lib/platformApi';
-import { loadClientSession } from '../lib/clientSession';
+import { completeProfileClient, requestClientOtp, verifyClientOtp } from '../lib/platformApi';
+import { loadClientSession, saveClientSession } from '../lib/clientSession';
 import { useToast } from '../lib/useToast';
 import { normalizePhone } from '../shared/formatters';
+
+const MARKETPLACE_SLUG = 'marketplace';
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/')) return '/mi-cuenta';
@@ -32,6 +34,9 @@ export default function CompleteProfile() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // El teléfono identifica al cliente en cada salón, así que se verifica por SMS.
+  const [challenge, setChallenge] = useState<{ id: number; telefono: string; debugCode?: string } | null>(null);
+  const [code, setCode] = useState('');
 
   useEffect(() => {
     if (!loadClientSession()) {
@@ -41,6 +46,10 @@ export default function CompleteProfile() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (challenge) {
+      await confirm();
+      return;
+    }
     const telefono = normalizePhone(phone);
     if (telefono.length < 8) {
       setError('Introduce un teléfono válido.');
@@ -53,12 +62,47 @@ export default function CompleteProfile() {
     setLoading(true);
     setError(null);
     try {
+      const response = await requestClientOtp(MARKETPLACE_SLUG, telefono, 'REGISTER');
+      const debugCode = import.meta.env.DEV ? response.debugCode : undefined;
+      setChallenge({ id: response.challengeId, telefono, debugCode });
+      setCode(debugCode ?? '');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar el código.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirm = async () => {
+    if (!challenge) return;
+    if (code.trim().length < 4) {
+      setError('Introduce el código que te hemos enviado por SMS.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
       const session = loadClientSession();
-      await completeProfileClient({ telefono, ...(isGoogle ? {} : { password }) }, session!.token);
+      if (!session) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      const { verificationToken } = await verifyClientOtp(MARKETPLACE_SLUG, {
+        challengeId: challenge.id,
+        telefono: challenge.telefono,
+        code: code.trim(),
+        purpose: 'REGISTER',
+      });
+      const cliente = await completeProfileClient(
+        { telefono: challenge.telefono, verificationToken, ...(isGoogle ? {} : { password }) },
+        session.token,
+      );
+      // Sin esto la sesión seguiría sin teléfono y la reserva lo volvería a pedir.
+      saveClientSession({ ...session, cliente: { ...session.cliente, ...cliente } });
       notify('Perfil completado correctamente.', 'success');
       navigate(next, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar el perfil.');
+      setError(err instanceof Error ? err.message : 'No se pudo verificar el código.');
     } finally {
       setLoading(false);
     }
@@ -91,12 +135,33 @@ export default function CompleteProfile() {
               onChange={(e) => setPhone(e.target.value)}
               type="tel"
               autoComplete="tel"
-              disabled={loading}
+              disabled={loading || Boolean(challenge)}
             />
-            <span className="auth-help">Con prefijo internacional si estás fuera de España (+34…).</span>
+            <span className="auth-help">Te enviaremos un código por SMS para confirmarlo.</span>
           </label>
 
-          {!isGoogle && (
+          {challenge && (
+            <label>
+              Código SMS
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                disabled={loading}
+              />
+              <span className="auth-help">
+                Enviado al {challenge.telefono}.{' '}
+                <button type="button" className="btn-link-inline" disabled={loading} onClick={() => { setChallenge(null); setCode(''); setError(null); }}>
+                  Cambiar teléfono
+                </button>
+              </span>
+              {challenge.debugCode && <span className="auth-debug">Código de entorno de pruebas: {challenge.debugCode}</span>}
+            </label>
+          )}
+
+          {!isGoogle && !challenge && (
             <label>
               Contraseña
               <input
@@ -116,7 +181,7 @@ export default function CompleteProfile() {
 
           <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
             {loading && <span className="inline-spinner" aria-hidden="true" />}
-            {loading ? 'Guardando...' : 'Continuar'}
+            {loading ? 'Un momento…' : challenge ? 'Confirmar teléfono' : 'Enviar código'}
           </button>
         </form>
       </div>

@@ -112,7 +112,6 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             <SalonCard
               key={salon.id}
               {...salon}
-              nextSlot={salon.nextSlot}
               badges={salon.badges}
               onSelect={() => {
                 trackEvent('salon_click', { salonSlug: salon.slug, source: 'seo_landing' });

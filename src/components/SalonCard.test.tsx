@@ -43,4 +43,23 @@ describe('SalonCard', () => {
 
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
+
+  it('shows a new salon honestly: no fake rating, price or distance', () => {
+    render(
+      <SalonCard
+        {...mockSalon}
+        rating={0}
+        reviews={0}
+        desde={0}
+        distance=""
+        photos={['https://cdn.example.com/portada.jpg']}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Nuevo en Allop')).toBeInTheDocument();
+    expect(screen.queryByText(/Desde/)).not.toBeInTheDocument();
+    expect(screen.getByText('Barcelona')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: `Foto de ${mockSalon.name}` })).toHaveAttribute('src', 'https://cdn.example.com/portada.jpg');
+  });
 });

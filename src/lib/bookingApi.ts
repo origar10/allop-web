@@ -1,5 +1,6 @@
-import type { ProfessionalItem, ServiceItem } from './salonDetails';
-import { apiGet, apiPost, ApiError } from '../shared/apiClient';
+import type { PublicService } from '../data/salons';
+import { toServiceItem, type ProfessionalItem, type ServiceItem } from './salonDetails';
+import { apiGet, apiPost } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
 export interface BookingRequest {
@@ -43,82 +44,72 @@ export interface DaySlots {
   slots: string[];
 }
 
-function localConfirmation(params: BookingRequest): BookingConfirmation {
-  const suffix = params.idempotencyKey.slice(-6).toUpperCase();
+// La plataforma devuelve la Reserva tal cual la crea el core del salón.
+type CoreReserva = Partial<{ id: number | string; estado: string }>;
 
+export async function createBooking(params: BookingRequest): Promise<BookingConfirmation> {
+  // Sin red no se inventa una confirmación: el error llega a la pantalla y el cliente reintenta.
+  const payload = await apiPost<CoreReserva>(
+    `/salones/${encodeURIComponent(params.salonSlug)}/reservas`,
+    {
+      salonSlug: params.salonSlug,
+      serviceId: params.service.id,
+      professionalId: params.professional.id === 'any' ? null : params.professional.id,
+      date: params.date,
+      time: params.time,
+      clientName: params.clientName,
+      phone: params.phone,
+      email: params.email,
+      notes: params.notes,
+    },
+    {
+      token: params.token,
+      timeoutMs: 30000,
+      headers: { 'Idempotency-Key': params.idempotencyKey },
+    },
+  );
+
+  const id = String(payload.id ?? '');
+  const confirmed = String(payload.estado ?? '').toLowerCase() === 'confirmada';
   return {
-    id: `local-${suffix}`,
-    locator: `ALP-${suffix}`,
-    status: 'pending',
-    message: 'Reserva recibida. El salón confirmará la disponibilidad en breve.',
-    notification: 'Hemos preparado la confirmación por SMS/email con los datos indicados.',
+    id,
+    locator: `ALP-${id.padStart(6, '0').slice(-6)}`,
+    status: confirmed ? 'confirmed' : 'pending',
+    message: confirmed
+      ? 'Tu cita está confirmada. Ya aparece en la agenda del salón.'
+      : 'El salón ha recibido tu solicitud y te confirmará la cita.',
+    notification: 'Te llegará la confirmación por SMS al teléfono de tu cuenta.',
   };
 }
 
-export async function createBooking(params: BookingRequest): Promise<BookingConfirmation> {
-  try {
-    const payload = await apiPost<Partial<BookingConfirmation>>(
-      `/salones/${encodeURIComponent(params.salonSlug)}/reservas`,
-      {
-        salonSlug: params.salonSlug,
-        serviceId: params.service.id,
-        professionalId: params.professional.id === 'any' ? null : params.professional.id,
-        date: params.date,
-        time: params.time,
-        clientName: params.clientName,
-        phone: params.phone,
-        email: params.email,
-        notes: params.notes,
-      },
-      {
-        token: params.token,
-        headers: { 'Idempotency-Key': params.idempotencyKey },
-      },
-    );
-
-    return {
-      id: payload.id || params.idempotencyKey,
-      locator: payload.locator || `ALP-${params.idempotencyKey.slice(-6).toUpperCase()}`,
-      status: payload.status || 'pending',
-      message: payload.message || 'Reserva creada correctamente.',
-      notification: payload.notification || 'Confirmación enviada por SMS/email si el backend lo tiene configurado.',
-    };
-  } catch (error) {
-    // Re-throw API errors (4xx/5xx) so callers can show traceId to the user.
-    // Only fall back to local mode for network/timeout failures (no status).
-    if (error instanceof ApiError && error.status) throw error;
-    return localConfirmation(params);
-  }
-}
-
+// Servicios que el salón publica en allop.es (visibles y con id del core), en el orden de la ficha.
 export async function listApiServices(salonSlug: string, signal?: AbortSignal): Promise<ServiceItem[]> {
   try {
-    const path = `/salones/${encodeURIComponent(salonSlug)}/servicios`;
-    const items = await apiGet<unknown>(path, { signal });
-    const arr = Array.isArray(items) ? items : [];
-    return arr
-      .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null && !(item as Record<string, unknown>).archivado && (item as Record<string, unknown>).activo !== false)
-      .map((item) => {
-        const bloques = Array.isArray(item.bloques) ? item.bloques : [];
-        const totalMin = bloques.reduce((s: number, b: unknown) => {
-          const block = b as Record<string, unknown>;
-          return s + (Number(block.duracion_min) || 0);
-        }, 0) || 30;
-        const duration = totalMin >= 60
-          ? `${Math.floor(totalMin / 60)}h${totalMin % 60 ? ` ${totalMin % 60}min` : ''}`
-          : `${totalMin} min`;
-        return {
-          id: String(item.id),
-          name: String(item.nombre || ''),
-          duration,
-          durationMinutes: totalMin,
-          price: parseFloat(String(item.precio_base || '0')),
-        } as ServiceItem;
-      })
-      .filter((s) => s.name && s.price > 0);
+    const items = await apiGet<unknown>(`/salones/${encodeURIComponent(salonSlug)}/servicios`, { signal });
+    return (Array.isArray(items) ? items as PublicService[] : [])
+      .map(toServiceItem)
+      .filter((s): s is ServiceItem => s !== null && Boolean(s.name));
   } catch {
     return [];
   }
+}
+
+// Profesionales reales que hacen este servicio (el core ya descarta a quien lo tiene excluido).
+export async function listProfessionals(salonSlug: string, serviceId: string, signal?: AbortSignal): Promise<ProfessionalItem[]> {
+  const items = await apiGet<unknown>(
+    `/salones/${encodeURIComponent(salonSlug)}/servicios/${encodeURIComponent(serviceId)}/empleados`,
+    { signal },
+  );
+  return (Array.isArray(items) ? items : [])
+    .filter((e): e is Record<string, unknown> => typeof e === 'object' && e !== null && e.estado_activo !== false)
+    .map((e) => ({
+      id: String(e.id),
+      name: String(e.nombre || '').trim(),
+      role: 'Profesional',
+      avatarUrl: typeof e.avatar_url === 'string' ? e.avatar_url : null,
+      avatarColor: typeof e.avatarColor === 'string' ? e.avatarColor : null,
+    }))
+    .filter((e) => e.name);
 }
 
 function isDayStatus(value: unknown): value is DayStatus {

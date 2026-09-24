@@ -346,7 +346,7 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
             </div>
             <div className="salons-grid compact">
               {newSalons.map((salon) => (
-                <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
+                <SalonCard key={salon.id} {...salon} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
               ))}
             </div>
           </div>
@@ -366,7 +366,7 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
           </div>
           <div className="salons-grid compact">
             {nearbySalons.map((salon) => (
-              <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
+              <SalonCard key={salon.id} {...salon} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
             ))}
           </div>
         </div>
@@ -410,7 +410,7 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
           </div>
           <div className="salons-grid">
             {topSalons.map((salon) => (
-              <SalonCard key={salon.id} {...salon} nextSlot={salon.nextSlot} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
+              <SalonCard key={salon.id} {...salon} badges={salon.badges} onSelect={() => onOpenSalon(salon)} />
             ))}
           </div>
         </div>

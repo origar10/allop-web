@@ -33,8 +33,32 @@ export interface Salon {
   badges?: string[];
   promotions?: Promotion[];
   cancelPolicy?: string;
-  serviciosBasicos?: Array<{ nombre: string; duracion_min: number; precio: number | null; visible: boolean }>;
+  /** Web propia del salón (de su ficha). */
+  web?: string;
+  /** Reseñas publicadas (solo en la ficha de detalle). */
+  reviewsList?: PublicReview[];
+  serviciosBasicos?: PublicService[];
   horarioApertura?: Array<{ dia: string; abierto: boolean; franjas: Array<{ inicio: string; fin: string }> }>;
+}
+
+/** Servicio tal cual lo publica el salón en su ficha de allop.es. */
+export interface PublicService {
+  id?: number | null;
+  nombre: string;
+  duracion_min: number;
+  /** null = el salón no enseña el precio. */
+  precio: number | null;
+  categoria?: string | null;
+  visible?: boolean;
+}
+
+export interface PublicReview {
+  id: string;
+  author: string;
+  rating: number;
+  text: string;
+  date: string;
+  ownerReply?: string;
 }
 
 export interface RecentReview {

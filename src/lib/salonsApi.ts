@@ -1,4 +1,4 @@
-import { SALONS, type Salon } from '../data/salons';
+import { SALONS, type PublicReview, type PublicService, type Salon } from '../data/salons';
 import { apiGet } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
@@ -13,8 +13,11 @@ type PublicSalonPayload = Partial<{
   location: string;
   distancia: string | number;
   distance: string | number;
-  rating: string | number;
-  reviews: string | number;
+  distancia_km: number | null;
+  rating: string | number | null;
+  reviews: string | number | ApiReview[];
+  num_reviews: number;
+  web: string | null;
   desde: string | number;
   precioDesde: string | number;
   telefono: string;
@@ -29,7 +32,7 @@ type PublicSalonPayload = Partial<{
   foto_portada: string | null;
   galeria: string[];
   nextSlot: string;
-  servicios_basicos: Array<{ nombre: string; duracion_min: number; precio: number | null; visible: boolean }> | null;
+  servicios_basicos: PublicService[] | null;
   horario_apertura: Array<{ dia: string; abierto: boolean; franjas: Array<{ inicio: string; fin: string }> }> | null;
   proximoHueco: string;
   badges: string[];
@@ -37,6 +40,27 @@ type PublicSalonPayload = Partial<{
   verified: boolean;
   featured: boolean;
 }>;
+
+type ApiReview = Partial<{
+  id: string | number;
+  cliente_nombre: string;
+  puntuacion: number;
+  texto: string | null;
+  respuesta_salon: string | null;
+  fecha: string;
+}>;
+
+function mapReviews(value: unknown): PublicReview[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return (value as ApiReview[]).map((r, i) => ({
+    id: String(r.id ?? i),
+    author: r.cliente_nombre || 'Cliente',
+    rating: Number(r.puntuacion) || 0,
+    text: r.texto || '',
+    date: r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+    ownerReply: r.respuesta_salon || undefined,
+  }));
+}
 
 function asNumber(value: unknown, fallback: number) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -74,9 +98,11 @@ function mapApiSalon(item: PublicSalonPayload, index: number): Salon {
     name,
     category: item.categoria || item.category || fallback?.category || 'Peluquería',
     location: item.ciudad || item.location || fallback?.location || '',
-    distance: asDistance(item.distancia || item.distance, fallback?.distance ?? ''),
+    distance: asDistance(item.distancia_km ?? item.distancia ?? item.distance, fallback?.distance ?? ''),
     rating: asNumber(item.rating, fallback?.rating ?? 0),
-    reviews: asNumber(item.reviews, fallback?.reviews ?? 0),
+    reviews: asNumber(item.num_reviews ?? (Array.isArray(item.reviews) ? item.reviews.length : item.reviews), fallback?.reviews ?? 0),
+    reviewsList: mapReviews(item.reviews),
+    web: item.web || undefined,
     desde: asNumber(item.desde || item.precioDesde, fallback?.desde ?? 0),
     tags: Array.isArray(item.tags) && item.tags.length ? item.tags : (fallback?.tags ?? []),
     verified: typeof item.verified === 'boolean' ? item.verified : (fallback?.verified ?? false),

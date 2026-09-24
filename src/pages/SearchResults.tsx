@@ -68,7 +68,8 @@ function getAvailabilityRank(salon: Salon) {
 function sortSalons(salons: Salon[], sortBy: SortMode, userLocation: UserLocation | null = null) {
   return [...salons].sort((a, b) => {
     if (sortBy === 'rating') return b.rating - a.rating || b.reviews - a.reviews;
-    if (sortBy === 'price') return a.desde - b.desde || b.rating - a.rating;
+    // Sin precio publicado (desde 0) va al final, no delante como si fuera gratis.
+    if (sortBy === 'price') return (a.desde || Infinity) - (b.desde || Infinity) || b.rating - a.rating;
     if (sortBy === 'distance') return getDistanceValue(a, userLocation) - getDistanceValue(b, userLocation);
     if (sortBy === 'availability') return getAvailabilityRank(a) - getAvailabilityRank(b) || b.rating - a.rating;
 
@@ -381,7 +382,6 @@ export default function SearchResults() {
               <SalonCard
                 key={salon.id}
                 {...salon}
-                nextSlot={salon.nextSlot}
                 badges={salon.badges}
                 onSelect={() => openSalon(salon)}
               />
@@ -400,7 +400,7 @@ export default function SearchResults() {
                 <article key={salon.id}>
                   <button type="button" onClick={() => openSalon(salon)}>
                     <strong>{salon.name}</strong>
-                    <span>{salon.location} - {salon.distance} - {salon.nextSlot}</span>
+                    <span>{[salon.location, salon.distance].filter(Boolean).join(' · ')}</span>
                   </button>
                   <a href={getAppleMapsUrl(salon)} target="_blank" rel="noreferrer">
                     <MapPin size={13} />

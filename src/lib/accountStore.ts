@@ -1,5 +1,4 @@
-import { SALONS } from '../data/salons';
-import type { ClientProfile, ClientBooking } from './platformApi';
+import type { ClientProfile, MarketplaceBooking } from './platformApi';
 import type { ServiceItem } from './salonDetails';
 
 export interface AccountBooking {
@@ -10,7 +9,7 @@ export interface AccountBooking {
   startsAt: string;
   status: 'confirmada' | 'pendiente' | 'cancelada' | 'completada';
   locator: string;
-  price: number;
+  price: number | null;
   canReview: boolean;
 }
 
@@ -128,24 +127,26 @@ export function cancelStoredBooking(id: string) {
   return next;
 }
 
-export function bookingFromApi(item: ClientBooking, salonSlug: string, salonName: string): AccountBooking {
-  const status = item.estado === 'cancelada' || item.estado === 'cancelled'
+export function bookingFromApi(item: MarketplaceBooking): AccountBooking {
+  const estado = item.estado.toLowerCase();
+  const status = estado === 'cancelada' || estado === 'cancelled' || estado === 'no_show'
     ? 'cancelada'
-    : item.estado === 'completada' || item.estado === 'completed'
+    : estado === 'completada' || estado === 'completed'
       ? 'completada'
-      : item.estado === 'confirmada' || item.estado === 'confirmed'
+      : estado === 'confirmada' || estado === 'confirmed'
         ? 'confirmada'
         : 'pendiente';
+  const startsAt = new Date(`${item.fecha}T${item.hora}:00`);
 
   return {
     id: String(item.id),
-    salonSlug,
-    salonName,
+    salonSlug: item.salon.slug,
+    salonName: item.salon.nombre,
     serviceName: item.servicio?.nombre || 'Reserva',
-    startsAt: item.fecha_hora_inicio || new Date().toISOString(),
+    startsAt: Number.isNaN(startsAt.getTime()) ? new Date().toISOString() : startsAt.toISOString(),
     status,
     locator: `ALP-${String(item.id).padStart(6, '0').slice(-6)}`,
-    price: SALONS.find((salon) => salon.slug === salonSlug)?.desde || 0,
+    price: item.precio,
     canReview: status === 'completada',
   };
 }
@@ -172,53 +173,6 @@ export function createLocalBooking(params: {
     price: params.service.price,
     canReview: false,
   };
-}
-
-export function fallbackBookings() {
-  const first = SALONS[0];
-  const second = SALONS[1];
-  const third = SALONS[2];
-  const now = new Date();
-  const upcoming = new Date(now);
-  upcoming.setDate(now.getDate() + 2);
-  const completed = new Date(now);
-  completed.setDate(now.getDate() - 12);
-
-  return [
-    {
-      id: 'fallback-next',
-      salonSlug: first.slug,
-      salonName: first.name,
-      serviceName: 'Corte Peluquería',
-      startsAt: upcoming.toISOString(),
-      status: 'confirmada' as const,
-      locator: 'ALP-DEMO1',
-      price: first.desde,
-      canReview: false,
-    },
-    {
-      id: 'fallback-completed',
-      salonSlug: second.slug,
-      salonName: second.name,
-      serviceName: 'Balayage',
-      startsAt: completed.toISOString(),
-      status: 'completada' as const,
-      locator: 'ALP-DEMO2',
-      price: second.desde + 12,
-      canReview: true,
-    },
-    {
-      id: 'fallback-cancelled',
-      salonSlug: third.slug,
-      salonName: third.name,
-      serviceName: 'Corte y barba',
-      startsAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 25).toISOString(),
-      status: 'cancelada' as const,
-      locator: 'ALP-DEMO3',
-      price: third.desde,
-      canReview: false,
-    },
-  ];
 }
 
 export function loadProfileDraft(profile: ClientProfile): AccountProfileDraft {

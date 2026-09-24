@@ -10,19 +10,18 @@ import {
   MessageSquare,
   Phone,
   ShieldCheck,
-  Star,
   Trash2,
   UserRound,
 } from 'lucide-react';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { SALONS } from '../data/salons';
+import type { Salon } from '../data/salons';
+import { listMarketplaceSalons } from '../lib/salonsApi';
 import {
   bookingFromApi,
   cancelStoredBooking,
   deleteAccountData,
   exportAccountData,
-  fallbackBookings,
   loadCommsHistory,
   loadFavoriteSlugs,
   loadNotificationPreferences,
@@ -40,10 +39,11 @@ import {
 } from '../lib/accountStore';
 import { getEventLabel } from '../lib/notificationTemplates';
 import { clearClientSession, loadClientSession } from '../lib/clientSession';
-import { getClientBookings } from '../lib/platformApi';
+import { cancelClientBooking, getMarketplaceBookings } from '../lib/platformApi';
 import { useToast } from '../lib/useToast';
 import { statusFromItems, type AsyncStatus } from '../shared/asyncState';
 import { formatDateTime } from '../shared/formatters';
+import { formatPrice } from '../lib/salonDetails';
 
 type AccountView = 'dashboard' | 'reservas' | 'favoritos' | 'perfil' | 'puntos' | 'comunicaciones';
 
@@ -52,7 +52,6 @@ const ACCOUNT_NAV: { view: AccountView; label: string }[] = [
   { view: 'reservas', label: 'Reservas' },
   { view: 'favoritos', label: 'Favoritos' },
   { view: 'perfil', label: 'Perfil' },
-  { view: 'puntos', label: 'Puntos' },
   { view: 'comunicaciones', label: 'Comunicaciones' },
 ];
 
@@ -60,7 +59,6 @@ function getView(pathname: string): AccountView {
   if (pathname.includes('/reservas')) return 'reservas';
   if (pathname.includes('/favoritos')) return 'favoritos';
   if (pathname.includes('/perfil')) return 'perfil';
-  if (pathname.includes('/puntos')) return 'puntos';
   if (pathname.includes('/comunicaciones')) return 'comunicaciones';
   return 'dashboard';
 }
@@ -106,17 +104,18 @@ export default function Account() {
     const controller = new AbortController();
     const stored = loadStoredBookings();
 
-    getClientBookings(session.salonSlug, session.token, controller.signal)
+    getMarketplaceBookings(session.token, controller.signal)
       .then((items) => {
         if (!mounted) return;
-        const apiBookings = items.map((item) => bookingFromApi(item, session.salonSlug, session.salonName));
-        const next = [...stored, ...apiBookings];
-        setBookings(next.length ? next : fallbackBookings());
+        const apiBookings = items.map(bookingFromApi);
+        // Las guardadas en el dispositivo solo cuentan si el servidor aún no las devuelve.
+        const pending = stored.filter((b) => !apiBookings.some((a) => a.id === b.id && a.salonSlug === b.salonSlug));
+        setBookings(sortBookings([...pending, ...apiBookings]));
       })
       .catch((error) => {
         if (!mounted || controller.signal.aborted) return;
-        setBookingError(error instanceof Error ? error.message : 'No se pudo cargar el historial remoto.');
-        setBookings(stored.length ? stored : fallbackBookings());
+        setBookingError(error instanceof Error ? error.message : 'No se pudo cargar el historial.');
+        setBookings(sortBookings(stored));
       })
       .finally(() => {
         if (mounted) setLoadingBookings(false);
@@ -128,14 +127,9 @@ export default function Account() {
     };
   }, [session]);
 
-  const favoriteSalons = useMemo(() => {
-    const favorites = SALONS.filter((salon) => favoriteSlugs.includes(salon.slug));
-    return favorites.length ? favorites : SALONS.filter((salon) => salon.featured).slice(0, 3);
-  }, [favoriteSlugs]);
-
-  const upcomingBookings = bookings.filter((booking) => booking.status === 'confirmada' || booking.status === 'pendiente');
-  const completedBookings = bookings.filter((booking) => booking.status === 'completada');
-  const points = session?.cliente.puntosFidelizacion ?? Math.max(120, completedBookings.length * 75);
+  const upcomingBookings = bookings
+    .filter((booking) => isUpcoming(booking))
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const bookingStatus = statusFromItems(bookings, loadingBookings, bookingError);
 
   if (!session || !profile) {
@@ -151,12 +145,18 @@ export default function Account() {
     );
   }
 
-  const cancelBooking = (id: string) => {
-    const next = cancelStoredBooking(id);
-    setBookings(next.length ? next : bookings.map((booking) => (
-      booking.id === id ? { ...booking, status: 'cancelada' as const } : booking
+  const cancelBooking = async (booking: AccountBooking) => {
+    try {
+      await cancelClientBooking(booking.salonSlug, booking.id, session.token);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo cancelar la reserva.', 'error');
+      return;
+    }
+    cancelStoredBooking(booking.id);
+    setBookings((current) => current.map((item) => (
+      item.id === booking.id && item.salonSlug === booking.salonSlug ? { ...item, status: 'cancelada' as const } : item
     )));
-    notify('Reserva cancelada.', 'success');
+    notify('Reserva cancelada. El hueco queda libre en la agenda del salón.', 'success');
   };
 
   const submitProfile = (event: FormEvent<HTMLFormElement>) => {
@@ -257,8 +257,8 @@ export default function Account() {
             <>
               <div className="account-metrics">
                 <article><CalendarDays size={20} /><strong>{upcomingBookings.length}</strong><span>Próximas reservas</span></article>
-                <article><Heart size={20} /><strong>{favoriteSalons.length}</strong><span>Favoritos</span></article>
-                <article><Star size={20} /><strong>{points}</strong><span>Puntos</span></article>
+                <article><Heart size={20} /><strong>{favoriteSlugs.length}</strong><span>Favoritos</span></article>
+                <article><CheckCircle size={20} /><strong>{bookings.filter((b) => b.status === 'completada').length}</strong><span>Visitas</span></article>
               </div>
               <section className="account-card">
                 <div className="section-header">
@@ -285,7 +285,7 @@ export default function Account() {
                   <p className="section-subtitle">Historial completo con estado y acciones disponibles</p>
                 </div>
               </div>
-              {bookingError && <p className="market-alert" role="status" aria-live="polite">Mostrando reservas locales: {bookingError}</p>}
+              {bookingError && <p className="market-alert" role="status" aria-live="polite">No se pudo cargar el historial ({bookingError}). Mostramos las reservas guardadas en este dispositivo.</p>}
               <BookingList bookings={bookings} loading={loadingBookings} status={bookingStatus} onCancel={cancelBooking} />
               <form className="review-form" onSubmit={submitReview}>
                 <h3><MessageSquare size={18} /> Añadir reseña</h3>
@@ -428,21 +428,6 @@ export default function Account() {
             </>
           )}
 
-          {view === 'puntos' && (
-            <section className="account-card">
-              <h2 className="section-title">Puntos y fidelización</h2>
-              <div className="points-hero">
-                <strong>{points}</strong>
-                <span>{session.cliente.tierFidelizacion || 'Nivel cliente Allop'}</span>
-              </div>
-              <div className="points-list">
-                <article><CheckCircle size={18} /> +75 puntos por visita completada</article>
-                <article><Star size={18} /> {session.cliente.cortesGratisDisponibles || 0} recompensas disponibles</article>
-                <article><CalendarDays size={18} /> {session.cliente.sesionesFidelizacion || completedBookings.length} visitas registradas</article>
-              </div>
-            </section>
-          )}
-
           {view === 'comunicaciones' && (
             <section className="account-card">
               <h2 className="section-title"><Inbox size={20} /> Historial de comunicaciones</h2>
@@ -484,12 +469,28 @@ export default function Account() {
   );
 }
 
+const STATUS_LABEL: Record<AccountBooking['status'], string> = {
+  confirmada: 'Confirmada',
+  pendiente: 'Pendiente',
+  cancelada: 'Cancelada',
+  completada: 'Completada',
+};
+
+function isUpcoming(booking: AccountBooking) {
+  return (booking.status === 'confirmada' || booking.status === 'pendiente') && new Date(booking.startsAt).getTime() > Date.now();
+}
+
+function sortBookings(list: AccountBooking[]) {
+  return [...list].sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+}
+
 function BookingList({ bookings, loading, onCancel }: {
   bookings: AccountBooking[];
   loading: boolean;
   status?: AsyncStatus;
-  onCancel: (id: string) => void;
+  onCancel: (booking: AccountBooking) => Promise<void>;
 }) {
+  const [cancellingKey, setCancellingKey] = useState('');
   const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
   const [copiedLocator, setCopiedLocator] = useState('');
 
@@ -515,10 +516,13 @@ function BookingList({ bookings, loading, onCancel }: {
   return (
     <div className="account-bookings" data-state={status || statusFromItems(bookings, loading)}>
       {bookings.map((booking) => (
-        <article key={booking.id}>
+        <article key={`${booking.salonSlug}-${booking.id}`}>
           <div>
             <strong>{booking.serviceName}</strong>
-            <span>{booking.salonName} · {formatDateTime(booking.startsAt)}</span>
+            <span>
+              <Link to={`/salones/${booking.salonSlug}`}>{booking.salonName}</Link> · {formatDateTime(booking.startsAt)}
+              {booking.price !== null && booking.price > 0 && <> · {formatPrice(booking.price)}</>}
+            </span>
             <div className="booking-locator-row">
               <code className="booking-locator-code">{booking.locator}</code>
               <button
@@ -539,12 +543,24 @@ function BookingList({ bookings, loading, onCancel }: {
             </div>
           </div>
           <div className="booking-row-actions">
-            <span className={`status-pill ${booking.status}`}>{booking.status}</span>
-            {(booking.status === 'pendiente' || booking.status === 'confirmada') && (
+            <span className={`status-pill ${booking.status}`}>{STATUS_LABEL[booking.status]}</span>
+            {isUpcoming(booking) && (
               pendingCancelId === booking.id ? (
                 <div className="confirm-row">
                   <span>¿Cancelar?</span>
-                  <button type="button" className="btn btn-sm danger" onClick={() => { onCancel(booking.id); setPendingCancelId(null); }}>Sí</button>
+                  <button
+                    type="button"
+                    className="btn btn-sm danger"
+                    disabled={cancellingKey === booking.id}
+                    onClick={async () => {
+                      setCancellingKey(booking.id);
+                      await onCancel(booking);
+                      setCancellingKey('');
+                      setPendingCancelId(null);
+                    }}
+                  >
+                    {cancellingKey === booking.id ? 'Cancelando…' : 'Sí'}
+                  </button>
                   <button type="button" className="btn btn-sm btn-ghost" onClick={() => setPendingCancelId(null)}>No</button>
                 </div>
               ) : (
@@ -562,8 +578,29 @@ function BookingList({ bookings, loading, onCancel }: {
 }
 
 function FavoriteGrid({ slugs, onChange }: { slugs: string[]; onChange: (slugs: string[]) => void }) {
-  const salons = SALONS.filter((salon) => slugs.includes(salon.slug));
-  const visibleSalons = salons.length ? salons : SALONS.filter((salon) => salon.featured).slice(0, 3);
+  const [allSalons, setAllSalons] = useState<Salon[] | null>(null);
+
+  useEffect(() => {
+    if (!slugs.length) return undefined;
+    const controller = new AbortController();
+    listMarketplaceSalons(controller.signal)
+      .then(setAllSalons)
+      .catch(() => { if (!controller.signal.aborted) setAllSalons([]); });
+    return () => controller.abort();
+  }, [slugs.length]);
+
+  const visibleSalons = (allSalons ?? []).filter((salon) => slugs.includes(salon.slug));
+
+  if (!slugs.length) {
+    return (
+      <div className="account-loading">
+        Aún no tienes favoritos. Pulsa <Heart size={13} /> Guardar en la ficha de un salón para tenerlo a mano. <Link to="/buscar">Buscar salones</Link>
+      </div>
+    );
+  }
+  if (allSalons === null) {
+    return <div className="account-loading"><span className="inline-spinner" aria-hidden="true" /> Cargando favoritos…</div>;
+  }
 
   const removeFavorite = (slug: string) => {
     const next = slugs.filter((item) => item !== slug);
@@ -575,10 +612,15 @@ function FavoriteGrid({ slugs, onChange }: { slugs: string[]; onChange: (slugs: 
     <div className="account-favorites">
       {visibleSalons.map((salon) => (
         <article key={salon.slug}>
-          <div className={`account-favorite-media ${salon.imageClass}`} />
+          <div className="account-favorite-media salon-photo-empty">
+            {salon.photos?.[0] ? <img src={salon.photos[0]} alt="" loading="lazy" /> : <span>{salon.name.slice(0, 2).toUpperCase()}</span>}
+          </div>
           <div>
             <h3>{salon.name}</h3>
-            <p>{salon.location} · {salon.rating.toFixed(1)} · desde {salon.desde} €</p>
+            <p>
+              {[salon.location, salon.reviews > 0 ? `★ ${salon.rating.toFixed(1)}` : null, salon.desde > 0 ? `desde ${formatPrice(salon.desde)}` : null]
+                .filter(Boolean).join(' · ')}
+            </p>
             <div>
               <Link className="btn btn-primary" to={`/salones/${salon.slug}`}>Ver ficha</Link>
               {slugs.includes(salon.slug) && <button className="btn btn-ghost" type="button" onClick={() => removeFavorite(salon.slug)}>Quitar</button>}
