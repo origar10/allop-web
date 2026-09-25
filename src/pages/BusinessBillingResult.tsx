@@ -59,7 +59,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
         <p className="eyebrow">Alta recibida</p>
           <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? 'Checkout simulado preparado.' : 'Suscripcion enviada a Stripe.'}</h1>
           <p>{selfService
-            ? `El plan ${plan.name} ya está activo. Ya puedes configurar servicios, agenda, equipo y permisos.`
+            ? `El plan ${plan.name} ya está activo. Entra en tu panel o en la app Allop Pro con tu email y tu contraseña, y configura servicios, horario y equipo.`
             : `El plan ${plan.name} queda asociado al salon y el estado de activacion queda pendiente de configurar servicios, agenda, equipo y permisos.`
           }</p>
         <div className="billing-status-grid">

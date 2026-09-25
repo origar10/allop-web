@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle, CreditCard, FileText, Lock, MessageCircle, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { firstError, validateEmail, validateName, validatePhone, validateTaxId } from '../lib/validation';
 import {
   BILLING_PLANS,
@@ -11,6 +11,7 @@ import {
   buildContractMailto,
   calculateVat,
   createCheckoutSession,
+  registerSalon,
   formatPlanPrice,
   getBillingPlan,
   normalizeBillingPlanId,
@@ -34,13 +35,13 @@ const emptyProfile: BillingProfile = {
 };
 
 export default function BusinessSignup() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialPlan = normalizeBillingPlanId(searchParams.get('plan'));
   const [planId, setPlanId] = useState<BillingPlanId>(BILLING_PLANS.some((plan) => plan.id === initialPlan) ? initialPlan : 'basic');
   const [interval, setInterval] = useState<BillingInterval>('monthly');
   const [profile, setProfile] = useState<BillingProfile>(emptyProfile);
   const [honeypot, setHoneypot] = useState('');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [, setPricingReady] = useState(0);
@@ -49,7 +50,7 @@ export default function BusinessSignup() {
   const basePrice = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
   const vat = basePrice === null ? null : calculateVat(basePrice);
   const finalPrice = basePrice === null || vat === null ? null : basePrice + vat;
-  const messageIsError = Boolean(message && !message.startsWith('Alta'));
+  const messageIsError = Boolean(message);
 
   useEffect(() => {
     setSeo({
@@ -93,6 +94,10 @@ export default function BusinessSignup() {
       setMessage(error);
       return;
     }
+    if (plan.selfService && password.length < 8) {
+      setMessage('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
 
     setSubmitting(true);
 
@@ -103,16 +108,15 @@ export default function BusinessSignup() {
       return;
     }
 
-    const result = await createCheckoutSession(planId, interval, profile);
-    setSubmitting(false);
-
-    if (result.localFallback) {
-      setMessage('Alta guardada. En cuanto el pago esté disponible te llevaremos a la página de pago.');
-      navigate(result.url);
-      return;
+    try {
+      // 1) Se crea la cuenta del salón (con su contraseña) y 2) se abre el pago enlazado a ella.
+      const cuenta = await registerSalon(profile, password);
+      const result = await createCheckoutSession(planId, interval, profile, cuenta.slug);
+      window.location.assign(result.url);
+    } catch (err) {
+      setSubmitting(false);
+      setMessage(err instanceof Error && err.message ? err.message : 'No se ha podido completar el alta. Inténtalo de nuevo.');
     }
-
-    window.location.assign(result.url);
   };
 
   return (
@@ -181,6 +185,12 @@ export default function BusinessSignup() {
             <label>Razón social<input value={profile.fiscalName} onChange={(event) => setProfile({ ...profile, fiscalName: event.target.value })} /></label>
             <label>NIF/CIF<input value={profile.taxId} onChange={(event) => setProfile({ ...profile, taxId: event.target.value })} /></label>
           </div>
+          {plan.selfService && (
+            <label>Contraseña para entrar en tu panel y en la app
+              <input type="password" autoComplete="new-password" minLength={8} value={password}
+                onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo 8 caracteres" />
+            </label>
+          )}
           <label>Dirección fiscal<input value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
           <div className="auth-two-cols">
             <label>Ciudad<input value={profile.city} onChange={(event) => setProfile({ ...profile, city: event.target.value })} /></label>

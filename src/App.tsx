@@ -29,6 +29,7 @@ const LegalPage = lazy(() => import('./pages/LegalPage'));
 const Guides = lazy(() => import('./pages/Guides'));
 const Press = lazy(() => import('./pages/Press'));
 const BusinessSignup = lazy(() => import('./pages/BusinessSignup'));
+const BusinessVerify = lazy(() => import('./pages/BusinessVerify'));
 const BusinessBillingResult = lazy(() => import('./pages/BusinessBillingResult'));
 const AppleCallback = lazy(() => import('./pages/AppleCallback'));
 const GoogleCallback = lazy(() => import('./pages/GoogleCallback'));
@@ -258,6 +259,7 @@ export default function App() {
             <Route path="/prensa" element={<Press supportEmail={SUPPORT_EMAIL} />} />
             <Route path="/business" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
             <Route path="/business/alta" element={<BusinessSignup />} />
+            <Route path="/business/verificar" element={<BusinessVerify dashboardUrl={DASHBOARD_URL} />} />
             <Route path="/business/alta/success" element={<BusinessBillingResult mode="success" />} />
             <Route path="/business/alta/cancel" element={<BusinessBillingResult mode="cancel" />} />
             <Route path="/estado" element={<SystemStatus />} />

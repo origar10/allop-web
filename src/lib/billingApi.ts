@@ -181,7 +181,18 @@ export function recordBillingEvent(name: string, payload: BillingEvent['payload'
   trackEvent(name as AnalyticsEventName, payload);
 }
 
-export async function createCheckoutSession(planId: BillingPlanId, interval: BillingInterval, profile: BillingProfile) {
+/** Crea la cuenta del salón (antes de pagar). Devuelve su slug; si el alta estaba a medias, la retoma. */
+export async function registerSalon(profile: BillingProfile, password: string) {
+  return apiPost<{ ok: boolean; slug: string; retomada?: boolean }>('/registro/salon', {
+    nombre: profile.salonName.trim(),
+    email: profile.email.trim().toLowerCase(),
+    password,
+    telefono: profile.phone.trim(),
+    ciudad: profile.city.trim(),
+  });
+}
+
+export async function createCheckoutSession(planId: BillingPlanId, interval: BillingInterval, profile: BillingProfile, slug?: string) {
   const plan = getBillingPlan(planId);
   recordBillingEvent('checkout_started', { planId, interval, salonName: profile.salonName, coupon: profile.coupon || null });
 
@@ -194,21 +205,16 @@ export async function createCheckoutSession(planId: BillingPlanId, interval: Bil
     planId,
     interval,
     profile,
+    slug,
     successUrl: `${window.location.origin}/business/alta/success?plan=${planId}&interval=${interval}`,
     cancelUrl: `${window.location.origin}/business/alta/cancel?plan=${planId}&interval=${interval}`,
   };
 
-  try {
-    const data = await apiPost<{ url?: string; subscription?: SubscriptionSnapshot }>('/billing/checkout-sessions', payload);
-    if (data.subscription) writeSubscription(data.subscription);
-    if (!data.url) throw new Error('El backend no devolvio URL de Checkout.');
-
-    return { url: data.url, localFallback: false };
-  } catch {
-    const subscription = buildLocalSubscription(profile, planId, interval);
-    writeSubscription(subscription);
-    return { url: `/business/alta/success?plan=${planId}&interval=${interval}&fallback=1`, localFallback: true };
-  }
+  // Sin página de pago no hay alta: el error llega a la pantalla (antes se simulaba un éxito).
+  const data = await apiPost<{ url?: string; subscription?: SubscriptionSnapshot }>('/billing/checkout-sessions', payload);
+  if (data.subscription) writeSubscription(data.subscription);
+  if (!data.url) throw new Error('No hemos podido abrir la página de pago. Inténtalo de nuevo en unos minutos.');
+  return { url: data.url, localFallback: false };
 }
 
 export function buildSelfServiceSignup(profile: BillingProfile, planId: BillingPlanId = 'basic', interval: BillingInterval = 'monthly') {
