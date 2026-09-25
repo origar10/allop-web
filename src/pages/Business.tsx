@@ -6,14 +6,16 @@ import {
   CheckCircle,
   ChevronDown,
   ClipboardCheck,
+  Clock,
   CreditCard,
-  FileText,
+  Crown,
+  Globe,
   Headphones,
-  MessageCircle,
   MessageSquare,
-  PlayCircle,
   Receipt,
+  Server,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Store,
   Users,
@@ -22,46 +24,40 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { submitBusinessLead } from '../lib/businessLeads';
 import { trackEvent } from '../lib/analytics';
-import { CONTRACT_EMAIL, fetchPublicPricing } from '../lib/billingApi';
+import { fetchPublicPricing } from '../lib/billingApi';
 
 interface BusinessProps {
   supportEmail: string;
   dashboardUrl: string;
 }
 
-const plans = [
-  {
-    name: 'Basico',
-    price: '39 €',
-    period: '/mes',
-    detail: 'Para salones que quieren crear su cuenta y empezar sin revision manual.',
-    features: ['Alta self-service', 'Marketplace publico', 'Agenda online', 'Cuentas para empleados', 'Recordatorios basicos', 'Ficha del salon'],
-    limits: ['1 sede', 'Hasta 7 empleados', 'Reservas ilimitadas', 'Soporte estandar'],
-    selfService: true,
-    cta: 'Crear cuenta',
-    href: '/business/alta?plan=basic',
-    external: false,
-  },
-  {
-    name: 'A medida',
-    price: 'Pedir presupuesto',
-    period: '',
-    detail: 'Para marcas, varios salones o necesidades avanzadas.',
-    features: ['Multi-salon', 'Roles avanzados', 'Soporte prioritario', 'Integraciones a medida'],
-    limits: ['Varias sedes', 'Usuarios ilimitados', 'Acompanamiento dedicado'],
-    featured: true,
-    selfService: false,
-    cta: 'Pedir presupuesto',
-    href: `mailto:${CONTRACT_EMAIL}?subject=${encodeURIComponent('Presupuesto Allop A medida')}`,
-    external: true,
-  },
+const SIGNUP_HREF = '/business/alta?plan=basic';
+
+/** Precio del plan Básico por defecto; la API lo actualiza si el panel lo cambia. */
+const DEFAULT_PRICING = { monthly: 39, annual: 350 };
+
+const basicFeatures = [
+  'Agenda online y reservas las 24 horas',
+  'Ficha de tu salón en allop.es',
+  'Cuentas para tu equipo (hasta 7)',
+  'App Allop Pro en el móvil de cada profesional',
+  'Recordatorios de cita',
+  'Clientes con historial y notas',
+  'Reservas ilimitadas',
+  'Sin permanencia',
+];
+
+const startSteps = [
+  { icon: <Sparkles size={22} />, title: 'Crea tu cuenta', text: 'Rellena los datos del salón y elige pago mensual o anual. En unos minutos tienes el panel listo.' },
+  { icon: <ClipboardCheck size={22} />, title: 'Añade servicios y horario', text: 'Precios, duraciones, horario y tu equipo. Puedes cambiarlo cuando quieras.' },
+  { icon: <CalendarDays size={22} />, title: 'Empieza a recibir reservas', text: 'Comparte tu enlace de reservas y gestiona la agenda desde el ordenador o el móvil.' },
 ];
 
 const modules = [
-  { icon: <CalendarDays size={22} />, title: 'Agenda y reservas', text: 'Reservas online, disponibilidad por profesional y gestión de citas desde el panel.' },
-  { icon: <CreditCard size={22} />, title: 'Caja y facturación', text: 'Cobros, cierres de caja, facturas y trazabilidad de movimientos diarios.' },
-  { icon: <Users size={22} />, title: 'Clientes', text: 'Historial, fidelización, notas internas y seguimiento de próximas visitas.' },
-  { icon: <BarChart3 size={22} />, title: 'Operativa', text: 'Ventas, inventario, empleados, permisos y métricas para tomar decisiones.' },
+  { icon: <CalendarDays size={22} />, title: 'Agenda y reservas', text: 'Reservas online, disponibilidad por profesional y gestión de citas desde el panel o la app.' },
+  { icon: <Users size={22} />, title: 'Clientes', text: 'Historial, notas internas y seguimiento de próximas visitas de cada cliente.' },
+  { icon: <Smartphone size={22} />, title: 'App para tu equipo', text: 'Con Allop Pro cada profesional ve su agenda, sus clientes y ficha desde el móvil.' },
+  { icon: <BarChart3 size={22} />, title: 'Cobros y números', text: 'Cobros, ventas del día y ocupación para saber cómo va el salón de un vistazo.' },
 ];
 
 const metrics = [
@@ -98,20 +94,20 @@ const testimonials = [
 ];
 
 const integrations = [
-  { icon: <Receipt size={20} />, name: 'TPV y caja', text: 'Preparado para conectar cobros, cierres y facturación.' },
-  { icon: <MessageSquare size={20} />, name: 'WhatsApp/SMS', text: 'Recordatorios y confirmaciones según consentimiento.' },
-  { icon: <CreditCard size={20} />, name: 'Stripe', text: 'Base preparada para suscripciones y portal de cliente.' },
-  { icon: <Headphones size={20} />, name: 'Soporte', text: 'Canales de soporte y seguimiento operativo para salones.' },
+  { icon: <Receipt size={20} />, name: 'TPV y caja', text: 'Cobros y ventas del día conectados con la agenda.' },
+  { icon: <MessageSquare size={20} />, name: 'WhatsApp y SMS', text: 'Recordatorios y confirmaciones, siempre con el consentimiento del cliente.' },
+  { icon: <CreditCard size={20} />, name: 'Pago con tarjeta', text: 'Tu suscripción se paga con tarjeta de forma segura a través de Stripe.' },
+  { icon: <Headphones size={20} />, name: 'Soporte', text: 'Te ayudamos por email cuando lo necesites.' },
 ];
 
 const faqs = [
-  ['¿Tengo permanencia?', 'No planteamos permanencia para empezar. Si se contrata un plan anual o una migración a medida, se acuerda por escrito.'],
-  ['¿Podéis migrar mi agenda actual?', 'Sí. Podemos partir de papel, Excel, Google Calendar u otro software, y ordenar servicios, horarios y equipo.'],
-  ['¿Cuánto tarda el alta?', 'Un salón sencillo puede estar preparado en pocos días si tenemos servicios, horarios y datos básicos.'],
-  ['¿Necesito cambiar mi TPV?', 'No para empezar. Allop puede convivir con tu operativa actual y conectar integraciones cuando tenga sentido.'],
-  ['¿Qué pasa con pagos y facturas?', 'Los planes B2B se pueden preparar para suscripción y facturación. La parte sensible de tarjeta debe quedar en Stripe si se activa self-service.'],
-  ['¿Incluye formación?', 'Sí. El onboarding contempla una sesión inicial para servicios, agenda, equipo y primeras reservas.'],
-  ['¿Puedo cancelar?', 'Sí. La cancelación del servicio se acuerda según el plan contratado y el estado de configuración o migración.'],
+  ['¿Qué incluye el plan Básico?', 'Agenda online, ficha en allop.es, cuentas y app para tu equipo (hasta 7 personas), clientes con historial y recordatorios. Reservas ilimitadas.'],
+  ['¿Necesito hablar con alguien para empezar?', 'No. Te das de alta online, pagas con tarjeta y empiezas a configurar tu salón en el momento. Si te atascas, te ayudamos por email.'],
+  ['¿Tengo permanencia?', 'No. El plan Básico es mes a mes (o anual, si prefieres ahorrar) y lo puedes cancelar cuando quieras.'],
+  ['¿Cuánto tardo en tenerlo listo?', 'El alta son unos minutos. Con tus servicios, horario y equipo a mano, puedes recibir reservas el mismo día.'],
+  ['¿Necesito cambiar mi TPV?', 'No. Allop puede convivir con tu forma de cobrar actual.'],
+  ['¿Cuándo tiene sentido A medida?', 'Cuando quieres tu propia marca en todas partes: web y apps con tu nombre, varias sedes o una migración completa desde otro programa. Lo estudiamos contigo caso a caso.'],
+  ['¿Dónde se guardan los datos de mi tarjeta?', 'En Stripe, el proveedor de pagos. Allop no guarda datos de tarjeta.'],
 ];
 
 const comparisonRows = [
@@ -119,16 +115,7 @@ const comparisonRows = [
   ['Recordatorios', 'A mano o inexistentes', 'Mensajes sueltos', 'No transaccional', 'Automáticos'],
   ['Historial de clientes', 'Disperso', 'Conversaciones', 'No estructurado', 'Centralizado'],
   ['Caja y operaciones', 'Separado', 'Separado', 'No incluido', 'Conectado'],
-  ['Visibilidad marketplace', 'No disponible', 'No disponible', 'No disponible', 'Ficha pública Allop'],
-];
-
-const planLimitRows = [
-  ['Usuarios', 'Gestor + cuentas de empleados', 'A medida'],
-  ['Empleados', 'Hasta 7', 'A medida'],
-  ['Sedes', '1', 'Varias sedes'],
-  ['Reservas/mes', 'Sin limite', 'A medida'],
-  ['Recordatorios', 'Basicos', 'SMS/email segun contrato'],
-  ['Soporte', 'Estandar', 'Prioritario'],
+  ['Visibilidad', 'No disponible', 'No disponible', 'No disponible', 'Ficha en allop.es'],
 ];
 
 const useCases = [
@@ -139,16 +126,27 @@ const useCases = [
   ['Spa', 'Rituales, cabinas, reservas anticipadas y coordinación de equipo.'],
 ];
 
-const onboarding = [
-  ['Demo', 'Revisamos negocio, volumen, equipo y objetivo.'],
-  ['Configuración', 'Creamos servicios, horarios, profesionales y permisos.'],
-  ['Migración', 'Pasamos agenda y clientes desde papel, Excel o calendario.'],
-  ['Formación', 'Sesión corta para el equipo y primeros casos reales.'],
-  ['Producción', 'Publicamos ficha, activamos reservas y revisamos primeros días.'],
+const customPillars = [
+  { icon: <Globe size={22} />, title: 'Tu web de reservas', text: 'Con tu marca, tus colores y tu estilo. Tus clientes reservan contigo, no en un directorio.' },
+  { icon: <Smartphone size={22} />, title: 'Tus propias apps', text: 'App para tus clientes y app para tu equipo, con tu nombre y tu logo en App Store y Google Play.' },
+  { icon: <Server size={22} />, title: 'Un servidor solo para ti', text: 'Tu salón funciona en su propia instalación, con sus datos separados y a su ritmo.' },
+  { icon: <Crown size={22} />, title: 'Acompañamiento personal', text: 'Una persona de Allop contigo de principio a fin: migración, formación y lanzamiento.' },
+];
+
+const customProcess = [
+  ['Conversación', 'Nos cuentas tu salón y lo que quieres conseguir. Te decimos con sinceridad si A medida encaja.'],
+  ['Diseño', 'Preparamos tu web y tus apps con tu identidad de marca.'],
+  ['Migración', 'Traemos tu agenda y tus clientes desde Booksy, Fresha, Excel o papel.'],
+  ['Formación', 'Una sesión con tu equipo para arrancar con seguridad.'],
+  ['Lanzamiento', 'Publicamos tus apps y te acompañamos los primeros días.'],
 ];
 
 function buildTestimonialImage(baseUrl: string, width: number) {
   return `${baseUrl}?auto=format&fm=webp&fit=crop&w=${width}&q=72`;
+}
+
+function formatEuros(value: number) {
+  return `${Number.isInteger(value) ? value : value.toFixed(2).replace('.', ',')} €`;
 }
 
 export default function Business({ supportEmail, dashboardUrl }: BusinessProps) {
@@ -159,7 +157,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
     phone: '',
     email: '',
     city: '',
-    teamSize: '1-7',
+    teamSize: '1 sede',
     message: '',
   });
   const [leadMessage, setLeadMessage] = useState('');
@@ -167,17 +165,21 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
   const [monthlyBookings, setMonthlyBookings] = useState(280);
   const [noShowRate, setNoShowRate] = useState(8);
   const [adminHours, setAdminHours] = useState(35);
-  const [basicoPrice, setBasicoPrice] = useState<string | null>(null);
+  const [pricing, setPricing] = useState(DEFAULT_PRICING);
 
   useEffect(() => {
-    fetchPublicPricing().then((pricing) => {
-      if (pricing) setBasicoPrice(`${pricing.basicoMonthly} €`);
+    fetchPublicPricing().then((result) => {
+      if (result) setPricing({ monthly: result.basicoMonthly, annual: result.basicoAnnual });
     });
   }, []);
-  const demoHref = '#business-contact';
+
+  const monthlyPrice = formatEuros(pricing.monthly);
+  const annualSaving = Math.max(0, Math.round(pricing.monthly * 12 - pricing.annual));
   const avoidedNoShows = Math.round(monthlyBookings * (noShowRate / 100) * 0.45);
   const savedHours = Math.round(adminHours * 0.35);
   const estimatedValue = avoidedNoShows * 28 + savedHours * 14;
+
+  const trackSignup = (placement: string) => trackEvent('business_signup_cta', { placement });
 
   const submitLead = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -190,25 +192,23 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
     setSubmitting(true);
     const result = await submitBusinessLead({
       ...lead,
-      source: 'business_landing',
+      source: 'business_landing_a_medida',
       createdAt: new Date().toISOString(),
     });
     setSubmitting(false);
     trackEvent('business_lead_submitted', {
-      source: 'business_landing',
+      source: 'business_landing_a_medida',
       storedLocally: result.storedLocally,
       teamSize: lead.teamSize,
     });
-    setLeadMessage(result.storedLocally
-      ? 'Solicitud guardada. El CRM no respondió, pero no se ha perdido el lead.'
-      : 'Solicitud enviada. Te contactaremos para preparar la demo.');
+    setLeadMessage('Solicitud recibida. Revisamos cada proyecto con calma y te escribiremos en unos días.');
     setLead({
       salonName: '',
       contactName: '',
       phone: '',
       email: '',
       city: '',
-      teamSize: '1-7',
+      teamSize: '1 sede',
       message: '',
     });
   };
@@ -218,26 +218,26 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-hero">
         <div className="container business-hero-grid">
           <div className="business-hero-copy">
-            <p className="eyebrow">Allop para salones</p>
-            <h1>Todo lo que necesita tu salón para reservar, cobrar y crecer.</h1>
+            <p className="eyebrow">Allop para salones · Plan Básico</p>
+            <h1>Tu salón con reservas online desde hoy, por {monthlyPrice} al mes.</h1>
             <p>
-              Allop une marketplace, agenda, caja, clientes, empleados e inventario en una plataforma pensada para peluquerías, barberías y centros de estética.
+              Agenda, ficha en allop.es, clientes y una app para todo tu equipo. Te das de alta en unos minutos, sin llamadas ni permanencia.
             </p>
             <div className="business-actions">
-              <a className="btn btn-lg btn-primary" href={demoHref}>
-                Solicitar demo
+              <Link className="btn btn-lg btn-primary" to={SIGNUP_HREF} onClick={() => trackSignup('hero')}>
+                Empezar ahora
                 <ArrowRight size={16} />
-              </a>
-              <a className="btn btn-lg btn-ghost" href="#business-demo">
-                <PlayCircle size={16} />
-                Ver demo del panel
-              </a>
-              <Link className="btn btn-lg btn-ghost" to="/business/alta?plan=basic">
-                <CreditCard size={16} />
-                Empezar self-service
               </Link>
-              <a className="btn btn-lg btn-ghost" href={dashboardUrl}>Acceder al panel</a>
+              <a className="btn btn-lg btn-ghost" href="#precios">Ver qué incluye</a>
             </div>
+            <ul className="business-hero-trust" aria-label="Condiciones del plan Básico">
+              <li><CheckCircle size={15} /> Alta online en minutos</li>
+              <li><CheckCircle size={15} /> Sin permanencia</li>
+              <li><CheckCircle size={15} /> Reservas ilimitadas</li>
+            </ul>
+            <p className="business-hero-alt">
+              ¿Ya tienes cuenta? <a href={dashboardUrl}>Entra en tu panel</a>
+            </p>
           </div>
           <div className="business-visual" aria-label="Panel de gestión Allop">
             <div className="business-panel">
@@ -246,7 +246,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
                 <strong>12 citas</strong>
               </div>
               <div className="business-panel-row"><CalendarDays size={17} /> 10:30 Corte + color</div>
-              <div className="business-panel-row"><CreditCard size={17} /> Caja abierta · 284 €</div>
+              <div className="business-panel-row"><CreditCard size={17} /> Cobrado hoy · 284 €</div>
               <div className="business-panel-row"><Users size={17} /> 3 clientes nuevos</div>
             </div>
           </div>
@@ -264,11 +264,32 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         </div>
       </section>
 
-      <section className="business-band" id="operativa">
+      <section className="business-band" id="empezar">
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Operativa diaria</p>
+              <p className="eyebrow">Empieza hoy</p>
+              <h2 className="section-title">Tres pasos y tu salón ya recibe reservas.</h2>
+            </div>
+          </div>
+          <div className="business-steps">
+            {startSteps.map((step, index) => (
+              <article key={step.title}>
+                <div className="business-step-number">{index + 1}</div>
+                <div className="business-module-icon">{step.icon}</div>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="business-section" id="operativa">
+        <div className="container">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Tu día a día</p>
               <h2 className="section-title">Una rutina completa, no solo un calendario.</h2>
             </div>
           </div>
@@ -284,104 +305,35 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         </div>
       </section>
 
-      <section className="business-section" id="business-demo">
-        <div className="container business-demo-grid">
-          <div>
-            <p className="eyebrow">Demo del panel</p>
-            <h2 className="section-title">Un tour de 30 segundos por la operativa del salón.</h2>
-            <p className="business-demo-copy">Agenda, caja, clientes y equipo conviven en una pantalla preparada para el día a día: mirar huecos, cobrar, revisar clientes y cerrar jornada.</p>
-          </div>
-          <div className="business-demo-panel">
-            <div className="demo-timeline">
-              <span style={{ width: '72%' }} />
-            </div>
-            <div className="demo-screen">
-              <article><CalendarDays size={18} /><strong>Agenda</strong><span>12 citas hoy</span></article>
-              <article><CreditCard size={18} /><strong>Caja</strong><span>284 € abiertos</span></article>
-              <article><Users size={18} /><strong>Clientes</strong><span>3 nuevos</span></article>
-              <article><BarChart3 size={18} /><strong>Operativa</strong><span>Stock bajo en color</span></article>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="business-section" id="precios">
+      <section className="business-band" id="precios">
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Precios</p>
-              <h2 className="section-title">Planes claros para empezar y escalar.</h2>
+              <p className="eyebrow">Precio</p>
+              <h2 className="section-title">Un plan con todo lo que necesita tu salón.</h2>
             </div>
           </div>
-          <div className="business-pricing">
-            {plans.map((plan) => (
-              <article className={`business-plan ${plan.featured ? 'featured' : ''}`} key={plan.name}>
-                {plan.featured && <span className="plan-badge">Por contrato</span>}
-                <h3>{plan.name}</h3>
-                <div className="plan-price">{plan.selfService && basicoPrice ? basicoPrice : plan.price}{plan.period && <span>{plan.period}</span>}</div>
-                <p>{plan.detail}</p>
-                <ul>
-                  {[...plan.features, ...plan.limits].map((feature) => (
-                    <li key={feature}><CheckCircle size={16} /> {feature}</li>
-                  ))}
-                </ul>
-                {plan.external
-                  ? <a className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'} href={plan.href}>{plan.cta}</a>
-                  : <Link className={plan.featured ? 'btn btn-primary' : 'btn btn-ghost'} to={plan.href}>{plan.cta}</Link>
-                }
-              </article>
-            ))}
-          </div>
-
-          <div className="business-plan-table" aria-label="Comparativa de planes">
-            <div className="plan-table-row head">
-              <span>Función</span>
-              <strong>Basico</strong>
-              <strong>A medida</strong>
+          <article className="business-basic-plan">
+            <div className="business-basic-price">
+              <span className="plan-badge">Plan Básico</span>
+              <div className="plan-price">{monthlyPrice}<span>/mes + IVA</span></div>
+              <p>O {formatEuros(pricing.annual)} al año{annualSaving > 0 ? ` y te ahorras ${annualSaving} €` : ''}.</p>
+              <Link className="btn btn-lg btn-primary" to={SIGNUP_HREF} onClick={() => trackSignup('pricing')}>
+                Crear mi cuenta
+                <ArrowRight size={16} />
+              </Link>
+              <small>Sin permanencia. Cancela cuando quieras.</small>
             </div>
-            {['Marketplace', 'Agenda', 'Caja', 'Clientes', 'Inventario', 'Soporte'].map((row, index) => (
-              <div className="plan-table-row" key={row}>
-                <span>{row}</span>
-                <strong>{index < 2 ? 'Incluido' : index === 5 ? 'Estandar' : 'Opcional'}</strong>
-                <strong>{index < 5 ? 'Incluido' : 'Prioritario'}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div className="business-limit-table" aria-label="Límites de planes">
-            <div className="plan-table-row head">
-              <span>Límite</span>
-              <strong>Basico</strong>
-              <strong>A medida</strong>
-            </div>
-            {planLimitRows.map(([limit, basic, custom]) => (
-              <div className="plan-table-row" key={limit}>
-                <span>{limit}</span>
-                <strong>{basic}</strong>
-                <strong>{custom}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="business-band">
-        <div className="container business-includes-grid">
-          <div>
-            <p className="eyebrow">Qué incluye</p>
-            <h2 className="section-title">Módulos concretos para operar el salón.</h2>
-          </div>
-          <div className="business-includes-list">
-            {modules.map((module) => (
-              <article key={module.title}>
-                {module.icon}
-                <div>
-                  <h3>{module.title}</h3>
-                  <p>{module.text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+            <ul className="business-basic-features">
+              {basicFeatures.map((feature) => (
+                <li key={feature}><CheckCircle size={17} /> {feature}</li>
+              ))}
+            </ul>
+          </article>
+          <p className="business-custom-teaser">
+            <Crown size={16} />
+            ¿Buscas tu propia web y tus propias apps con tu marca? <a href="#a-medida">Descubre Allop A medida</a>
+          </p>
         </div>
       </section>
 
@@ -389,16 +341,19 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container business-calculator-grid">
           <div>
             <p className="eyebrow">Calculadora de ahorro</p>
-            <h2 className="section-title">Estima no-shows evitados y tiempo recuperado.</h2>
-            <p className="business-demo-copy">Es una estimación orientativa para hablar en la demo con números sobre reservas, ausencias y horas de gestión.</p>
+            <h2 className="section-title">Estima citas perdidas evitadas y tiempo recuperado.</h2>
+            <p className="business-demo-copy">Una estimación orientativa de lo que recuperas con reservas online y recordatorios.</p>
+            <Link className="btn btn-primary business-calculator-cta" to={SIGNUP_HREF} onClick={() => trackSignup('calculator')}>
+              Empezar por {monthlyPrice}/mes
+            </Link>
           </div>
           <div className="business-calculator">
-            <label>Reservas mensuales <strong>{monthlyBookings}</strong><input type="range" min="40" max="1200" step="20" value={monthlyBookings} onChange={(event) => setMonthlyBookings(Number(event.target.value))} /></label>
-            <label>No-shows actuales <strong>{noShowRate}%</strong><input type="range" min="1" max="25" step="1" value={noShowRate} onChange={(event) => setNoShowRate(Number(event.target.value))} /></label>
-            <label>Horas de gestión/mes <strong>{adminHours} h</strong><input type="range" min="5" max="120" step="5" value={adminHours} onChange={(event) => setAdminHours(Number(event.target.value))} /></label>
+            <label>Reservas al mes <strong>{monthlyBookings}</strong><input type="range" min="40" max="1200" step="20" value={monthlyBookings} onChange={(event) => setMonthlyBookings(Number(event.target.value))} /></label>
+            <label>Clientes que no se presentan <strong>{noShowRate}%</strong><input type="range" min="1" max="25" step="1" value={noShowRate} onChange={(event) => setNoShowRate(Number(event.target.value))} /></label>
+            <label>Horas de gestión al mes <strong>{adminHours} h</strong><input type="range" min="5" max="120" step="5" value={adminHours} onChange={(event) => setAdminHours(Number(event.target.value))} /></label>
             <div className="calculator-results">
-              <article><Calculator size={20} /><strong>{avoidedNoShows}</strong><span>no-shows evitables/mes</span></article>
-              <article><ClockIcon /><strong>{savedHours} h</strong><span>tiempo recuperado</span></article>
+              <article><Calculator size={20} /><strong>{avoidedNoShows}</strong><span>citas perdidas evitables al mes</span></article>
+              <article><Clock size={20} /><strong>{savedHours} h</strong><span>tiempo recuperado</span></article>
               <article><CreditCard size={20} /><strong>{estimatedValue} €</strong><span>valor mensual estimado</span></article>
             </div>
           </div>
@@ -460,8 +415,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Casos de uso</p>
-              <h2 className="section-title">Adaptado por tipo de negocio.</h2>
+              <p className="eyebrow">Para cada tipo de salón</p>
+              <h2 className="section-title">Adaptado a cómo trabajas.</h2>
             </div>
           </div>
           <div className="business-use-cases">
@@ -481,7 +436,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
           <div className="section-header">
             <div>
               <p className="eyebrow">Integraciones</p>
-              <h2 className="section-title">Conectores preparados para crecer sin rehacer tu operación.</h2>
+              <h2 className="section-title">Encaja con lo que ya usas.</h2>
             </div>
           </div>
           <div className="business-integrations">
@@ -499,13 +454,13 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-section">
         <div className="container business-faq-grid">
           <div>
-            <p className="eyebrow">FAQ salones</p>
-            <h2 className="section-title">Preguntas antes de dar el salto.</h2>
+            <p className="eyebrow">Preguntas frecuentes</p>
+            <h2 className="section-title">Antes de dar el salto.</h2>
           </div>
           <div className="business-faq">
             {faqs.map(([question, answer], index) => (
               <article className={openFaq === index ? 'active' : ''} key={question}>
-                <button type="button" onClick={() => setOpenFaq(openFaq === index ? -1 : index)}>
+                <button type="button" aria-expanded={openFaq === index} onClick={() => setOpenFaq(openFaq === index ? -1 : index)}>
                   {question}
                   <ChevronDown size={16} />
                 </button>
@@ -516,109 +471,96 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         </div>
       </section>
 
-      <section className="business-band">
-        <div className="container">
-          <div className="section-header">
-            <div>
-              <p className="eyebrow">Onboarding</p>
-              <h2 className="section-title">De demo a producción sin perder tu operativa.</h2>
-            </div>
-          </div>
-          <div className="business-process">
-            {onboarding.map(([title, text], index) => (
-              <article key={title}>
-                {index === 0 ? <MessageCircle size={24} /> : index === 1 ? <Sparkles size={24} /> : index === 2 ? <ClipboardCheck size={24} /> : index === 3 ? <Users size={24} /> : <ShieldCheck size={24} />}
-                <h3>{index + 1}. {title}</h3>
-                <p>{text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="business-section">
-        <div className="container business-lead-magnet">
-          <FileText size={24} />
-          <div>
-            <p className="eyebrow">Guía gratuita</p>
-            <h2>Checklist de digitalización y guía anti no-show para salones</h2>
-            <p>Un recurso práctico para revisar agenda, recordatorios, políticas de cancelación y datos mínimos antes de activar reservas online.</p>
-          </div>
-          <a className="btn btn-primary btn-lg" href="#business-contact">Pedir checklist</a>
-        </div>
-      </section>
-
-      <section className="business-section" id="business-contact">
-        <div className="container business-contact-grid">
-          <div>
-            <p className="eyebrow">Formulario de demo</p>
-            <h2 className="section-title">Cuéntanos qué necesitas y te guiamos.</h2>
-            <p className="business-demo-copy">Con el nombre del salón, ciudad y contacto podemos preparar una propuesta y activar el seguimiento comercial.</p>
-            <div className="business-support-widget">
-              <MessageCircle size={20} />
-              <div>
-                <strong>Soporte en vivo preparado</strong>
-                <span>Widget operativo listo para conectar con Crisp, Intercom o el canal que decidáis.</span>
-              </div>
-            </div>
-          </div>
-          <form className="business-lead-form" onSubmit={submitLead}>
-            <label>Nombre del salón<input value={lead.salonName} onChange={(event) => setLead({ ...lead, salonName: event.target.value })} /></label>
-            <label>Persona de contacto<input value={lead.contactName} onChange={(event) => setLead({ ...lead, contactName: event.target.value })} /></label>
-            <div className="auth-two-cols">
-              <label>Teléfono<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
-              <label>Email<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
-            </div>
-            <div className="auth-two-cols">
-              <label>Ciudad<input value={lead.city} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
-              <label>Equipo<select value={lead.teamSize} onChange={(event) => setLead({ ...lead, teamSize: event.target.value })}>
-                <option value="1-7">1-7 personas</option>
-                <option value="8+">8+ personas</option>
-              </select></label>
-            </div>
-            <label>Mensaje<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={4} /></label>
-            {leadMessage && (
-              <p
-                className={`auth-message ${leadMessage.includes('Indica') ? 'err' : 'ok'}`}
-                role={leadMessage.includes('Indica') ? 'alert' : 'status'}
-                aria-live={leadMessage.includes('Indica') ? 'assertive' : 'polite'}
-              >
-                {leadMessage}
-              </p>
-            )}
-            <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
-              {submitting && <span className="inline-spinner" aria-hidden="true" />}
-              {submitting ? 'Enviando...' : 'Solicitar demo'}
-            </button>
-            <a className="business-email-link" href={`mailto:${supportEmail}`}>También puedes escribir a {supportEmail}</a>
-          </form>
-        </div>
-      </section>
-
       <section className="business-final" id="empresa">
         <div className="container business-final-inner">
           <div>
-            <p className="eyebrow">Alta de salón</p>
-            <h2>Tu operativa puede empezar ordenada desde la primera demo.</h2>
-            <p>No hace falta tener todo decidido. Revisamos contigo servicios, horarios, equipo y próximos pasos.</p>
+            <p className="eyebrow">Plan Básico</p>
+            <h2>Empieza hoy y recibe tu primera reserva online esta misma semana.</h2>
+            <p>{monthlyPrice} al mes, sin permanencia. Configuras tu salón a tu ritmo y lo cambias cuando quieras.</p>
           </div>
           <div className="business-actions">
-            <a className="btn btn-lg btn-white" href={demoHref}>
-              <MessageCircle size={17} />
-              Contactar
-            </a>
-            <Link className="btn btn-lg btn-outline-white" to="/business/alta?plan=basic">
-              <CreditCard size={17} />
-              Alta self-service
+            <Link className="btn btn-lg btn-white" to={SIGNUP_HREF} onClick={() => trackSignup('final')}>
+              Crear mi cuenta
+              <ArrowRight size={17} />
             </Link>
             <a className="btn btn-lg btn-outline-white" href={dashboardUrl}>Ya tengo cuenta</a>
           </div>
         </div>
       </section>
+
+      <section className="business-exclusive" id="a-medida" aria-labelledby="a-medida-title">
+        <div className="container">
+          <div className="business-exclusive-head">
+            <p className="business-exclusive-eyebrow"><Crown size={15} /> Allop A medida</p>
+            <h2 id="a-medida-title">Tu marca, en todas partes.</h2>
+            <p>
+              Para salones que quieren su propia web y sus propias apps, con el motor de Allop por dentro.
+              Trabajamos con pocos salones a la vez para cuidar cada lanzamiento como si fuera el nuestro.
+            </p>
+          </div>
+
+          <div className="business-exclusive-pillars">
+            {customPillars.map((pillar) => (
+              <article key={pillar.title}>
+                <div className="business-exclusive-icon">{pillar.icon}</div>
+                <h3>{pillar.title}</h3>
+                <p>{pillar.text}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="business-exclusive-process">
+            <h3>Así lo lanzamos contigo</h3>
+            <ol>
+              {customProcess.map(([title, text]) => (
+                <li key={title}>
+                  <strong>{title}</strong>
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="business-exclusive-contact" id="business-contact">
+            <div>
+              <h3>Solicita tu plaza</h3>
+              <p>Cuéntanos tu proyecto. Estudiamos cada solicitud y te respondemos personalmente con una propuesta.</p>
+              <p className="business-exclusive-note"><ShieldCheck size={16} /> Precio según proyecto. Sin compromiso hasta que firmes.</p>
+              <a className="business-email-link" href={`mailto:${supportEmail}`}>O escríbenos a {supportEmail}</a>
+            </div>
+            <form className="business-lead-form" onSubmit={submitLead}>
+              <label>Nombre del salón<input value={lead.salonName} onChange={(event) => setLead({ ...lead, salonName: event.target.value })} /></label>
+              <label>Persona de contacto<input value={lead.contactName} onChange={(event) => setLead({ ...lead, contactName: event.target.value })} /></label>
+              <div className="auth-two-cols">
+                <label>Teléfono<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
+                <label>Email<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
+              </div>
+              <div className="auth-two-cols">
+                <label>Ciudad<input value={lead.city} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
+                <label>Sedes<select value={lead.teamSize} onChange={(event) => setLead({ ...lead, teamSize: event.target.value })}>
+                  <option value="1 sede">1 sede</option>
+                  <option value="2-3 sedes">2 o 3 sedes</option>
+                  <option value="4+ sedes">4 sedes o más</option>
+                </select></label>
+              </div>
+              <label>Qué te gustaría conseguir<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={4} placeholder="Por ejemplo: app propia para mis clientas, migrar desde Booksy…" /></label>
+              {leadMessage && (
+                <p
+                  className={`auth-message ${leadMessage.includes('Indica') ? 'err' : 'ok'}`}
+                  role={leadMessage.includes('Indica') ? 'alert' : 'status'}
+                  aria-live={leadMessage.includes('Indica') ? 'assertive' : 'polite'}
+                >
+                  {leadMessage}
+                </p>
+              )}
+              <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
+                {submitting && <span className="inline-spinner" aria-hidden="true" />}
+                {submitting ? 'Enviando...' : 'Solicitar acceso'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
     </>
   );
-}
-
-function ClockIcon() {
-  return <CalendarDays size={20} />;
 }

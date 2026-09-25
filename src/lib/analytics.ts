@@ -14,6 +14,7 @@ export type AnalyticsEventName =
   | 'booking_abandoned'
   | 'registration_completed'
   | 'business_lead_submitted'
+  | 'business_signup_cta'
   | 'plan_viewed'
   | 'checkout_started'
   | 'checkout_completed'

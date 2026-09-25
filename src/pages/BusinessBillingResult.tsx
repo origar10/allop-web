@@ -16,7 +16,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
   useEffect(() => {
     setSeo({
       title: mode === 'success' ? 'Alta recibida | Allop Business' : 'Checkout cancelado | Allop Business',
-      description: mode === 'success' ? 'Estado de activacion de la suscripcion B2B de Allop.' : 'Recupera el alta self-service de Allop Business.',
+      description: mode === 'success' ? 'Estado de activacion de la suscripcion B2B de Allop.' : 'Retoma el alta de tu salón en Allop.',
       canonicalPath: mode === 'success' ? '/business/alta/success' : '/business/alta/cancel',
     });
     recordBillingEvent(mode === 'success' ? 'checkout_completed' : 'checkout_abandoned', { fallback });
@@ -59,12 +59,12 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
         <p className="eyebrow">Alta recibida</p>
           <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? 'Checkout simulado preparado.' : 'Suscripcion enviada a Stripe.'}</h1>
           <p>{selfService
-            ? `El plan ${plan.name} queda activo sin revision manual. Ya puedes configurar servicios, agenda, equipo y permisos.`
+            ? `El plan ${plan.name} ya está activo. Ya puedes configurar servicios, agenda, equipo y permisos.`
             : `El plan ${plan.name} queda asociado al salon y el estado de activacion queda pendiente de configurar servicios, agenda, equipo y permisos.`
           }</p>
         <div className="billing-status-grid">
           <article><CreditCard size={18} /><strong>{subscription?.status || 'trialing'}</strong><span>Estado de suscripcion</span></article>
-          <article><Receipt size={18} /><strong>{selfService ? 'self-service' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripcion</span></article>
+          <article><Receipt size={18} /><strong>{selfService ? 'Alta online' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripcion</span></article>
           <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>Activacion del salon</span></article>
         </div>
         {portalMessage && <p className="auth-message ok" role="status" aria-live="polite">{portalMessage}</p>}

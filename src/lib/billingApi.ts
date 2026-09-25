@@ -73,7 +73,7 @@ export const BILLING_PLANS: BillingPlan[] = [
     bookings: 'Sin limite',
     reminders: 'Básicos',
     support: 'Estándar',
-    features: ['Alta self-service', 'Ficha pública', 'Agenda online', 'Cuentas para empleados', 'Recordatorios básicos', 'Sin revisión manual'],
+    features: ['Alta online en minutos', 'Ficha pública', 'Agenda online', 'Cuentas para empleados', 'Recordatorios básicos', 'Sin permanencia'],
     selfService: true,
     stripePriceEnvMonthly: 'STRIPE_PRICE_BASIC_MONTHLY',
     stripePriceEnvAnnual: 'STRIPE_PRICE_BASIC_ANNUAL',
@@ -89,7 +89,7 @@ export const BILLING_PLANS: BillingPlan[] = [
     bookings: 'A medida',
     reminders: 'SMS/email según contrato',
     support: 'Prioritario',
-    features: ['Multi-salón', 'Roles avanzados', 'Integraciones a medida', 'Migración acompañada', 'Contrato personalizado'],
+    features: ['Web y apps con tu marca', 'Servidor propio', 'Varias sedes', 'Migración acompañada', 'Acompañamiento personal'],
     selfService: false,
   },
 ];

@@ -26,7 +26,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
       { heading: 'Servicio', text: ['Allop permite buscar salones, consultar fichas, reservar servicios y gestionar informacion operativa.', 'Para salones, Allop puede ofrecer agenda, caja, clientes, equipo, facturacion, suscripciones y soporte.'] },
       { heading: 'Reservas', text: ['Las reservas pueden quedar pendientes o confirmadas segun disponibilidad y reglas del salon.', 'El salon es responsable de prestar el servicio contratado y comunicar condiciones especificas de cancelacion, retrasos o no-show.'] },
       { heading: 'Cuenta', text: ['El usuario debe facilitar datos veraces y mantener la confidencialidad del acceso OTP o cuenta.', 'Allop puede limitar funcionalidades si detecta abuso, spam, fraude o incumplimiento.'] },
-      { heading: 'Pagos B2B', text: ['Las suscripciones B2B se gestionan mediante Stripe Checkout y Stripe Customer Portal cuando el self-service este activo.', 'Allop no guarda datos de tarjeta.'] },
+      { heading: 'Pagos B2B', text: ['Las suscripciones B2B se gestionan mediante Stripe Checkout y Stripe Customer Portal cuando el alta online esté activa.', 'Allop no guarda datos de tarjeta.'] },
       { heading: 'Cambios', text: ['Podemos actualizar estos terminos. La version publicada indicara la fecha de ultima actualizacion.'] },
     ],
   },
@@ -67,7 +67,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     sections: [
       { heading: 'Roles', text: ['El salon actua como responsable de los datos de sus clientes cuando usa Allop para gestionar reservas, agenda, comunicaciones e historial.', 'Allop/Origar SL actua como encargado del tratamiento respecto a esos datos operativos.'] },
       { heading: 'Objeto y duracion', text: ['Tratamiento necesario para prestar software de agenda, reservas, caja, clientes, soporte, facturacion y comunicaciones transaccionales.', 'La duracion queda vinculada al contrato o suscripcion B2B del salon.'] },
-      { heading: 'Medidas', text: ['Control de acceso por cuenta, minimizacion de datos, registros operativos, backups segun entorno y separacion de secretos en backend.', 'Stripe trata datos de pago directamente cuando se activa self-service.'] },
+      { heading: 'Medidas', text: ['Control de acceso por cuenta, minimizacion de datos, registros operativos, backups segun entorno y separacion de secretos en backend.', 'Stripe trata datos de pago directamente en el alta online.'] },
       { heading: 'Subencargados', text: ['Podran intervenir proveedores de hosting, mensajeria, analitica consentida, soporte y pagos. Se documentaran antes de produccion real.'] },
       { heading: 'Fin de servicio', text: ['Al terminar el servicio, el salon podra solicitar exportacion, devolucion o supresion de datos conforme a plazos legales y obligaciones fiscales.'] },
     ],

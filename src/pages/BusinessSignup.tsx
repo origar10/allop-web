@@ -53,8 +53,8 @@ export default function BusinessSignup() {
 
   useEffect(() => {
     setSeo({
-      title: 'Alta self-service para salones | Allop',
-      description: 'Crea una cuenta Basico self-service o pide presupuesto para Allop a medida.',
+      title: 'Da de alta tu salón | Allop',
+      description: 'Crea tu cuenta del plan Básico en unos minutos o solicita Allop A medida.',
       canonicalPath: '/business/alta',
     });
   }, []);
@@ -107,7 +107,7 @@ export default function BusinessSignup() {
     setSubmitting(false);
 
     if (result.localFallback) {
-      setMessage('Alta self-service guardada. Cuando el backend Stripe responda, esta accion redirigira a Stripe Checkout.');
+      setMessage('Alta guardada. En cuanto el pago esté disponible te llevaremos a la página de pago.');
       navigate(result.url);
       return;
     }
@@ -119,13 +119,13 @@ export default function BusinessSignup() {
     <section className="billing-page">
       <div className="container billing-layout">
         <div className="billing-copy">
-          <p className="eyebrow">Alta B2B</p>
-          <h1>Basico: cuenta self-service. A medida: pedir presupuesto.</h1>
-          <p>Basico permite crear la cuenta sin revision manual. A medida se gestiona por contrato y abre un correo directo a {CONTRACT_EMAIL}.</p>
+          <p className="eyebrow">Alta de salón</p>
+          <h1>Tu salón en Allop, en unos minutos.</h1>
+          <p>Con el plan Básico creas tu cuenta ahora mismo y empiezas a configurar tu salón al momento. Si buscas web y apps con tu marca, solicita Allop A medida y te escribimos personalmente.</p>
           <div className="billing-security">
-            <span><ShieldCheck size={16} /> Alta Basico sin revision</span>
-            <span><RotateCcw size={16} /> Configuracion editable despues</span>
-            <span><Lock size={16} /> Contratos por email corporativo</span>
+            <span><ShieldCheck size={16} /> Activo al momento</span>
+            <span><RotateCcw size={16} /> Lo cambias cuando quieras</span>
+            <span><Lock size={16} /> Pago seguro, sin permanencia</span>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export default function BusinessSignup() {
           </label>
 
           {canSelectInterval && (
-            <div className="billing-toggle" aria-label="Intervalo de facturacion">
+            <div className="billing-toggle" aria-label="Forma de pago">
               <button type="button" className={interval === 'monthly' ? 'active' : ''} onClick={() => setInterval('monthly')}>Mensual</button>
               <button type="button" className={interval === 'annual' ? 'active' : ''} onClick={() => setInterval('annual')}>Anual</button>
             </div>
@@ -146,7 +146,7 @@ export default function BusinessSignup() {
               <button key={item.id} type="button" className={planId === item.id ? 'active' : ''} onClick={() => setPlanId(item.id)}>
                 <strong>{item.name}</strong>
                 <span>{formatPlanPrice(item, interval)}</span>
-                {item.selfService && <small>Alta sin revision manual</small>}
+                {item.selfService ? <small>Activo al momento</small> : <small>Por solicitud</small>}
               </button>
             ))}
           </div>
@@ -165,26 +165,26 @@ export default function BusinessSignup() {
               <span>IVA 21%</span>
               <strong>{vat === null ? 'Se confirma antes de contratar' : `${vat.toFixed(2)} EUR`}</strong>
               <span>Total</span>
-              <strong>{finalPrice === null ? (plan.selfService ? 'Alta self-service' : 'Contrato por email') : `${finalPrice.toFixed(2)} EUR`}</strong>
+              <strong>{finalPrice === null ? (plan.selfService ? 'Alta online' : 'Según proyecto') : `${finalPrice.toFixed(2)} EUR`}</strong>
             </div>
           </div>
 
           <div className="auth-two-cols">
-            <label>Salon<input value={profile.salonName} onChange={(event) => setProfile({ ...profile, salonName: event.target.value })} /></label>
+            <label>Salón<input value={profile.salonName} onChange={(event) => setProfile({ ...profile, salonName: event.target.value })} /></label>
             <label>Contacto<input value={profile.contactName} onChange={(event) => setProfile({ ...profile, contactName: event.target.value })} /></label>
           </div>
           <div className="auth-two-cols">
-            <label>Email facturacion<input type="email" value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} /></label>
-            <label>Telefono<input type="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
+            <label>Email de facturación<input type="email" value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} /></label>
+            <label>Teléfono<input type="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
           </div>
           <div className="auth-two-cols">
-            <label>Razon social<input value={profile.fiscalName} onChange={(event) => setProfile({ ...profile, fiscalName: event.target.value })} /></label>
+            <label>Razón social<input value={profile.fiscalName} onChange={(event) => setProfile({ ...profile, fiscalName: event.target.value })} /></label>
             <label>NIF/CIF<input value={profile.taxId} onChange={(event) => setProfile({ ...profile, taxId: event.target.value })} /></label>
           </div>
-          <label>Direccion fiscal<input value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
+          <label>Dirección fiscal<input value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
           <div className="auth-two-cols">
             <label>Ciudad<input value={profile.city} onChange={(event) => setProfile({ ...profile, city: event.target.value })} /></label>
-            <label>Cupon<input value={profile.coupon} onChange={(event) => setProfile({ ...profile, coupon: event.target.value })} placeholder="Opcional" /></label>
+            <label>Cupón<input value={profile.coupon} onChange={(event) => setProfile({ ...profile, coupon: event.target.value })} placeholder="Opcional" /></label>
           </div>
 
           {message && (
@@ -196,19 +196,19 @@ export default function BusinessSignup() {
           <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
             {submitting && <span className="inline-spinner" aria-hidden="true" />}
             {plan.selfService ? <CreditCard size={16} /> : <MessageCircle size={16} />}
-            {submitting ? 'Preparando...' : plan.selfService ? 'Ir a Stripe Checkout' : 'Enviar correo a contratos'}
+            {submitting ? 'Preparando...' : plan.selfService ? 'Continuar al pago' : 'Solicitar A medida'}
           </button>
           {plan.selfService
-            ? <p className="billing-note"><FileText size={14} /> Sin revision manual: Stripe gestiona el pago de Basico y Allop no guarda datos de tarjeta.</p>
-            : <p className="billing-note"><FileText size={14} /> A medida se solicita por contrato. El formulario abrira un correo a {CONTRACT_EMAIL} con tus datos.</p>
+            ? <p className="billing-note"><FileText size={14} /> El pago lo gestiona Stripe de forma segura. Allop no guarda los datos de tu tarjeta.</p>
+            : <p className="billing-note"><FileText size={14} /> Se abrirá un correo a {CONTRACT_EMAIL} con tus datos para estudiar tu proyecto.</p>
           }
         </form>
       </div>
 
       <div className="container billing-next">
-        <article><Sparkles size={18} /><strong>Self-service</strong><span>Basico queda activo al completar el formulario, sin cola de revision.</span></article>
-        <article><CheckCircle size={18} /><strong>Configuracion</strong><span>Despues puedes ordenar servicios, horarios, equipo y datos fiscales.</span></article>
-        <article><ArrowRight size={18} /><strong>Contrato</strong><span>A medida se centraliza por email en {CONTRACT_EMAIL}.</span></article>
+        <article><Sparkles size={18} /><strong>Activo al momento</strong><span>El plan Básico queda activo en cuanto completas el alta.</span></article>
+        <article><CheckCircle size={18} /><strong>Configuración</strong><span>Después añades servicios, horarios, equipo y datos fiscales a tu ritmo.</span></article>
+        <article><ArrowRight size={18} /><strong>A medida</strong><span>Web y apps con tu marca. Escríbenos a {CONTRACT_EMAIL} y lo estudiamos contigo.</span></article>
       </div>
     </section>
   );
