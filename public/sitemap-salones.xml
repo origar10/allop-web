@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://allop.es/salones</loc></url>
-  <url><loc>https://allop.es/salones/feromi</loc></url>
-  <url><loc>https://allop.es/salones/lumiere-studio</loc></url>
-  <url><loc>https://allop.es/salones/barberia-marcel</loc></url>
-  <url><loc>https://allop.es/salones/nuvo-beauty</loc></url>
-  <url><loc>https://allop.es/salones/aura-spa</loc></url>
-  <url><loc>https://allop.es/salones/glow-studio</loc></url>
+  <url><loc>https://allop.es/salones/barberia-el-puerto-demo</loc></url>
+  <url><loc>https://allop.es/salones/bruma-estetica-demo</loc></url>
+  <url><loc>https://allop.es/salones/estudio-nacar-demo</loc></url>
+  <url><loc>https://allop.es/salones/unas-de-lua-demo</loc></url>
 </urlset>

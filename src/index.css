@@ -252,6 +252,13 @@ section[id] { scroll-margin-top: 84px; }
 .cookie-banner p { color: var(--fg-3); font-size: 13px; line-height: 1.55; margin: 4px 0; }
 .cookie-banner a { color: var(--accent); font-size: 13px; font-weight: 900; }
 .cookie-actions { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+/* En móvil el aviso iba en fila y los botones (que no encogen) dejaban el texto en una columna
+   de una palabra por línea tapando media pantalla: se apila y los botones ocupan el ancho. */
+@media (max-width: 640px) {
+  .cookie-banner { flex-direction: column; align-items: stretch; gap: 12px; left: 12px; right: 12px; bottom: 12px; }
+  .cookie-actions { flex-shrink: 1; }
+  .cookie-actions .btn { flex: 1 1 0; }
+}
 .toast-region { position: fixed; right: 18px; bottom: 92px; z-index: var(--z-toast); display: grid; gap: 8px; width: min(360px, calc(100vw - 36px)); pointer-events: none; }
 .toast { padding: 12px 14px; border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius-sm); background: var(--surface); color: var(--fg-2); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 800; pointer-events: auto; }
 .toast-success { border-left-color: #16A34A; }

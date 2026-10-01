@@ -5,7 +5,23 @@ import { join } from 'node:path';
 const site = 'https://allop.es';
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 
-const salons = ['feromi', 'lumiere-studio', 'barberia-marcel', 'nuvo-beauty', 'aura-spa', 'glow-studio'];
+// Salones publicados de verdad, leídos de la API al compilar. Antes era una lista fija de
+// nombres de ejemplo que daban 404 (y no incluía ninguno de los publicados): Google indexaba
+// páginas rotas. Si la API no responde, solo se publica /salones, nunca enlaces inventados.
+async function salonesPublicados() {
+  const api = (process.env.VITE_API_URL || 'https://api.allop.es/api').replace(/\/$/, '');
+  try {
+    const res = await fetch(`${api}/salones`, { signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const lista = Array.isArray(data) ? data : data.salones ?? data.data ?? [];
+    return lista.map((s) => s.slug).filter((slug) => typeof slug === 'string' && /^[a-z0-9-]+$/.test(slug));
+  } catch (err) {
+    console.warn(`Sitemap: no se pudo leer la lista de salones (${err.message}); solo se incluye /salones.`);
+    return [];
+  }
+}
+const salons = await salonesPublicados();
 const services = ['peluqueria', 'barberia', 'estetica', 'unas', 'masajes', 'maquillaje', 'manicura', 'corte'];
 const categories = ['cabello', 'belleza', 'bienestar'];
 const cities = ['barcelona', 'rubi', 'sabadell', 'terrassa'];

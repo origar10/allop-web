@@ -8,6 +8,15 @@ interface SeoOptions {
   type?: string;
 }
 
+// Páginas que no deben salir en buscadores: cuenta, acceso, pasos intermedios de alta y
+// reserva, resultados de OAuth y la 404 (el servidor responde 200 a todo, es una SPA).
+const RUTAS_PRIVADAS = [/^\/login/, /^\/register/, /^\/mi-cuenta/, /^\/completar-perfil/, /^\/auth\//,
+  /^\/business\/verificar/, /^\/business\/alta\/(success|cancel)/, /^\/reservar\//, /^\/404$/];
+
+export function esRutaPrivada(path: string) {
+  return RUTAS_PRIVADAS.some((re) => re.test(path));
+}
+
 function getAbsoluteUrl(path: string) {
   if (path.startsWith('http')) return path;
   return `${SITE_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
@@ -30,6 +39,10 @@ export function setSeo({ title, description, canonicalPath, image = '/allop-icon
   document.title = title;
 
   upsertMeta('meta[name="description"]', { name: 'description', content: description });
+  upsertMeta('meta[name="robots"]', {
+    name: 'robots',
+    content: esRutaPrivada(window.location.pathname) ? 'noindex, nofollow' : 'index, follow',
+  });
   upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title });
   upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
   upsertMeta('meta[property="og:type"]', { property: 'og:type', content: type });
