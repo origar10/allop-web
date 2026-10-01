@@ -50,7 +50,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
       ? `${category?.description} Compara salones verificados, precios desde y disponibilidad.`
     : type === 'service'
       ? `${service?.description} Encuentra salones verificados con disponibilidad online.`
-      : `Reserva ${service?.label.toLowerCase()} en ${city?.label} con salones verificados, politica clara y soporte si algo falla.`;
+      : `Reserva ${service?.label.toLowerCase()} en ${city?.label} con salones verificados, política clara y soporte si algo falla.`;
   const canonicalPath = type === 'city'
     ? `/ciudad/${city?.slug}`
     : type === 'category'
@@ -80,7 +80,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
     <section className="seo-landing">
       <div className="container">
         <div className="seo-landing-hero">
-          <p className="eyebrow">{type === 'serviceCity' ? 'Guia local' : type === 'city' ? 'Ciudad popular' : type === 'category' ? 'Categoria' : 'Servicio popular'}</p>
+          <p className="eyebrow">{type === 'serviceCity' ? 'Guía local' : type === 'city' ? 'Ciudad popular' : type === 'category' ? 'Categoría' : 'Servicio popular'}</p>
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="seo-landing-actions">
@@ -90,7 +90,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             </Link>
             <Link className="btn btn-ghost btn-lg" to="/guias">
               <BookOpen size={17} />
-              Ver guias
+              Ver guías
             </Link>
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             </div>
           </article>
           <article>
-            <h2>Categorias</h2>
+            <h2>Categorías</h2>
             <div className="profile-tags">
               {CATEGORIES.map((item) => (
                 <Link key={item.slug} to={`/categoria/${item.slug}`}>{item.label}</Link>
@@ -159,7 +159,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
         <div className="seo-faq-grid">
           <article>
             <p className="eyebrow">FAQ indexable</p>
-            <h2>Preguntas frecuentes sobre precio, duracion y reservas</h2>
+            <h2>Preguntas frecuentes sobre precio, duración y reservas</h2>
             {EDITORIAL_FAQS.map((faq) => (
               <div className="seo-faq-item" key={faq.intent}>
                 <h3>{faq.question}</h3>
@@ -168,8 +168,8 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             ))}
           </article>
           <article>
-            <p className="eyebrow">Guias para clientes</p>
-            <h2>Antes y despues de reservar</h2>
+            <p className="eyebrow">Guías para clientes</p>
+            <h2>Antes y después de reservar</h2>
             {clientGuides.map((guide) => (
               <Link className="guide-row" key={guide.slug} to={`/guias/clientes/${guide.slug}`}>
                 <strong>{guide.title}</strong>

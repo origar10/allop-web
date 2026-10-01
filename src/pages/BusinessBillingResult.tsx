@@ -16,7 +16,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
   useEffect(() => {
     setSeo({
       title: mode === 'success' ? 'Alta recibida | Allop Business' : 'Checkout cancelado | Allop Business',
-      description: mode === 'success' ? 'Estado de activacion de la suscripcion B2B de Allop.' : 'Retoma el alta de tu salón en Allop.',
+      description: mode === 'success' ? 'Estado de activación de la suscripción B2B de Allop.' : 'Retoma el alta de tu salón en Allop.',
       canonicalPath: mode === 'success' ? '/business/alta/success' : '/business/alta/cancel',
     });
     recordBillingEvent(mode === 'success' ? 'checkout_completed' : 'checkout_abandoned', { fallback });
@@ -26,7 +26,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
   const openPortal = async () => {
     const result = await openCustomerPortal();
     if (result.localFallback) {
-      setPortalMessage('Portal simulado. Cuando el backend responda, esta accion abrira Stripe Customer Portal.');
+      setPortalMessage('Portal simulado. Cuando el backend responda, esta acción abrira Stripe Customer Portal.');
       return;
     }
     window.location.href = result.url;
@@ -57,15 +57,15 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
       <div className="container billing-result">
         <CheckCircle size={38} />
         <p className="eyebrow">Alta recibida</p>
-          <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? 'Checkout simulado preparado.' : 'Suscripcion enviada a Stripe.'}</h1>
+          <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? 'Checkout simulado preparado.' : 'Suscripción enviada a Stripe.'}</h1>
           <p>{selfService
             ? `El plan ${plan.name} ya está activo. Entra en tu panel o en la app Allop Pro con tu email y tu contraseña, y configura servicios, horario y equipo.`
-            : `El plan ${plan.name} queda asociado al salon y el estado de activacion queda pendiente de configurar servicios, agenda, equipo y permisos.`
+            : `El plan ${plan.name} queda asociado al salón y el estado de activación queda pendiente de configurar servicios, agenda, equipo y permisos.`
           }</p>
         <div className="billing-status-grid">
-          <article><CreditCard size={18} /><strong>{subscription?.status || 'trialing'}</strong><span>Estado de suscripcion</span></article>
-          <article><Receipt size={18} /><strong>{selfService ? 'Alta online' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripcion</span></article>
-          <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>Activacion del salon</span></article>
+          <article><CreditCard size={18} /><strong>{subscription?.status || 'trialing'}</strong><span>Estado de suscripción</span></article>
+          <article><Receipt size={18} /><strong>{selfService ? 'Alta online' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripción</span></article>
+          <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>Activación del salón</span></article>
         </div>
         {portalMessage && <p className="auth-message ok" role="status" aria-live="polite">{portalMessage}</p>}
         <div className="billing-result-actions">

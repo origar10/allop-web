@@ -127,8 +127,8 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
 
   useEffect(() => {
     setSeo({
-      title: 'Allop | Encuentra salon y reserva en segundos',
-      description: 'Marketplace de salones con reservas verificadas, disponibilidad online, resenas y soporte para clientes y negocios.',
+      title: 'Allop | Encuentra salón y reserva en segundos',
+      description: 'Marketplace de salones con reservas verificadas, disponibilidad online, reseñas y soporte para clientes y negocios.',
       canonicalPath: '/',
     });
   }, []);

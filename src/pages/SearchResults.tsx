@@ -11,7 +11,7 @@ import { setSeo } from '../lib/seo';
 import { statusFromItems } from '../shared/asyncState';
 import { formatDistanceKm } from '../shared/formatters';
 
-const POPULAR_CITIES = ['Barcelona', 'Rubi', 'Sabadell', 'Terrassa'];
+const POPULAR_CITIES = ['Barcelona', 'Rubí', 'Sabadell', 'Terrassa'];
 const INITIAL_VISIBLE_COUNT = 6;
 
 type AvailabilityFilter = 'all' | 'today' | 'tomorrow' | 'week';
@@ -137,7 +137,7 @@ export default function SearchResults() {
   useEffect(() => {
     setSeo({
       title: query || city ? `Buscar ${query || 'salones'} ${city ? `en ${city}` : ''} | Allop` : 'Buscar salones | Allop',
-      description: 'Busqueda compartible de salones en Allop con filtros por servicio, ciudad, disponibilidad y mapa.',
+      description: 'Búsqueda compartible de salones en Allop con filtros por servicio, ciudad, disponibilidad y mapa.',
       canonicalPath: '/buscar',
     });
   }, [city, query]);
@@ -196,7 +196,7 @@ export default function SearchResults() {
   const resultsStatus = statusFromItems(filteredSalons, isLoadingSalons || isFiltering, loadError);
   const resultText = isLoadingSalons
     ? 'Cargando salones...'
-    : filteredSalons.length === 1 ? '1 salon disponible' : `${filteredSalons.length} salones disponibles`;
+    : filteredSalons.length === 1 ? '1 salón disponible' : `${filteredSalons.length} salones disponibles`;
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -249,17 +249,17 @@ export default function SearchResults() {
     <section className="directory-page">
       <div className="container">
         <div className="directory-hero">
-          <p className="eyebrow">Busqueda</p>
-          <h1>Resultados de busqueda</h1>
-          <p>Busca por servicio, salon, categoria, barrio o ciudad y cambia entre lista y mapa.</p>
+          <p className="eyebrow">Búsqueda</p>
+          <h1>Resultados de búsqueda</h1>
+          <p>Busca por servicio, salón, categoría, barrio o ciudad y cambia entre lista y mapa.</p>
           <form className="directory-search" onSubmit={submit}>
             <label>
-              Servicio o salon
-              <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Peluqueria, manicura, barberia..." />
+              Servicio o salón
+              <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Peluquería, manicura, barbería..." />
             </label>
             <label>
               Ciudad o barrio
-              <input value={draftCity} onChange={(event) => setDraftCity(event.target.value)} placeholder="Barcelona, Rubi, Terrassa..." />
+              <input value={draftCity} onChange={(event) => setDraftCity(event.target.value)} placeholder="Barcelona, Rubí, Terrassa..." />
             </label>
             <button className="btn btn-primary" type="submit">
               <Search size={16} />
@@ -274,7 +274,7 @@ export default function SearchResults() {
             <strong>Filtros</strong>
           </div>
           <label>
-            Precio maximo
+            Precio máximo
             <span>{maxPrice} EUR</span>
             <input
               type="range"
@@ -286,7 +286,7 @@ export default function SearchResults() {
             />
           </label>
           <label>
-            Valoracion minima
+            Valoración mínima
             <select value={minRating} onChange={(event) => setMinRating(Number(event.target.value))}>
               <option value={0}>Todas</option>
               <option value={4}>4.0+</option>
@@ -308,7 +308,7 @@ export default function SearchResults() {
             <select value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)}>
               <option value="all">Cualquier dia</option>
               <option value="today">Hoy</option>
-              <option value="tomorrow">Manana</option>
+              <option value="tomorrow">Mañana</option>
               <option value="week">Esta semana</option>
             </select>
           </label>
@@ -326,7 +326,7 @@ export default function SearchResults() {
 
         {loadError && (
           <div className="market-alert" role="status">
-            Mostrando datos locales mientras la API publica no responde: {loadError}
+            Mostrando datos locales mientras la API pública no responde: {loadError}
           </div>
         )}
 
@@ -338,7 +338,7 @@ export default function SearchResults() {
           ))}
           <button type="button" onClick={useNearby}>
             <LocateFixed size={14} />
-            {geoEnabled ? 'Cerca de ti' : 'Usar ubicacion'}
+            {geoEnabled ? 'Cerca de ti' : 'Usar ubicación'}
           </button>
         </div>
 
@@ -416,7 +416,7 @@ export default function SearchResults() {
           <div className="empty-results">
             <MapPin size={22} />
             <strong>No hay salones con esos criterios.</strong>
-            <p>Prueba una busqueda mas amplia, cambia la ciudad o limpia filtros.</p>
+            <p>Prueba una búsqueda mas amplia, cambia la ciudad o limpia filtros.</p>
             <button className="btn btn-primary" type="button" onClick={clearFilters}>Ver todos los salones</button>
           </div>
         )}

@@ -14,8 +14,8 @@ export default function Guides() {
 
   useEffect(() => {
     setSeo({
-      title: guide ? `${guide.title} | Guias Allop` : 'Guias Allop para clientes y salones',
-      description: guide?.summary || 'Guias evergreen para elegir salon, preparar una reserva y digitalizar la operativa de un salon.',
+      title: guide ? `${guide.title} | Guías Allop` : 'Guías Allop para clientes y salones',
+      description: guide?.summary || 'Guías evergreen para elegir salón, preparar una reserva y digitalizar la operativa de un salón.',
       canonicalPath: guide ? `/guias/${guide.audience}/${guide.slug}` : location.pathname === '/blog' ? '/blog' : '/guias',
     });
   }, [guide, location.pathname]);
@@ -27,7 +27,7 @@ export default function Guides() {
       <section className="guide-page">
         <div className="container guide-layout">
           <article className="guide-article">
-            <p className="eyebrow">{guide.audience === 'clientes' ? 'Guia para clientes' : 'Guia para salones'}</p>
+            <p className="eyebrow">{guide.audience === 'clientes' ? 'Guía para clientes' : 'Guía para salones'}</p>
             <h1>{guide.title}</h1>
             <p className="guide-summary">{guide.summary}</p>
             {guide.sections.map((section) => (
@@ -38,12 +38,12 @@ export default function Guides() {
             ))}
             <Link className="btn btn-primary" to="/guias">
               <BookOpen size={16} />
-              Ver todas las guias
+              Ver todas las guías
             </Link>
           </article>
           <aside className="guide-side">
-            <h2>Enlaces utiles</h2>
-            <Link to="/#buscar">Buscar salon <ArrowRight size={14} /></Link>
+            <h2>Enlaces útiles</h2>
+            <Link to="/#buscar">Buscar salón <ArrowRight size={14} /></Link>
             <Link to="/confianza">Reservas verificadas <ArrowRight size={14} /></Link>
             <Link to="/business">Allop para salones <ArrowRight size={14} /></Link>
           </aside>
@@ -60,7 +60,7 @@ export default function Guides() {
       <div className="container">
         <div className="guide-hero">
           <p className="eyebrow">Contenido editorial</p>
-          <h1>Guias Allop</h1>
+          <h1>Guías Allop</h1>
           <p>Contenido evergreen para clientes que reservan y para salones que quieren ordenar su operativa.</p>
         </div>
         <div className="guide-grid">
@@ -80,7 +80,7 @@ function GuideColumn({ icon, title, guides }: { icon: ReactNode; title: string; 
         <Link className="guide-card" key={guide.slug} to={`/guias/${guide.audience}/${guide.slug}`}>
           <strong>{guide.title}</strong>
           <span>{guide.summary}</span>
-          <em>Leer guia <ArrowRight size={13} /></em>
+          <em>Leer guía <ArrowRight size={13} /></em>
         </Link>
       ))}
     </article>

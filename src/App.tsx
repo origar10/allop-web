@@ -87,11 +87,11 @@ function RouteSeo() {
     const bookingSlug = pathname.startsWith('/reservar/') ? pathname.split('/')[2] : '';
     const bookingSalon = SALONS.find((salon) => salon.slug === bookingSlug);
     const legalTitles: Record<string, string> = {
-      '/privacidad': 'Politica de privacidad',
-      '/terminos': 'Terminos y condiciones',
-      '/cookies': 'Politica de cookies',
+      '/privacidad': 'Política de privacidad',
+      '/terminos': 'Términos y condiciones',
+      '/cookies': 'Política de cookies',
       '/aviso-legal': 'Aviso legal',
-      '/rgpd': 'Informacion RGPD',
+      '/rgpd': 'Información RGPD',
       '/dpa': 'DPA para salones',
       '/eliminar-cuenta': 'Eliminar tu cuenta y tus datos',
     };
@@ -106,7 +106,7 @@ function RouteSeo() {
       },
       '/mi-cuenta': {
         title: 'Mi cuenta Allop',
-        description: 'Consulta reservas, favoritos, perfil, puntos y preferencias de notificacion en Allop.',
+        description: 'Consulta reservas, favoritos, perfil, puntos y preferencias de notificación en Allop.',
       },
       '/business': {
         title: 'Allop Business para salones',
@@ -114,7 +114,7 @@ function RouteSeo() {
       },
       '/confianza': {
         title: 'Confianza y reservas verificadas | Allop',
-        description: 'Como Allop verifica reservas, salones, resenas y privacidad antes de reservar.',
+        description: 'Como Allop verifica reservas, salones, reseñas y privacidad antes de reservar.',
       },
       '/ayuda': {
         title: 'Centro de ayuda | Allop',
@@ -136,7 +136,7 @@ function RouteSeo() {
         description: `${legalTitles[pathname]} de Allop y Origar SL.`,
       } : {
         title: 'Allop',
-        description: 'Marketplace de salones con reserva online, soporte y gestion para negocios.',
+        description: 'Marketplace de salones con reserva online, soporte y gestión para negocios.',
       });
 
     setSeo({

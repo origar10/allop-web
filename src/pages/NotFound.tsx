@@ -6,8 +6,8 @@ import { setSeo } from '../lib/seo';
 export default function NotFound() {
   useEffect(() => {
     setSeo({
-      title: 'Pagina no encontrada | Allop',
-      description: 'No hemos encontrado esta pagina de Allop. Vuelve al marketplace, revisa la ayuda o contacta con soporte.',
+      title: 'Página no encontrada | Allop',
+      description: 'No hemos encontrado esta página de Allop. Vuelve al marketplace, revisa la ayuda o contacta con soporte.',
       canonicalPath: '/404',
     });
   }, []);
@@ -16,8 +16,8 @@ export default function NotFound() {
     <section className="not-found-page">
       <div className="container not-found-content">
         <p className="eyebrow">404</p>
-        <h1>No encontramos esta pagina.</h1>
-        <p>Puede que el enlace haya cambiado o que la ficha ya no exista. Desde aqui puedes volver a buscar, revisar ayuda o contactar con Allop.</p>
+        <h1>No encontramos esta página.</h1>
+        <p>Puede que el enlace haya cambiado o que la ficha ya no exista. Desde aquí puedes volver a buscar, revisar ayuda o contactar con Allop.</p>
         <div className="not-found-actions">
           <Link className="btn btn-primary btn-lg" to="/">
             <Search size={16} />
@@ -29,7 +29,7 @@ export default function NotFound() {
           </Link>
           <Link className="btn btn-ghost btn-lg" to="/business">
             <Store size={16} />
-            Soy un salon
+            Soy un salón
           </Link>
         </div>
         <Link className="see-all" to="/contacto">

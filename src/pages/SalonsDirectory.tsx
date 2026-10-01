@@ -14,7 +14,7 @@ export default function SalonsDirectory() {
   useEffect(() => {
     setSeo({
       title: 'Directorio de salones | Allop',
-      description: 'Directorio indexable de salones en Allop por ciudad, categoria y servicio.',
+      description: 'Directorio indexable de salones en Allop por ciudad, categoría y servicio.',
       canonicalPath: '/salones',
     });
   }, []);
@@ -25,7 +25,7 @@ export default function SalonsDirectory() {
         <div className="directory-hero">
           <p className="eyebrow">Directorio Allop</p>
           <h1>Salones publicados</h1>
-          <p>Explora salones verificados por ciudad, categoria y servicio. Cada ficha mantiene disponibilidad, precio desde y acceso a reserva.</p>
+          <p>Explora salones verificados por ciudad, categoría y servicio. Cada ficha mantiene disponibilidad, precio desde y acceso a reserva.</p>
           <div className="directory-actions">
             <Link className="btn btn-primary btn-lg" to="/buscar">
               <Scissors size={17} />
@@ -43,7 +43,7 @@ export default function SalonsDirectory() {
             </div>
           </article>
           <article>
-            <h2>Categorias</h2>
+            <h2>Categorías</h2>
             <div>
               {CATEGORIES.map((category) => <Link key={category.slug} to={`/categoria/${category.slug}`}>{category.label}</Link>)}
             </div>

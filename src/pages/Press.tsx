@@ -7,7 +7,7 @@ export default function Press({ supportEmail }: { supportEmail: string }) {
   useEffect(() => {
     setSeo({
       title: 'Prensa y media kit | Allop',
-      description: 'Recursos de marca, descripcion corta y contacto de prensa de Allop.',
+      description: 'Recursos de marca, descripción corta y contacto de prensa de Allop.',
       canonicalPath: '/prensa',
     });
   }, []);
@@ -35,8 +35,8 @@ export default function Press({ supportEmail }: { supportEmail: string }) {
         <aside className="press-resources">
           <h2><Newspaper size={18} /> Recursos</h2>
           <div>
-            <strong>Descripcion corta</strong>
-            <p>Marketplace y software operativo para salones de belleza, peluqueria, barberia y bienestar.</p>
+            <strong>Descripción corta</strong>
+            <p>Marketplace y software operativo para salones de belleza, peluquería, barbería y bienestar.</p>
           </div>
           <div>
             <strong>Uso de marca</strong>
@@ -44,7 +44,7 @@ export default function Press({ supportEmail }: { supportEmail: string }) {
           </div>
           <div>
             <strong>Empresa</strong>
-            <p>Allop es un producto de Origar SL. Para datos societarios finales, usar siempre la informacion legal publicada.</p>
+            <p>Allop es un producto de Origar SL. Para datos societarios finales, usar siempre la información legal publicada.</p>
           </div>
           <Link className="see-all" to="/contacto">Otras consultas <Mail size={14} /></Link>
         </aside>

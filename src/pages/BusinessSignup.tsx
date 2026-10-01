@@ -84,7 +84,7 @@ export default function BusinessSignup() {
     if (honeypot) return;
 
     const error = firstError(
-      validateName(profile.salonName, 'El nombre del salon'),
+      validateName(profile.salonName, 'El nombre del salón'),
       validateName(profile.contactName, 'El nombre de contacto'),
       validateEmail(profile.email),
       validatePhone(profile.phone),
