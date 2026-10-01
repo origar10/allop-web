@@ -4,25 +4,10 @@ import { completeProfileClient, requestClientOtp, verifyClientOtp } from '../lib
 import { loadClientSession, saveClientSession } from '../lib/clientSession';
 import { useToast } from '../lib/useToast';
 import { normalizePhone } from '../shared/formatters';
+import { getSafeNext } from '../lib/safeNext';
 
 const MARKETPLACE_SLUG = 'marketplace';
 
-function getSafeNext(value: string | null) {
-  if (!value || !value.startsWith('/')) return '/mi-cuenta';
-  // Una barra invertida deja que el navegador lea la ruta como //host, así que
-  // /\evil.com acaba resolviendo a https://evil.com pese a empezar por '/'.
-  if (value.includes('\\')) return '/mi-cuenta';
-  if (value.startsWith('//')) return '/mi-cuenta';
-  // Red final: tabuladores y saltos de línea embebidos los quita el navegador al
-  // parsear, así que solo resolviendo contra nuestro origen se ve el destino real.
-  try {
-    const { origin } = window.location;
-    if (new URL(value, origin).origin !== origin) return '/mi-cuenta';
-  } catch {
-    return '/mi-cuenta';
-  }
-  return value;
-}
 
 export default function CompleteProfile() {
   const navigate = useNavigate();

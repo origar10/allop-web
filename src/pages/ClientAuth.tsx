@@ -15,6 +15,7 @@ import {
 import { trackEvent } from '../lib/analytics';
 import { useToast } from '../lib/useToast';
 import { normalizePhone } from '../shared/formatters';
+import { getSafeNext } from '../lib/safeNext';
 
 interface ClientAuthProps {
   mode: 'login' | 'register';
@@ -31,22 +32,6 @@ const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI as string |
 const APPLE_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined;
 const APPLE_REDIRECT_URI = import.meta.env.VITE_APPLE_REDIRECT_URI as string | undefined;
 
-function getSafeNext(value: string | null) {
-  if (!value || !value.startsWith('/')) return '/mi-cuenta';
-  // Una barra invertida deja que el navegador lea la ruta como //host, así que
-  // /\evil.com acaba resolviendo a https://evil.com pese a empezar por '/'.
-  if (value.includes('\\')) return '/mi-cuenta';
-  if (value.startsWith('//')) return '/mi-cuenta';
-  // Red final: tabuladores y saltos de línea embebidos los quita el navegador al
-  // parsear, así que solo resolviendo contra nuestro origen se ve el destino real.
-  try {
-    const { origin } = window.location;
-    if (new URL(value, origin).origin !== origin) return '/mi-cuenta';
-  } catch {
-    return '/mi-cuenta';
-  }
-  return value;
-}
 
 export default function ClientAuth({ mode }: ClientAuthProps) {
   const navigate = useNavigate();
