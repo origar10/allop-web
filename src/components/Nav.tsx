@@ -7,6 +7,8 @@ import { useTheme } from '../lib/useTheme';
 import { useToast } from '../lib/useToast';
 
 import { tr } from '../lib/tr';
+import { region } from '../lib/region';
+import SelectorIdioma from './SelectorIdioma';
 interface NavProps {
   onSearch: (query: string) => void;
   onLogin: () => void;
@@ -59,6 +61,34 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
       navigate('/');
     }
   };
+
+  // Países con alta self-service y prueba gratis (Noruega): la web es sobre todo para salones; no
+  // hay buscador de salones ni guías de ciudades españolas.
+  if (region().prueba_gratis_dias) {
+    return (
+      <nav className="nav nav-business">
+        <div className="nav-inner">
+          <Link to="/" className="nav-logo nav-logo-business">
+            <img src="/allop-icon.svg" alt="Allop" width="28" height="28" decoding="async" />
+            <span>Allop</span>
+          </Link>
+          <div className="nav-actions">
+            <SelectorIdioma />
+            <ThemeToggle />
+            {session ? (
+              <>
+                <Link to="/mi-cuenta" className="btn btn-ghost"><UserRound size={15} /> {session.cliente.nombre}</Link>
+                <button type="button" className="btn btn-ghost" onClick={logout} aria-label={t('nav.user.logout')}><LogOut size={14} /></button>
+              </>
+            ) : (
+              <a className="btn btn-ghost" href={dashboardUrl}>{t('nav.business.dashboard')}</a>
+            )}
+            {!session && <Link className="btn btn-primary" to="/business/alta">{tr('Empezar gratis')}</Link>}
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   if (isBusiness) {
     return (

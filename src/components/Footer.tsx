@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../lib/useI18n';
 
 import { tr } from '../lib/tr';
+import { region } from '../lib/region';
 interface FooterProps {
   dashboardUrl: string;
   signupUrl: string;
@@ -16,6 +17,23 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
   const location = useLocation();
   const isBusiness = isBusinessPath(location.pathname);
   const { t } = useI18n();
+
+  // Noruega (alta self-service): pie mínimo. Los textos legales de la plataforma en noruego están
+  // pendientes; los de cada salón viven en {slug}.allop.no/personvern.
+  if (region().prueba_gratis_dias) {
+    return (
+      <footer className="footer footer-business">
+        <div className="container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'center', padding: '28px 16px' }}>
+          <span>© {new Date().getFullYear()} Allop · Origar</span>
+          <span style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <a href={dashboardUrl}>{t('nav.business.dashboard')}</a>
+            <Link to="/business/alta">{tr('Empezar gratis')}</Link>
+            <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+          </span>
+        </div>
+      </footer>
+    );
+  }
 
   if (isBusiness) {
     return (
