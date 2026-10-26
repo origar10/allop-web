@@ -43,6 +43,7 @@ import { captureError } from '../lib/monitoring';
 import { ApiError } from '../shared/apiClient';
 
 import { getLocale, tr } from '../lib/tr';
+import { region } from '../lib/region';
 type BookingStep = 1 | 2 | 3 | 4 | 5;
 const STEP_LABELS = ['Servicio', 'Profesional', 'Día y hora', 'Confirmar'];
 
@@ -302,6 +303,8 @@ export default function BookingFlow() {
   // Con un solo profesional no hay nada que elegir: se salta ese paso.
   const skipProfessional = professionals !== null && professionals.length <= 1;
   const phone = session?.cliente.telefono?.trim() || '';
+  // El salón reconoce al cliente por su teléfono o, donde se entra por email (Noruega), por su email.
+  const identificado = region().acceso_cliente === 'email' ? Boolean(session?.cliente.email) : Boolean(phone);
   const morning = daySlots.filter((t) => t < '14:00');
   const afternoon = daySlots.filter((t) => t >= '14:00');
   const hasAnyAvailability = Object.values(dayStatus).some((d) => d.status === 'available');
@@ -591,7 +594,7 @@ export default function BookingFlow() {
             </div>
           )}
 
-          {step === 4 && session && !phone && (
+          {step === 4 && session && !identificado && (
             <div className="booking-card">
               <h2><Phone size={20} />{' '}{tr('Falta tu teléfono')}</h2>
               <p className="booking-lead">
@@ -604,7 +607,7 @@ export default function BookingFlow() {
             </div>
           )}
 
-          {step === 4 && session && phone && (
+          {step === 4 && session && identificado && (
             <div className="booking-card">
               <h2><ShieldCheck size={20} />{' '}{tr('Revisa y confirma')}</h2>
               <dl className="booking-review">
