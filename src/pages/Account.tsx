@@ -44,7 +44,7 @@ import { statusFromItems, type AsyncStatus } from '../shared/asyncState';
 import { formatDateTime } from '../shared/formatters';
 import { formatPrice } from '../lib/salonDetails';
 
-import { tr } from '../lib/tr';
+import { getLocale, tr } from '../lib/tr';
 type AccountView = 'dashboard' | 'reservas' | 'favoritos' | 'perfil' | 'puntos' | 'comunicaciones';
 
 const ACCOUNT_NAV: { view: AccountView; label: string }[] = [
@@ -201,7 +201,7 @@ export default function Account() {
     setReviewBookingId('');
     setReviewText('');
     setReviewRating(5);
-    notify(`Reseña publicada en la ficha de ${booking.salonName}.`, 'success');
+    notify(tr('Reseña publicada en la ficha de {salon}.', { salon: booking.salonName }), 'success');
   };
 
   const logoutEverywhere = () => {
@@ -469,7 +469,7 @@ export default function Account() {
                         </span>
                         <strong>{getEventLabel(entry.event)}</strong>
                         <time className="comms-history-time" dateTime={entry.sentAt}>
-                          {new Date(entry.sentAt).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          {new Date(entry.sentAt).toLocaleString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </time>
                       </div>
                       <p>{entry.salonName} · {entry.serviceName}</p>
@@ -549,14 +549,14 @@ function BookingList({ bookings, loading, onCancel }: {
                 type="button"
                 className="booking-locator-copy"
                 onClick={() => copyLocator(booking.locator)}
-                aria-label={`Copiar localizador ${booking.locator}`}
+                aria-label={tr('Copiar localizador {loc}', { loc: booking.locator })}
               >
                 {copiedLocator === booking.locator ? tr('Copiado') : tr('Copiar')}
               </button>
               <a
                 href={`/contacto?motivo=soporte-reserva&localizador=${booking.locator}`}
                 className="booking-locator-support"
-                aria-label={`Soporte para reserva ${booking.locator}`}
+                aria-label={tr('Soporte para reserva {loc}', { loc: booking.locator })}
               >
                 <Headphones size={12} />{' '}{tr('Soporte')}
               </a>

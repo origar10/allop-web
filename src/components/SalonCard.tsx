@@ -56,16 +56,16 @@ export default function SalonCard({
   const price = desde > 0 ? formatPrice(desde) : null;
 
   return (
-    <button className="salon-card" type="button" onClick={onSelect} aria-label={`Abrir ficha de ${name}`}>
+    <button className="salon-card" type="button" onClick={onSelect} aria-label={tr('Abrir ficha de {salon}', { salon: name })}>
       <div className={`salon-img ${photo ? '' : imageClass}`}>
         {photo ? (
-          <img src={photo} alt={`Foto de ${name}`} loading="lazy" decoding="async" />
+          <img src={photo} alt={tr('Foto de {salon}', { salon: name })} loading="lazy" decoding="async" />
         ) : stockUrl ? (
           <img
             src={buildImageUrl(stockUrl, 360)}
             srcSet={`${buildImageUrl(stockUrl, 240)} 240w, ${buildImageUrl(stockUrl, 360)} 360w, ${buildImageUrl(stockUrl, 520)} 520w`}
             sizes="(max-width: 720px) 118px, (max-width: 1100px) 33vw, 25vw"
-            alt={`Imagen de ${name}`}
+            alt={tr('Imagen de {salon}', { salon: name })}
             loading="lazy"
             decoding="async"
           />

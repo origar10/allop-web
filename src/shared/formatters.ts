@@ -1,6 +1,9 @@
-const DEFAULT_LOCALE = 'es-ES';
+import { getLocale } from '../lib/tr';
+import { region } from '../lib/region';
+// Idioma y moneda del país de la instalación (region.ts): es-ES/EUR en España, nb-NO/NOK en Noruega.
+const localeActual = () => getLocale();
 
-export function formatCurrency(value: number, currency = 'EUR', locale = DEFAULT_LOCALE) {
+export function formatCurrency(value: number, currency = region().currency, locale = localeActual()) {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
@@ -32,7 +35,7 @@ export function formatDateTime(value?: string | number | Date, options: Intl.Dat
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
 
-  return new Intl.DateTimeFormat(DEFAULT_LOCALE, {
+  return new Intl.DateTimeFormat(localeActual(), {
     dateStyle: 'medium',
     timeStyle: 'short',
     ...options,

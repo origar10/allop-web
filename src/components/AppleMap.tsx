@@ -3,7 +3,7 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { type Salon } from '../data/salons';
 import { getMapKitToken } from '../lib/mapkitApi';
 
-import { tr } from '../lib/tr';
+import { fmtMoney, tr } from '../lib/tr';
 const MAPKIT_SCRIPT_ID = 'apple-mapkit-js';
 const MAPKIT_SCRIPT_SRC = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
 
@@ -149,10 +149,10 @@ export default function AppleMap({ salons, className = 'market-map', ariaLabel, 
               style={getFallbackPinStyle(salon, located)}
               type="button"
               onClick={() => onOpenSalon(salon)}
-              aria-label={`Abrir ficha de ${salon.name}`}
+              aria-label={tr('Abrir ficha de {salon}', { salon: salon.name })}
             >
               <MapPin size={16} />
-              <span>{salon.desde > 0 ? `${salon.desde} €` : salon.name}</span>
+              <span>{salon.desde > 0 ? fmtMoney(Number(salon.desde) || 0, 0) : salon.name}</span>
             </button>
           ))}
         </div>

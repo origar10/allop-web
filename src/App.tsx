@@ -139,7 +139,7 @@ function RouteSeo() {
 
     const content = bookingSalon
       ? {
-        title: `Reservar en ${bookingSalon.name} | Allop`,
+        title: `${tr('Reservar en {salon}', { salon: bookingSalon.name })} | Allop`,
         description: `Reserva ${bookingSalon.category.toLowerCase()} en ${bookingSalon.location} con ${bookingSalon.name}.`,
       }
       : routeSeo[pathname] || (legalTitles[pathname] ? {
@@ -308,7 +308,7 @@ export default function App() {
               <p>{selectedSalon.description}</p>
               <div className="modal-facts">
                 {selectedSalon.desde > 0 && <span>{tr('Desde')}{' '}{formatPrice(selectedSalon.desde)}</span>}
-                <span>{selectedSalon.reviews > 0 ? `★ ${selectedSalon.rating.toFixed(1)} · ${selectedSalon.reviews} reseñas` : tr('Nuevo en Allop')}</span>
+                <span>{selectedSalon.reviews > 0 ? `★ ${selectedSalon.rating.toFixed(1)} · ${tr('{n} reseñas', { n: selectedSalon.reviews })}` : tr('Nuevo en Allop')}</span>
               </div>
               <div className="modal-actions">
                 <button className="btn btn-primary" type="button" onClick={() => openSalonProfile(selectedSalon)}>

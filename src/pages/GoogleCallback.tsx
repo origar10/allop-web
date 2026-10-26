@@ -48,7 +48,7 @@ export default function GoogleCallback() {
         if (auth.needsProfileCompletion) {
           navigate(`/completar-perfil?provider=google&next=${encodeURIComponent(next)}`, { replace: true });
         } else {
-          notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
+          notify(tr('Sesión iniciada como {nombre}.', { nombre: auth.cliente.nombre }), 'success');
           navigate(next, { replace: true });
         }
       } catch {

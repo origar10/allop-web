@@ -1,6 +1,6 @@
 import type { PublicService, Salon } from '../data/salons';
 
-import { tr } from './tr';
+import { fmtMoney, getLocale, tr } from './tr';
 export interface ServiceItem {
   /** Id del servicio en el core del salón (lo que se reserva). */
   id: string;
@@ -38,7 +38,7 @@ export function formatDuration(minutes: number) {
 
 export function formatPrice(price: number | null | undefined) {
   if (price === null || price === undefined) return null;
-  return `${Number.isInteger(price) ? price : price.toFixed(2).replace('.', ',')} €`;
+  return fmtMoney(price, Number.isInteger(price) ? 0 : 2);
 }
 
 export function toServiceItem(s: PublicService): ServiceItem | null {
@@ -83,7 +83,7 @@ function localIsoDate(date: Date) {
 }
 
 export function getAvailableDates(days = 14) {
-  const formatter = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+  const formatter = new Intl.DateTimeFormat(getLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
 
   return Array.from({ length: days }).map((_, index) => {
     const date = new Date();

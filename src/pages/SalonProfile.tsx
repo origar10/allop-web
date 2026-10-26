@@ -125,7 +125,7 @@ export default function SalonProfile() {
     const precio = salon.desde > 0 ? ` desde ${salon.desde} €` : '';
 
     setSeo({
-      title: `${salon.name}${salon.location ? ` en ${salon.location}` : ''} | Allop`,
+      title: `${salon.location ? tr('{salon} en {lugar}', { salon: salon.name, lugar: salon.location }) : salon.name} | Allop`,
       description: salon.description
         ? `${salon.description.slice(0, 140)} Reserva cita${precio} en Allop.`
         : `Reserva cita en ${salon.name}${precio} en Allop.`,
@@ -214,7 +214,7 @@ export default function SalonProfile() {
 
   const shareSalon = async () => {
     const shareData = {
-      title: `${salon.name} en Allop`,
+      title: tr('{salon} en Allop', { salon: salon.name }),
       text: salon.description,
       url: canonicalUrl,
     };
@@ -292,7 +292,7 @@ export default function SalonProfile() {
               <img
                 className="salon-profile-main-photo"
                 src={photoUrls[selectedPhoto]}
-                alt={`${salon.name}, foto ${selectedPhoto + 1}`}
+                alt={tr('{salon}, foto {n}', { salon: salon.name, n: selectedPhoto + 1 })}
               />
             ) : (
               <div className="salon-profile-main-photo salon-photo-empty" aria-hidden="true">
@@ -307,7 +307,7 @@ export default function SalonProfile() {
                     className={selectedPhoto === index ? 'active' : ''}
                     type="button"
                     onClick={() => setSelectedPhoto(index)}
-                    aria-label={`Ver foto ${index + 1}`}
+                    aria-label={tr('Ver foto {n}', { n: index + 1 })}
                   >
                     <img src={url} alt="" loading="lazy" />
                   </button>
@@ -377,7 +377,7 @@ export default function SalonProfile() {
                   <div className="rating-distribution" aria-label={tr('Distribución de puntuaciones')}>
                     <div className="rating-dist-summary">
                       <span className="rating-dist-score">{salon.rating.toFixed(1)}</span>
-                      <div className="rating-dist-stars" aria-label={`${salon.rating} de 5 estrellas`}>
+                      <div className="rating-dist-stars" aria-label={tr('{n} de 5 estrellas', { n: salon.rating })}>
                         {[1, 2, 3, 4, 5].map((s) => (
                           <Star key={s} size={14} fill={s <= Math.round(salon.rating) ? '#F59E0B' : 'none'} color="#F59E0B" />
                         ))}
@@ -396,7 +396,7 @@ export default function SalonProfile() {
                             disabled={count === 0}
                             onClick={() => { setFilterRating(filterRating === star ? null : star); setReviewsPage(1); }}
                             aria-pressed={filterRating === star}
-                            aria-label={`Filtrar por ${star} estrellas (${count} reseñas)`}
+                            aria-label={tr('Filtrar por {n} estrellas ({c} reseñas)', { n: star, c: count })}
                           >
                             <span className="rating-dist-label">{star}★</span>
                             <span className="rating-dist-bar-track">
@@ -423,7 +423,7 @@ export default function SalonProfile() {
                       <article key={review.id}>
                         <div className="review-card-top">
                           <strong>{review.author}</strong>
-                          <span className="review-stars" aria-label={`${review.rating} de 5`}>
+                          <span className="review-stars" aria-label={tr('{n} de 5', { n: review.rating })}>
                             {[1, 2, 3, 4, 5].map((s) => (
                               <Star key={s} size={13} fill={s <= review.rating ? '#F59E0B' : 'none'} color="#F59E0B" />
                             ))}

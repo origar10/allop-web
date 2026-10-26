@@ -392,7 +392,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 {tr('Cambiar datos')}
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={resendOtp} disabled={loading || resendCountdown > 0}>
-                {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : tr('Reenviar código')}
+                {resendCountdown > 0 ? tr('Reenviar en {s}s', { s: resendCountdown }) : tr('Reenviar código')}
               </button>
             </div>
           )}

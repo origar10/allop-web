@@ -42,7 +42,7 @@ import { useToast } from '../lib/useToast';
 import { captureError } from '../lib/monitoring';
 import { ApiError } from '../shared/apiClient';
 
-import { tr } from '../lib/tr';
+import { getLocale, tr } from '../lib/tr';
 type BookingStep = 1 | 2 | 3 | 4 | 5;
 const STEP_LABELS = ['Servicio', 'Profesional', 'Día y hora', 'Confirmar'];
 
@@ -68,9 +68,9 @@ function loadDraft(key: string): BookingDraft | null {
   } catch { return null; }
 }
 
-const weekdayFmt = new Intl.DateTimeFormat('es-ES', { weekday: 'short' });
-const monthFmt = new Intl.DateTimeFormat('es-ES', { month: 'short' });
-const longDateFmt = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+const weekdayFmt = new Intl.DateTimeFormat(getLocale(), { weekday: 'short' });
+const monthFmt = new Intl.DateTimeFormat(getLocale(), { month: 'short' });
+const longDateFmt = new Intl.DateTimeFormat(getLocale(), { weekday: 'long', day: 'numeric', month: 'long' });
 
 function longDate(iso: string) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -649,7 +649,7 @@ export default function BookingFlow() {
               <p>
                 {cancelled
                   ? tr('Hemos liberado el hueco en la agenda del salón.')
-                  : `${selectedService?.name ?? 'Tu cita'} · ${longDate(selectedDate)} a las ${selectedTime}`}
+                  : tr('{servicio} · {fecha} a las {hora}', { servicio: selectedService?.name ?? tr('Tu cita'), fecha: longDate(selectedDate), hora: selectedTime })}
               </p>
               {!cancelled && (
                 <>

@@ -2,7 +2,7 @@ import { SALONS, type PublicReview, type PublicService, type Salon } from '../da
 import { apiGet } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
-import { tr } from './tr';
+import { getLocale, tr } from './tr';
 type PublicSalonPayload = Partial<{
   id: string | number;
   slug: string;
@@ -58,7 +58,7 @@ function mapReviews(value: unknown): PublicReview[] | undefined {
     author: r.cliente_nombre || 'Cliente',
     rating: Number(r.puntuacion) || 0,
     text: r.texto || '',
-    date: r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+    date: r.fecha ? new Date(r.fecha).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }) : '',
     ownerReply: r.respuesta_salon || undefined,
   }));
 }
