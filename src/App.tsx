@@ -32,6 +32,7 @@ const Guides = lazy(() => import('./pages/Guides'));
 const Press = lazy(() => import('./pages/Press'));
 const BusinessSignup = lazy(() => import('./pages/BusinessSignup'));
 const AltaPrueba = lazy(() => import('./pages/AltaPrueba'));
+const LandingNorge = lazy(() => import('./pages/LandingNorge'));
 const BusinessVerify = lazy(() => import('./pages/BusinessVerify'));
 const BusinessBillingResult = lazy(() => import('./pages/BusinessBillingResult'));
 const AppleCallback = lazy(() => import('./pages/AppleCallback'));
@@ -235,7 +236,7 @@ export default function App() {
           <Routes>
             <Route
               path="/"
-              element={(
+              element={region().prueba_gratis_dias ? <LandingNorge /> : (
                 <Home
                   searchTerm={searchTerm}
                   onSearchTermChange={setSearchTerm}
@@ -267,7 +268,7 @@ export default function App() {
             <Route path="/blog" element={<Guides />} />
             <Route path="/guias/:audience/:slug" element={<Guides />} />
             <Route path="/prensa" element={<Press supportEmail={SUPPORT_EMAIL} />} />
-            <Route path="/business" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
+            <Route path="/business" element={region().prueba_gratis_dias ? <LandingNorge /> : <Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
             <Route path="/business/alta" element={region().prueba_gratis_dias ? <AltaPruebaRoute /> : <BusinessSignup />} />
             <Route path="/business/verificar" element={<BusinessVerify dashboardUrl={DASHBOARD_URL} />} />
             <Route path="/business/alta/success" element={<BusinessBillingResult mode="success" />} />
