@@ -209,7 +209,7 @@ export default function SalonProfile() {
 
     const next = toggleFavoriteSalon(salon.slug);
     setIsFavorite(next);
-    notify(next ? 'Salón guardado.' : 'Salón quitado de favoritos.', 'success');
+    notify(next ? tr('Salón guardado.') : tr('Salón quitado de favoritos.'), 'success');
   };
 
   const shareSalon = async () => {
@@ -226,7 +226,7 @@ export default function SalonProfile() {
 
     await navigator.clipboard?.writeText(canonicalUrl).catch(() => undefined);
     setShareMessage('Enlace copiado');
-    notify('Enlace copiado.', 'success');
+    notify(tr('Enlace copiado.'), 'success');
     window.setTimeout(() => setShareMessage(''), 1800);
   };
 

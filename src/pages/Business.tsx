@@ -49,16 +49,16 @@ const basicFeatures = [
 ];
 
 const startSteps = [
-  { icon: <Sparkles size={22} />, title: tr('Crea tu cuenta'), text: 'Rellena los datos del salón y elige pago mensual o anual. En unos minutos tienes el panel listo.' },
-  { icon: <ClipboardCheck size={22} />, title: tr('Añade servicios y horario'), text: 'Precios, duraciones, horario y tu equipo. Puedes cambiarlo cuando quieras.' },
-  { icon: <CalendarDays size={22} />, title: tr('Empieza a recibir reservas'), text: 'Comparte tu enlace de reservas y gestiona la agenda desde el ordenador o el móvil.' },
+  { icon: <Sparkles size={22} />, title: tr('Crea tu cuenta'), text: tr('Rellena los datos del salón y elige pago mensual o anual. En unos minutos tienes el panel listo.') },
+  { icon: <ClipboardCheck size={22} />, title: tr('Añade servicios y horario'), text: tr('Precios, duraciones, horario y tu equipo. Puedes cambiarlo cuando quieras.') },
+  { icon: <CalendarDays size={22} />, title: tr('Empieza a recibir reservas'), text: tr('Comparte tu enlace de reservas y gestiona la agenda desde el ordenador o el móvil.') },
 ];
 
 const modules = [
-  { icon: <CalendarDays size={22} />, title: tr('Agenda y reservas'), text: 'Reservas online, disponibilidad por profesional y gestión de citas desde el panel o la app.' },
-  { icon: <Users size={22} />, title: tr('Clientes'), text: 'Historial, notas internas y seguimiento de próximas visitas de cada cliente.' },
-  { icon: <Smartphone size={22} />, title: tr('App para tu equipo'), text: 'Con Allop Pro cada profesional ve su agenda, sus clientes y ficha desde el móvil.' },
-  { icon: <BarChart3 size={22} />, title: tr('Cobros y números'), text: 'Cobros, ventas del día y ocupación para saber cómo va el salón de un vistazo.' },
+  { icon: <CalendarDays size={22} />, title: tr('Agenda y reservas'), text: tr('Reservas online, disponibilidad por profesional y gestión de citas desde el panel o la app.') },
+  { icon: <Users size={22} />, title: tr('Clientes'), text: tr('Historial, notas internas y seguimiento de próximas visitas de cada cliente.') },
+  { icon: <Smartphone size={22} />, title: tr('App para tu equipo'), text: tr('Con Allop Pro cada profesional ve su agenda, sus clientes y ficha desde el móvil.') },
+  { icon: <BarChart3 size={22} />, title: tr('Cobros y números'), text: tr('Cobros, ventas del día y ocupación para saber cómo va el salón de un vistazo.') },
 ];
 
 const metrics = [
@@ -73,7 +73,7 @@ const testimonials = [
     salon: 'Lumière Studio, Barcelona',
     context: 'Equipo de 7 personas',
     result: 'Menos llamadas y 18% menos huecos vacíos',
-    text: 'Pasamos de agenda manual a tener reservas online y recordatorios sin cambiar nuestra forma de trabajar.',
+    text: tr('Pasamos de agenda manual a tener reservas online y recordatorios sin cambiar nuestra forma de trabajar.'),
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
   },
   {
@@ -81,7 +81,7 @@ const testimonials = [
     salon: 'Barbería Marcel, Terrassa',
     context: 'Barbería de 3 sillones',
     result: 'Caja y agenda revisadas al cierre',
-    text: 'El equipo ve la agenda, caja y clientes en el mismo sitio. Hemos reducido llamadas y huecos perdidos.',
+    text: tr('El equipo ve la agenda, caja y clientes en el mismo sitio. Hemos reducido llamadas y huecos perdidos.'),
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
   },
   {
@@ -89,16 +89,16 @@ const testimonials = [
     salon: 'Nuvo Beauty, Sabadell',
     context: 'Centro de estética con 5 cabinas',
     result: 'Servicios y profesionales ordenados',
-    text: 'Nos ayudó a ordenar servicios, profesionales y reservas sin tener que montar un sistema desde cero.',
+    text: tr('Nos ayudó a ordenar servicios, profesionales y reservas sin tener que montar un sistema desde cero.'),
     image: 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56',
   },
 ];
 
 const integrations = [
-  { icon: <Receipt size={20} />, name: 'TPV y caja', text: 'Cobros y ventas del día conectados con la agenda.' },
-  { icon: <MessageSquare size={20} />, name: 'WhatsApp y SMS', text: 'Recordatorios y confirmaciones, siempre con el consentimiento del cliente.' },
-  { icon: <CreditCard size={20} />, name: 'Pago con tarjeta', text: 'Tu suscripción se paga con tarjeta de forma segura a través de Stripe.' },
-  { icon: <Headphones size={20} />, name: 'Soporte', text: 'Te ayudamos por email cuando lo necesites.' },
+  { icon: <Receipt size={20} />, name: 'TPV y caja', text: tr('Cobros y ventas del día conectados con la agenda.') },
+  { icon: <MessageSquare size={20} />, name: 'WhatsApp y SMS', text: tr('Recordatorios y confirmaciones, siempre con el consentimiento del cliente.') },
+  { icon: <CreditCard size={20} />, name: 'Pago con tarjeta', text: tr('Tu suscripción se paga con tarjeta de forma segura a través de Stripe.') },
+  { icon: <Headphones size={20} />, name: 'Soporte', text: tr('Te ayudamos por email cuando lo necesites.') },
 ];
 
 const faqs = [
@@ -128,10 +128,10 @@ const useCases = [
 ];
 
 const customPillars = [
-  { icon: <Globe size={22} />, title: tr('Tu web de reservas'), text: 'Con tu marca, tus colores y tu estilo. Tus clientes reservan contigo, no en un directorio.' },
-  { icon: <Smartphone size={22} />, title: tr('Tus propias apps'), text: 'App para tus clientes y app para tu equipo, con tu nombre y tu logo en App Store y Google Play.' },
-  { icon: <Server size={22} />, title: tr('Un servidor solo para ti'), text: 'Tu salón funciona en su propia instalación, con sus datos separados y a su ritmo.' },
-  { icon: <Crown size={22} />, title: tr('Acompañamiento personal'), text: 'Una persona de Allop contigo de principio a fin: migración, formación y lanzamiento.' },
+  { icon: <Globe size={22} />, title: tr('Tu web de reservas'), text: tr('Con tu marca, tus colores y tu estilo. Tus clientes reservan contigo, no en un directorio.') },
+  { icon: <Smartphone size={22} />, title: tr('Tus propias apps'), text: tr('App para tus clientes y app para tu equipo, con tu nombre y tu logo en App Store y Google Play.') },
+  { icon: <Server size={22} />, title: tr('Un servidor solo para ti'), text: tr('Tu salón funciona en su propia instalación, con sus datos separados y a su ritmo.') },
+  { icon: <Crown size={22} />, title: tr('Acompañamiento personal'), text: tr('Una persona de Allop contigo de principio a fin: migración, formación y lanzamiento.') },
 ];
 
 const customProcess = [

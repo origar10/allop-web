@@ -54,7 +54,7 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
   const logout = () => {
     clearClientSession(session?.salonSlug);
     clearClientSession();
-    notify('Sesión cerrada.', 'success');
+    notify(tr('Sesión cerrada.'), 'success');
     if (location.pathname.startsWith('/mi-cuenta')) {
       navigate('/');
     }

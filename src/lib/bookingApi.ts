@@ -3,6 +3,7 @@ import { toServiceItem, type ProfessionalItem, type ServiceItem } from './salonD
 import { apiGet, apiPost } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
+import { tr } from './tr';
 export interface BookingRequest {
   salonSlug: string;
   service: ServiceItem;
@@ -76,8 +77,8 @@ export async function createBooking(params: BookingRequest): Promise<BookingConf
     locator: `ALP-${id.padStart(6, '0').slice(-6)}`,
     status: confirmed ? 'confirmed' : 'pending',
     message: confirmed
-      ? 'Tu cita está confirmada. Ya aparece en la agenda del salón.'
-      : 'El salón ha recibido tu solicitud y te confirmará la cita.',
+      ? tr('Tu cita está confirmada. Ya aparece en la agenda del salón.')
+      : tr('El salón ha recibido tu solicitud y te confirmará la cita.'),
     notification: 'Te llegará la confirmación por SMS al teléfono de tu cuenta.',
   };
 }

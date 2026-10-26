@@ -149,21 +149,21 @@ export default function Account() {
     try {
       await cancelClientBooking(booking.salonSlug, booking.id, session.token);
     } catch (error) {
-      notify(error instanceof Error ? error.message : 'No se pudo cancelar la reserva.', 'error');
+      notify(error instanceof Error ? error.message : tr('No se pudo cancelar la reserva.'), 'error');
       return;
     }
     cancelStoredBooking(booking.id);
     setBookings((current) => current.map((item) => (
       item.id === booking.id && item.salonSlug === booking.salonSlug ? { ...item, status: 'cancelada' as const } : item
     )));
-    notify('Reserva cancelada. El hueco queda libre en la agenda del salón.', 'success');
+    notify(tr('Reserva cancelada. El hueco queda libre en la agenda del salón.'), 'success');
   };
 
   const submitProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     saveProfileDraft(profile);
     setProfileMessage('Perfil guardado.');
-    notify('Perfil guardado.', 'success');
+    notify(tr('Perfil guardado.'), 'success');
     window.setTimeout(() => setProfileMessage(''), 1800);
   };
 
@@ -183,7 +183,7 @@ export default function Account() {
     try {
       await createSalonReview(booking.salonSlug, booking.id, reviewRating, reviewText.trim(), session.token);
     } catch (error) {
-      notify(error instanceof Error ? error.message : 'No se pudo publicar la reseña.', 'error');
+      notify(error instanceof Error ? error.message : tr('No se pudo publicar la reseña.'), 'error');
       return;
     } finally {
       setSendingReview(false);
@@ -207,7 +207,7 @@ export default function Account() {
   const logoutEverywhere = () => {
     clearClientSession(session.salonSlug);
     clearClientSession();
-    notify('Sesión cerrada.', 'success');
+    notify(tr('Sesión cerrada.'), 'success');
     navigate('/login');
   };
 
@@ -221,7 +221,7 @@ export default function Account() {
     link.click();
     URL.revokeObjectURL(url);
     setPrivacyMessage('Datos exportados en JSON.');
-    notify('Datos exportados.', 'success');
+    notify(tr('Datos exportados.'), 'success');
   };
 
   const deleteData = () => {
@@ -229,7 +229,7 @@ export default function Account() {
     deleteAccountData();
     clearClientSession(session.salonSlug);
     clearClientSession();
-    notify('Datos locales eliminados.', 'success');
+    notify(tr('Datos locales eliminados.'), 'success');
     navigate('/login');
   };
 

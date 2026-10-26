@@ -120,7 +120,7 @@ export default function LandingNorge() {
       <section className="lno-comp container">
         <h2>{tr('¿Por qué no seguir con los mensajes?')}</h2>
         <table>
-          <thead><tr><th></th><th>{tr('Instagram / WhatsApp')}</th><th>{tr('Grandes plataformas')}</th><th className="lno-yo">Allop</th></tr></thead>
+          <thead><tr><th></th><th>{tr('Instagram / WhatsApp')}</th><th>{tr('Grandes plataformas')}</th><th className="lno-yo">{tr('Allop')}</th></tr></thead>
           <tbody>
             {([
               [tr('Reservas a cualquier hora'), false, true, true],

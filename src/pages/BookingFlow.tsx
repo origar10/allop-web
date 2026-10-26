@@ -394,9 +394,9 @@ export default function BookingFlow() {
       setCancelled(true);
       setCancelConfirm(false);
       trackEvent('booking_cancelled', { salonSlug: salon.slug, step: 5 });
-      notify('Cita cancelada.', 'success');
+      notify(tr('Cita cancelada.'), 'success');
     } catch (err) {
-      notify(err instanceof Error ? err.message : 'No se pudo cancelar la cita.', 'error');
+      notify(err instanceof Error ? err.message : tr('No se pudo cancelar la cita.'), 'error');
     } finally {
       setCancelling(false);
     }

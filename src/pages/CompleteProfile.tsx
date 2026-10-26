@@ -85,7 +85,7 @@ export default function CompleteProfile() {
       );
       // Sin esto la sesión seguiría sin teléfono y la reserva lo volvería a pedir.
       saveClientSession({ ...session, cliente: { ...session.cliente, ...cliente } });
-      notify('Perfil completado correctamente.', 'success');
+      notify(tr('Perfil completado correctamente.'), 'success');
       navigate(next, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : tr('No se pudo verificar el código.'));

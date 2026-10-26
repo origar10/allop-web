@@ -18,6 +18,7 @@ import { normalizePhone } from '../shared/formatters';
 import { getSafeNext } from '../lib/safeNext';
 
 import { tr } from '../lib/tr';
+import { region } from '../lib/region';
 interface ClientAuthProps {
   mode: 'login' | 'register';
 }
@@ -60,7 +61,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
   const [loading, setLoading] = useState(false);
   const { notify } = useToast();
 
-  const title = isRegister ? 'Crea tu cuenta de cliente' : 'Accede a tu cuenta';
+  const title = isRegister ? tr('Crea tu cuenta de cliente') : tr('Accede a tu cuenta');
+  // Países con acceso por email (Noruega): el código se verifica en el email y el teléfono es opcional.
+  const accesoEmail = region().acceso_cliente === 'email';
   const Icon = isRegister ? UserPlus : LogIn;
 
   useEffect(() => {
@@ -77,7 +80,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     const text = error instanceof Error ? error.message : fallback;
     const normalized = text.toLowerCase();
     if (normalized.includes('network') || normalized.includes('fetch')) {
-      return 'No hay conexión con Allop ahora mismo. Inténtalo de nuevo en unos segundos.';
+      return tr('No hay conexión con Allop ahora mismo. Inténtalo de nuevo en unos segundos.');
     }
     return text || fallback;
   }
@@ -86,7 +89,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const submitLogin = async () => {
     if (!email.trim() || !password) {
-      setMessage({ ok: false, text: 'Introduce tu email o teléfono y contraseña.' });
+      setMessage({ ok: false, text: accesoEmail ? tr('Introduce tu email y tu contraseña.') : tr('Introduce tu email o teléfono y contraseña.') });
       return;
     }
     setLoading(true);
@@ -94,10 +97,10 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     try {
       const auth = await emailLoginClient({ identifier: email.trim(), password });
       saveClientSession({ ...auth, salonSlug: MARKETPLACE_SLUG, salonName: 'Allop', createdAt: new Date().toISOString() });
-      notify(`Sesión iniciada como ${auth.cliente.nombre}.`, 'success');
+      notify(tr('Sesión iniciada como {nombre}.', { nombre: auth.cliente.nombre }), 'success');
       navigate(nextPath, { replace: true });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'Email/teléfono o contraseña incorrectos.') });
+      setMessage({ ok: false, text: authErrorText(error, accesoEmail ? tr('Email o contraseña incorrectos.') : tr('Email/teléfono o contraseña incorrectos.')) });
     } finally {
       setLoading(false);
     }
@@ -107,30 +110,31 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const sendOtp = async () => {
     if (!name.trim() || name.trim().length < 2) {
-      setMessage({ ok: false, text: 'Introduce tu nombre.' });
+      setMessage({ ok: false, text: tr('Introduce tu nombre.') });
       return;
     }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setMessage({ ok: false, text: 'Email no válido.' });
+      setMessage({ ok: false, text: tr('Email no válido.') });
       return;
     }
     const tel = normalizePhone(phone);
-    if (tel.length < 8) {
-      setMessage({ ok: false, text: 'Introduce un teléfono válido.' });
+    if (!accesoEmail && tel.length < 8) {
+      setMessage({ ok: false, text: tr('Introduce un teléfono válido.') });
       return;
     }
     if (password.length < 8) {
-      setMessage({ ok: false, text: 'La contraseña debe tener al menos 8 caracteres.' });
+      setMessage({ ok: false, text: tr('La contraseña debe tener al menos 8 caracteres.') });
       return;
     }
     if (!acceptedTerms) {
-      setMessage({ ok: false, text: 'Acepta los términos y la política de privacidad para crear la cuenta.' });
+      setMessage({ ok: false, text: tr('Acepta los términos y la política de privacidad para crear la cuenta.') });
       return;
     }
     setLoading(true);
     setMessage(null);
     try {
-      const response = await requestClientOtp(MARKETPLACE_SLUG, tel, purpose);
+      // Con acceso por email el código va al email (el backend lo acepta en el mismo campo).
+      const response = await requestClientOtp(MARKETPLACE_SLUG, accesoEmail ? email.trim().toLowerCase() : tel, purpose);
       setPhone(tel);
       setChallengeId(response.challengeId);
       setDebugCode(import.meta.env.DEV ? response.debugCode || '' : '');
@@ -140,11 +144,11 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       setMessage({
         ok: true,
         text: import.meta.env.DEV && response.debugCode
-          ? `Código generado para pruebas: ${response.debugCode}`
-          : 'Te hemos enviado un código de verificación por SMS.',
+          ? tr('Código generado para pruebas: {codigo}', { codigo: response.debugCode })
+          : accesoEmail ? tr('Te hemos enviado un código de verificación por email.') : tr('Te hemos enviado un código de verificación por SMS.'),
       });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'No se pudo enviar el código.') });
+      setMessage({ ok: false, text: authErrorText(error, tr('No se pudo enviar el código.')) });
     } finally {
       setLoading(false);
     }
@@ -154,7 +158,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
 
   const confirmRegister = async () => {
     if (!challengeId || otpCode.trim().length < 4) {
-      setMessage({ ok: false, text: 'Introduce el código recibido por SMS.' });
+      setMessage({ ok: false, text: accesoEmail ? tr('Introduce el código que te hemos enviado por email.') : tr('Introduce el código recibido por SMS.') });
       return;
     }
     setLoading(true);
@@ -162,7 +166,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     try {
       const verified = await verifyClientOtp(MARKETPLACE_SLUG, {
         challengeId,
-        telefono: phone,
+        telefono: accesoEmail ? email.trim().toLowerCase() : phone,
         code: otpCode.trim(),
         purpose,
       });
@@ -176,10 +180,10 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
       });
       saveClientSession({ ...auth, salonSlug: MARKETPLACE_SLUG, salonName: 'Allop', createdAt: new Date().toISOString() });
       trackEvent('registration_completed', { salonSlug: MARKETPLACE_SLUG, hasEmail: true });
-      notify(`Cuenta creada. Bienvenido/a, ${auth.cliente.nombre}.`, 'success');
+      notify(tr('Cuenta creada. Bienvenido/a, {nombre}.', { nombre: auth.cliente.nombre }), 'success');
       navigate(nextPath, { replace: true });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'No se pudo verificar el código.') });
+      setMessage({ ok: false, text: authErrorText(error, tr('No se pudo verificar el código.')) });
     } finally {
       setLoading(false);
     }
@@ -189,13 +193,13 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     setLoading(true);
     setMessage(null);
     try {
-      const response = await requestClientOtp(MARKETPLACE_SLUG, phone, purpose);
+      const response = await requestClientOtp(MARKETPLACE_SLUG, accesoEmail ? email.trim().toLowerCase() : phone, purpose);
       setChallengeId(response.challengeId);
       setDebugCode(import.meta.env.DEV ? response.debugCode || '' : '');
       setResendCountdown(RESEND_SECONDS);
-      setMessage({ ok: true, text: 'Nuevo código enviado por SMS.' });
+      setMessage({ ok: true, text: accesoEmail ? tr('Nuevo código enviado por email.') : tr('Nuevo código enviado por SMS.') });
     } catch (error) {
-      setMessage({ ok: false, text: authErrorText(error, 'No se pudo reenviar el código.') });
+      setMessage({ ok: false, text: authErrorText(error, tr('No se pudo reenviar el código.')) });
     } finally {
       setLoading(false);
     }
@@ -239,12 +243,12 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           <h1>{title}</h1>
           <p>
             {isRegister
-              ? tr('Registra tu cuenta con email, teléfono y contraseña. Verificamos el teléfono una sola vez.')
-              : tr('Entra con tu email o teléfono y contraseña para ver tus reservas y continuar como cliente.')}
+              ? (accesoEmail ? tr('Registra tu cuenta con tu email y una contraseña. Verificamos el email una sola vez.') : tr('Registra tu cuenta con email, teléfono y contraseña. Verificamos el teléfono una sola vez.'))
+              : (accesoEmail ? tr('Entra con tu email y tu contraseña para ver tus reservas.') : tr('Entra con tu email o teléfono y contraseña para ver tus reservas y continuar como cliente.'))}
           </p>
           <div className="client-auth-points">
             <span><CheckCircle size={16} />{' '}{tr('Reservas más rápidas')}</span>
-            <span><ShieldCheck size={16} />{' '}{tr('Teléfono verificado')}</span>
+            <span><ShieldCheck size={16} />{' '}{accesoEmail ? tr('Email verificado') : tr('Teléfono verificado')}</span>
             <span><CheckCircle size={16} />{' '}{tr('Historial global')}</span>
           </div>
         </div>
@@ -278,7 +282,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           {!isRegister && (
             <>
               <label>
-                {tr('Email o teléfono')}
+                {accesoEmail ? tr('Email') : tr('Email o teléfono')}
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -318,9 +322,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" disabled={loading} />
               </label>
               <label>
-                {tr('Teléfono')}
+                {accesoEmail ? tr('Teléfono (opcional)') : tr('Teléfono')}
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" disabled={loading} />
-                <span className="auth-help">{tr('Con prefijo si estás fuera de España (+34…). Recibirás un código de verificación.')}</span>
+                {!accesoEmail && <span className="auth-help">{tr('Con prefijo si estás fuera de España (+34…). Recibirás un código de verificación.')}</span>}
               </label>
               <label>
                 {tr('Contraseña')}
@@ -340,7 +344,9 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           {isRegister && registerStep === 'otp' && (
             <>
               <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
-                {tr('Hemos enviado un código de 6 dígitos al número')}{' '}<strong>{phone}</strong>{tr('. Introdúcelo para verificar tu teléfono.')}
+                {accesoEmail
+                  ? <>{tr('Hemos enviado un código de 6 dígitos a')}{' '}<strong>{email.trim()}</strong>{tr('. Introdúcelo para verificar tu email.')}</>
+                  : <>{tr('Hemos enviado un código de 6 dígitos al número')}{' '}<strong>{phone}</strong>{tr('. Introdúcelo para verificar tu teléfono.')}</>}
               </p>
               <label>
                 {tr('Código SMS')}
