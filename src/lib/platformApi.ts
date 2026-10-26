@@ -26,6 +26,7 @@ export interface ClientProfile {
   nombre: string;
   apellidos?: string | null;
   telefono?: string | null;
+  email?: string | null;
   puntosFidelizacion?: number;
   sesionesFidelizacion?: number;
   cortesGratisDisponibles?: number;
