@@ -17,6 +17,7 @@ import { useToast } from '../lib/useToast';
 import { normalizePhone } from '../shared/formatters';
 import { getSafeNext } from '../lib/safeNext';
 
+import { tr } from '../lib/tr';
 interface ClientAuthProps {
   mode: 'login' | 'register';
 }
@@ -234,23 +235,23 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
     <section className="client-auth">
       <div className="container client-auth-grid">
         <div className="client-auth-copy">
-          <p className="eyebrow">Allop clientes</p>
+          <p className="eyebrow">{tr('Allop clientes')}</p>
           <h1>{title}</h1>
           <p>
             {isRegister
-              ? 'Registra tu cuenta con email, teléfono y contraseña. Verificamos el teléfono una sola vez.'
-              : 'Entra con tu email o teléfono y contraseña para ver tus reservas y continuar como cliente.'}
+              ? tr('Registra tu cuenta con email, teléfono y contraseña. Verificamos el teléfono una sola vez.')
+              : tr('Entra con tu email o teléfono y contraseña para ver tus reservas y continuar como cliente.')}
           </p>
           <div className="client-auth-points">
-            <span><CheckCircle size={16} /> Reservas más rápidas</span>
-            <span><ShieldCheck size={16} /> Teléfono verificado</span>
-            <span><CheckCircle size={16} /> Historial global</span>
+            <span><CheckCircle size={16} />{' '}{tr('Reservas más rápidas')}</span>
+            <span><ShieldCheck size={16} />{' '}{tr('Teléfono verificado')}</span>
+            <span><CheckCircle size={16} />{' '}{tr('Historial global')}</span>
           </div>
         </div>
 
         <form className="client-auth-card" onSubmit={submit}>
           <div className="client-auth-icon"><Icon size={22} /></div>
-          <h2>{isRegister ? 'Registro cliente' : 'Inicio de sesión'}</h2>
+          <h2>{isRegister ? tr('Registro cliente') : tr('Inicio de sesión')}</h2>
 
           {GOOGLE_CLIENT_ID && GOOGLE_REDIRECT_URI && (
             <button className="btn btn-ghost btn-lg auth-google" type="button" onClick={startGoogleLogin} disabled={loading}>
@@ -260,7 +261,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                 <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
               </svg>
-              Continuar con Google
+              {tr('Continuar con Google')}
             </button>
           )}
 
@@ -269,7 +270,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
               <svg width="17" height="20" viewBox="0 0 814 1000" aria-hidden="true" focusable="false">
                 <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-47.4-148.2-107.8c-50.2-70.8-102.3-181.9-102.3-287.7 0-219.1 143.6-335.2 284.2-335.2 74.9 0 137.5 49.2 184.1 49.2 44.6 0 115.7-52.6 201.7-52.6 32.8 0 134.2 2.6 198.4 101.9zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" />
               </svg>
-              Continuar con Apple
+              {tr('Continuar con Apple')}
             </button>
           )}
 
@@ -277,7 +278,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           {!isRegister && (
             <>
               <label>
-                Email o teléfono
+                {tr('Email o teléfono')}
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -287,7 +288,7 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
                 />
               </label>
               <label>
-                Contraseña
+                {tr('Contraseña')}
                 <input
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -304,32 +305,32 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             <>
               <div className="auth-two-cols">
                 <label>
-                  Nombre
+                  {tr('Nombre')}
                   <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" disabled={loading} />
                 </label>
                 <label>
-                  Apellidos
+                  {tr('Apellidos')}
                   <input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" disabled={loading} />
                 </label>
               </div>
               <label>
-                Email
+                {tr('Email')}
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" disabled={loading} />
               </label>
               <label>
-                Teléfono
+                {tr('Teléfono')}
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" disabled={loading} />
-                <span className="auth-help">Con prefijo si estás fuera de España (+34…). Recibirás un código de verificación.</span>
+                <span className="auth-help">{tr('Con prefijo si estás fuera de España (+34…). Recibirás un código de verificación.')}</span>
               </label>
               <label>
-                Contraseña
+                {tr('Contraseña')}
                 <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="new-password" disabled={loading} />
-                <span className="auth-help">Mínimo 8 caracteres.</span>
+                <span className="auth-help">{tr('Mínimo 8 caracteres.')}</span>
               </label>
               <label className="auth-check">
                 <input checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} type="checkbox" disabled={loading} />
                 <span>
-                  Acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
+                  {tr('Acepto los')}{' '}<Link to="/terminos">{tr('términos')}</Link>{' '}{tr('y la')}{' '}<Link to="/privacidad">{tr('política de privacidad')}</Link>.
                 </span>
               </label>
             </>
@@ -339,10 +340,10 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
           {isRegister && registerStep === 'otp' && (
             <>
               <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
-                Hemos enviado un código de 6 dígitos al número <strong>{phone}</strong>. Introdúcelo para verificar tu teléfono.
+                {tr('Hemos enviado un código de 6 dígitos al número')}{' '}<strong>{phone}</strong>{tr('. Introdúcelo para verificar tu teléfono.')}
               </p>
               <label>
-                Código SMS
+                {tr('Código SMS')}
                 <input
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
@@ -369,8 +370,8 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
               {loading && <span className="inline-spinner" aria-hidden="true" />}
               {loading
-                ? (isRegister ? 'Enviando código...' : 'Entrando...')
-                : (isRegister ? 'Continuar' : 'Entrar')}
+                ? (isRegister ? tr('Enviando código...') : tr('Entrando...'))
+                : (isRegister ? tr('Continuar') : tr('Entrar'))}
             </button>
           )}
 
@@ -378,25 +379,25 @@ export default function ClientAuth({ mode }: ClientAuthProps) {
             <div className="auth-actions">
               <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
                 {loading && <span className="inline-spinner" aria-hidden="true" />}
-                {loading ? 'Verificando...' : 'Crear cuenta'}
+                {loading ? tr('Verificando...') : tr('Crear cuenta')}
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={() => { setRegisterStep('form'); setMessage(null); }} disabled={loading}>
                 <RotateCcw size={16} />
-                Cambiar datos
+                {tr('Cambiar datos')}
               </button>
               <button className="btn btn-ghost btn-lg" type="button" onClick={resendOtp} disabled={loading || resendCountdown > 0}>
-                {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : 'Reenviar código'}
+                {resendCountdown > 0 ? `Reenviar en ${resendCountdown}s` : tr('Reenviar código')}
               </button>
             </div>
           )}
 
           {import.meta.env.DEV && debugCode && isRegister && registerStep === 'otp' && (
-            <p className="auth-debug">Código de entorno de pruebas: {debugCode}</p>
+            <p className="auth-debug">{tr('Código de entorno de pruebas:')}{' '}{debugCode}</p>
           )}
 
           <p className="auth-switch">
-            {isRegister ? '¿Ya tienes cuenta?' : '¿Aún no tienes cuenta?'}{' '}
-            <Link to={isRegister ? '/login' : '/register'}>{isRegister ? 'Inicia sesión' : 'Regístrate'}</Link>
+            {isRegister ? tr('¿Ya tienes cuenta?') : tr('¿Aún no tienes cuenta?')}{' '}
+            <Link to={isRegister ? '/login' : '/register'}>{isRegister ? tr('Inicia sesión') : tr('Regístrate')}</Link>
           </p>
         </form>
       </div>

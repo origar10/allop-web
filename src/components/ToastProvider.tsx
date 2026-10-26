@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { ToastContext, type ToastItem, type ToastType } from '../lib/toastContext';
 
+import { tr } from '../lib/tr';
 export default function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
@@ -17,7 +18,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="toast-region" role="status" aria-live="polite" aria-label="Notificaciones">
+      <div className="toast-region" role="status" aria-live="polite" aria-label={tr('Notificaciones')}>
         {toasts.map((toast) => (
           <div className={`toast toast-${toast.type}`} key={toast.id}>
             {toast.message}

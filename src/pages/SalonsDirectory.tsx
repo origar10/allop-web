@@ -7,13 +7,14 @@ import { CATEGORIES, CITIES, SERVICES } from '../lib/taxonomy';
 import { setSeo } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
 
+import { tr } from '../lib/tr';
 export default function SalonsDirectory() {
   const navigate = useNavigate();
   const salons = useMarketplaceSalons();
 
   useEffect(() => {
     setSeo({
-      title: 'Directorio de salones | Allop',
+      title: tr('Directorio de salones | Allop'),
       description: 'Directorio indexable de salones en Allop por ciudad, categoría y servicio.',
       canonicalPath: '/salones',
     });
@@ -23,33 +24,33 @@ export default function SalonsDirectory() {
     <section className="directory-page">
       <div className="container">
         <div className="directory-hero">
-          <p className="eyebrow">Directorio Allop</p>
-          <h1>Salones publicados</h1>
-          <p>Explora salones verificados por ciudad, categoría y servicio. Cada ficha mantiene disponibilidad, precio desde y acceso a reserva.</p>
+          <p className="eyebrow">{tr('Directorio Allop')}</p>
+          <h1>{tr('Salones publicados')}</h1>
+          <p>{tr('Explora salones verificados por ciudad, categoría y servicio. Cada ficha mantiene disponibilidad, precio desde y acceso a reserva.')}</p>
           <div className="directory-actions">
             <Link className="btn btn-primary btn-lg" to="/buscar">
               <Scissors size={17} />
-              Buscar salones
+              {tr('Buscar salones')}
             </Link>
-            <Link className="btn btn-ghost btn-lg" to="/#buscar">Volver al marketplace</Link>
+            <Link className="btn btn-ghost btn-lg" to="/#buscar">{tr('Volver al marketplace')}</Link>
           </div>
         </div>
 
         <div className="directory-link-grid">
           <article>
-            <h2>Ciudades</h2>
+            <h2>{tr('Ciudades')}</h2>
             <div>
               {CITIES.map((city) => <Link key={city.slug} to={`/ciudad/${city.slug}`}><MapPin size={13} /> {city.label}</Link>)}
             </div>
           </article>
           <article>
-            <h2>Categorías</h2>
+            <h2>{tr('Categorías')}</h2>
             <div>
               {CATEGORIES.map((category) => <Link key={category.slug} to={`/categoria/${category.slug}`}>{category.label}</Link>)}
             </div>
           </article>
           <article>
-            <h2>Servicios</h2>
+            <h2>{tr('Servicios')}</h2>
             <div>
               {SERVICES.slice(0, 8).map((service) => <Link key={service.slug} to={`/servicios/${service.slug}`}>{service.label}</Link>)}
             </div>
@@ -58,16 +59,16 @@ export default function SalonsDirectory() {
 
         <div className="section-header">
           <div>
-            <h2 className="section-title">Todos los salones</h2>
+            <h2 className="section-title">{tr('Todos los salones')}</h2>
             <p className="section-subtitle">
-              {salons === null ? 'Cargando salones…' : `${salons.length} ${salons.length === 1 ? 'ficha disponible' : 'fichas disponibles'} para reserva online`}
+              {salons === null ? tr('Cargando salones…') : `${salons.length} ${salons.length === 1 ? 'ficha disponible' : 'fichas disponibles'} para reserva online`}
             </p>
           </div>
-          <Link className="see-all" to="/buscar">Buscar <ArrowRight size={14} /></Link>
+          <Link className="see-all" to="/buscar">{tr('Buscar')}{' '}<ArrowRight size={14} /></Link>
         </div>
 
         {salons?.length === 0 && (
-          <div className="account-loading">Aún no hay salones publicados. <Link to="/business">¿Tienes un salón?</Link></div>
+          <div className="account-loading">{tr('Aún no hay salones publicados.')}{' '}<Link to="/business">{tr('¿Tienes un salón?')}</Link></div>
         )}
         <div className="salons-grid">
           {(salons ?? []).map((salon) => (

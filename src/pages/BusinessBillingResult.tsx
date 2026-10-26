@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { getBillingPlan, getSubscriptionStatus, normalizeBillingPlanId, openCustomerPortal, recordBillingEvent, type SubscriptionSnapshot } from '../lib/billingApi';
 import { setSeo } from '../lib/seo';
 
+import { tr } from '../lib/tr';
 export default function BusinessBillingResult({ mode }: { mode: 'success' | 'cancel' }) {
   const [searchParams] = useSearchParams();
   const [subscription, setSubscription] = useState<SubscriptionSnapshot | null>(null);
@@ -15,7 +16,7 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
 
   useEffect(() => {
     setSeo({
-      title: mode === 'success' ? 'Alta recibida | Allop Business' : 'Checkout cancelado | Allop Business',
+      title: mode === 'success' ? tr('Alta recibida | Allop Business') : tr('Checkout cancelado | Allop Business'),
       description: mode === 'success' ? 'Estado de activación de la suscripción B2B de Allop.' : 'Retoma el alta de tu salón en Allop.',
       canonicalPath: mode === 'success' ? '/business/alta/success' : '/business/alta/cancel',
     });
@@ -37,15 +38,15 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
       <section className="billing-page">
         <div className="container billing-result">
           <AlertTriangle size={36} />
-          <p className="eyebrow">Checkout cancelado</p>
-          <h1>No se ha activado ningun pago.</h1>
-          <p>Puedes volver al alta con el plan seleccionado, pedir ayuda o dejarlo para demo comercial. No se han guardado datos de tarjeta en Allop.</p>
+          <p className="eyebrow">{tr('Checkout cancelado')}</p>
+          <h1>{tr('No se ha activado ningun pago.')}</h1>
+          <p>{tr('Puedes volver al alta con el plan seleccionado, pedir ayuda o dejarlo para demo comercial. No se han guardado datos de tarjeta en Allop.')}</p>
           <div className="billing-result-actions">
             <Link className="btn btn-primary btn-lg" to={`/business/alta?plan=${plan.id}`}>
-              Recuperar alta
+              {tr('Recuperar alta')}
               <ArrowRight size={16} />
             </Link>
-            <Link className="btn btn-ghost btn-lg" to="/business#business-contact">Hablar con Allop</Link>
+            <Link className="btn btn-ghost btn-lg" to="/business#business-contact">{tr('Hablar con Allop')}</Link>
           </div>
         </div>
       </section>
@@ -56,26 +57,26 @@ export default function BusinessBillingResult({ mode }: { mode: 'success' | 'can
     <section className="billing-page">
       <div className="container billing-result">
         <CheckCircle size={38} />
-        <p className="eyebrow">Alta recibida</p>
-          <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? 'Checkout simulado preparado.' : 'Suscripción enviada a Stripe.'}</h1>
+        <p className="eyebrow">{tr('Alta recibida')}</p>
+          <h1>{selfService ? `Cuenta ${plan.name} creada.` : fallback ? tr('Checkout simulado preparado.') : tr('Suscripción enviada a Stripe.')}</h1>
           <p>{selfService
             ? `El plan ${plan.name} ya está activo. Entra en tu panel o en la app Allop Pro con tu email y tu contraseña, y configura servicios, horario y equipo.`
             : `El plan ${plan.name} queda asociado al salón y el estado de activación queda pendiente de configurar servicios, agenda, equipo y permisos.`
           }</p>
         <div className="billing-status-grid">
-          <article><CreditCard size={18} /><strong>{subscription?.status || 'trialing'}</strong><span>Estado de suscripción</span></article>
-          <article><Receipt size={18} /><strong>{selfService ? 'Alta online' : subscription?.stripeSubscriptionId || 'sub pendiente'}</strong><span>ID de suscripción</span></article>
-          <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>Activación del salón</span></article>
+          <article><CreditCard size={18} /><strong>{subscription?.status || 'trialing'}</strong><span>{tr('Estado de suscripción')}</span></article>
+          <article><Receipt size={18} /><strong>{selfService ? tr('Alta online') : subscription?.stripeSubscriptionId || tr('sub pendiente')}</strong><span>{tr('ID de suscripción')}</span></article>
+          <article><Lock size={18} /><strong>{subscription?.activationState || 'pending_setup'}</strong><span>{tr('Activación del salón')}</span></article>
         </div>
         {portalMessage && <p className="auth-message ok" role="status" aria-live="polite">{portalMessage}</p>}
         <div className="billing-result-actions">
           {!selfService && (
             <button className="btn btn-primary btn-lg" type="button" onClick={openPortal}>
               <CreditCard size={16} />
-              Abrir Customer Portal
+              {tr('Abrir Customer Portal')}
             </button>
           )}
-          <Link className="btn btn-ghost btn-lg" to="/business">Volver a Business</Link>
+          <Link className="btn btn-ghost btn-lg" to="/business">{tr('Volver a Business')}</Link>
         </div>
       </div>
     </section>

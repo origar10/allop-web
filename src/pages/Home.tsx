@@ -26,13 +26,14 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { normalize } from '../lib/searchUtils';
 import { formatDistanceKm } from '../shared/formatters';
 
+import { tr } from '../lib/tr';
 const CATEGORIES = [
-  { icon: <Scissors size={22} />, label: 'Peluquería' },
-  { icon: <Smile size={22} />, label: 'Barbería' },
-  { icon: <Sparkles size={22} />, label: 'Estética' },
-  { icon: <Hand size={22} />, label: 'Uñas' },
-  { icon: <Heart size={22} />, label: 'Masajes' },
-  { icon: <Wand2 size={22} />, label: 'Maquillaje' },
+  { icon: <Scissors size={22} />, label: tr('Peluquería') },
+  { icon: <Smile size={22} />, label: tr('Barbería') },
+  { icon: <Sparkles size={22} />, label: tr('Estética') },
+  { icon: <Hand size={22} />, label: tr('Uñas') },
+  { icon: <Heart size={22} />, label: tr('Masajes') },
+  { icon: <Wand2 size={22} />, label: tr('Maquillaje') },
 ];
 
 const CHIPS = [
@@ -49,18 +50,18 @@ const CHIPS = [
 ];
 
 const POPULAR_SERVICES = [
-  { label: 'Corte de pelo', slug: 'corte' },
-  { label: 'Peluquería', slug: 'peluqueria' },
-  { label: 'Barbería', slug: 'barberia' },
-  { label: 'Manicura', slug: 'manicura' },
-  { label: 'Masajes', slug: 'masajes' },
-  { label: 'Maquillaje', slug: 'maquillaje' },
+  { label: tr('Corte de pelo'), slug: 'corte' },
+  { label: tr('Peluquería'), slug: 'peluqueria' },
+  { label: tr('Barbería'), slug: 'barberia' },
+  { label: tr('Manicura'), slug: 'manicura' },
+  { label: tr('Masajes'), slug: 'masajes' },
+  { label: tr('Maquillaje'), slug: 'maquillaje' },
 ];
 const CITY_LINKS = [
-  { label: 'Barcelona', slug: 'barcelona' },
-  { label: 'Rubí', slug: 'rubi' },
-  { label: 'Sabadell', slug: 'sabadell' },
-  { label: 'Terrassa', slug: 'terrassa' },
+  { label: tr('Barcelona'), slug: 'barcelona' },
+  { label: tr('Rubí'), slug: 'rubi' },
+  { label: tr('Sabadell'), slug: 'sabadell' },
+  { label: tr('Terrassa'), slug: 'terrassa' },
 ];
 type SortMode = 'recommended' | 'rating' | 'distance';
 
@@ -127,7 +128,7 @@ export default function Home({ searchTerm, onSearchTermChange, onSearch, onOpenS
 
   useEffect(() => {
     setSeo({
-      title: 'Allop | Encuentra salón y reserva en segundos',
+      title: tr('Allop | Encuentra salón y reserva en segundos'),
       description: 'Marketplace de salones con reservas verificadas, disponibilidad online, reseñas y soporte para clientes y negocios.',
       canonicalPath: '/',
     });
@@ -239,8 +240,8 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
   return (
     <>
       <section className="hero" id="buscar">
-        <h1>Encuentra tu salón.<br />Reserva en segundos.</h1>
-        <p>Más de 500 salones y profesionales en Barcelona y alrededores.<br />Sin llamadas, sin esperas.</p>
+        <h1>{tr('Encuentra tu salón.')}<br />{tr('Reserva en segundos.')}</h1>
+        <p>{tr('Más de 500 salones y profesionales en Barcelona y alrededores.')}<br />{tr('Sin llamadas, sin esperas.')}</p>
 
         <form className="search-bar" onSubmit={submitSearch}>
           <div className="search-field">
@@ -248,8 +249,8 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
             <input
               value={searchTerm}
               onChange={(event) => onSearchTermChange(event.target.value)}
-              placeholder="¿Qué servicio buscas?"
-              aria-label="Servicio"
+              placeholder={tr('¿Qué servicio buscas?')}
+              aria-label={tr('Servicio')}
               autoComplete="off"
             />
             {!!searchSuggestions.length && (
@@ -268,13 +269,13 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
             <input
               value={cityQuery}
               onChange={(event) => setCityQuery(event.target.value)}
-              placeholder="Ciudad o barrio"
-              aria-label="Ciudad o barrio"
+              placeholder={tr('Ciudad o barrio')}
+              aria-label={tr('Ciudad o barrio')}
             />
           </div>
           <button className="search-btn" type="submit">
             <Search size={17} />
-            Buscar
+            {tr('Buscar')}
           </button>
         </form>
 
@@ -285,30 +286,30 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
             </button>
           ))}
         </div>
-        <div className="trust-strip" aria-label="Confianza Allop">
-          <span><ShieldIcon /> Reservas verificadas</span>
-          <span><CalendarDays size={15} /> Cancelación clara</span>
-          <span><LifeBuoy size={15} /> Soporte si algo falla</span>
-          <span><Heart size={15} /> Privacidad cuidada</span>
+        <div className="trust-strip" aria-label={tr('Confianza Allop')}>
+          <span><ShieldIcon />{' '}{tr('Reservas verificadas')}</span>
+          <span><CalendarDays size={15} />{' '}{tr('Cancelación clara')}</span>
+          <span><LifeBuoy size={15} />{' '}{tr('Soporte si algo falla')}</span>
+          <span><Heart size={15} />{' '}{tr('Privacidad cuidada')}</span>
         </div>
       </section>
 
       <section className="commercial-links">
         <div className="container commercial-link-grid">
           <article>
-            <h2>Servicios populares</h2>
+            <h2>{tr('Servicios populares')}</h2>
             <div>
               {POPULAR_SERVICES.map((service) => <Link key={service.slug} to={`/servicios/${service.slug}`}>{service.label}</Link>)}
             </div>
           </article>
           <article>
-            <h2>Ciudades populares</h2>
+            <h2>{tr('Ciudades populares')}</h2>
             <div>
               {CITY_LINKS.map((city) => <Link key={city.slug} to={`/ciudad/${city.slug}`}>{city.label}</Link>)}
             </div>
           </article>
           <article>
-            <h2>Categorías</h2>
+            <h2>{tr('Categorías')}</h2>
             <div>
               {TAXONOMY_CATEGORIES.map((item) => <Link key={item.slug} to={`/categoria/${item.slug}`}>{item.label}</Link>)}
             </div>
@@ -318,7 +319,7 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
 
       <section>
         <div className="container">
-          <h2 className="section-title" style={{ marginBottom: 24 }}>¿Qué buscas hoy?</h2>
+          <h2 className="section-title" style={{ marginBottom: 24 }}>{tr('¿Qué buscas hoy?')}</h2>
           <div className="categories-grid">
             {CATEGORIES.map((item) => (
               <button
@@ -340,8 +341,8 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
           <div className="container">
             <div className="section-header">
               <div>
-                <h2 className="section-title">Salones nuevos en Allop</h2>
-                <p className="section-subtitle">Fichas recientes para dar vida al marketplace</p>
+                <h2 className="section-title">{tr('Salones nuevos en Allop')}</h2>
+                <p className="section-subtitle">{tr('Fichas recientes para dar vida al marketplace')}</p>
               </div>
             </div>
             <div className="salons-grid compact">
@@ -358,11 +359,11 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
           <div className="section-header">
             <div>
               <h2 className="section-title">
-                <LocateFixed size={20} /> Cerca de ti
+                <LocateFixed size={20} />{' '}{tr('Cerca de ti')}
               </h2>
-              <p className="section-subtitle">Ordenados por distancia con los datos disponibles</p>
+              <p className="section-subtitle">{tr('Ordenados por distancia con los datos disponibles')}</p>
             </div>
-            <button className="see-all" type="button" onClick={useNearby}>Ver cercanos <ArrowRight size={14} /></button>
+            <button className="see-all" type="button" onClick={useNearby}>{tr('Ver cercanos')}{' '}<ArrowRight size={14} /></button>
           </div>
           <div className="salons-grid compact">
             {nearbySalons.map((salon) => (
@@ -377,9 +378,9 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
           <div className="section-header">
             <div>
               <h2 className="section-title">
-                <Star size={20} fill="#F59E0B" color="#F59E0B" /> Reseñas recientes
+                <Star size={20} fill="#F59E0B" color="#F59E0B" />{' '}{tr('Reseñas recientes')}
               </h2>
-              <p className="section-subtitle">Opiniones verificadas de clientes tras su reserva</p>
+              <p className="section-subtitle">{tr('Opiniones verificadas de clientes tras su reserva')}</p>
             </div>
           </div>
           <div className="reviews-grid">
@@ -404,9 +405,9 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">
-              <Star size={20} fill="#F59E0B" color="#F59E0B" /> Más valorados
+              <Star size={20} fill="#F59E0B" color="#F59E0B" />{' '}{tr('Más valorados')}
             </h2>
-            <button className="see-all" type="button" onClick={() => runQuickSearch('')}>Ver todos <ArrowRight size={14} /></button>
+            <button className="see-all" type="button" onClick={() => runQuickSearch('')}>{tr('Ver todos')}{' '}<ArrowRight size={14} /></button>
           </div>
           <div className="salons-grid">
             {topSalons.map((salon) => (
@@ -418,22 +419,22 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
 
       <section className="how-section" id="como-funciona">
         <div className="container">
-          <h2 className="how-title">Reservar es así de fácil</h2>
+          <h2 className="how-title">{tr('Reservar es así de fácil')}</h2>
           <div className="how-steps">
             <div className="how-step">
               <div className="how-icon"><Search size={26} /></div>
-              <h3>Busca y filtra</h3>
-              <p>Encuentra el salón perfecto por servicio, ubicación, precio o disponibilidad.</p>
+              <h3>{tr('Busca y filtra')}</h3>
+              <p>{tr('Encuentra el salón perfecto por servicio, ubicación, precio o disponibilidad.')}</p>
             </div>
             <div className="how-step">
               <div className="how-icon"><CalendarDays size={26} /></div>
-              <h3>Elige fecha y hora</h3>
-              <p>Consulta la agenda en tiempo real y reserva el hueco que mejor te va.</p>
+              <h3>{tr('Elige fecha y hora')}</h3>
+              <p>{tr('Consulta la agenda en tiempo real y reserva el hueco que mejor te va.')}</p>
             </div>
             <div className="how-step">
               <div className="how-icon"><Star size={26} /></div>
-              <h3>Disfruta y valora</h3>
-              <p>Recibe recordatorios automáticos. Después, comparte tu experiencia.</p>
+              <h3>{tr('Disfruta y valora')}</h3>
+              <p>{tr('Recibe recordatorios automáticos. Después, comparte tu experiencia.')}</p>
             </div>
           </div>
         </div>
@@ -443,18 +444,18 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         <div className="container after-booking-grid">
           <article>
             <CalendarDays size={22} />
-            <h3>Tras reservar</h3>
-            <p>Recibes el resumen de la cita y el salón ve la solicitud en su agenda.</p>
+            <h3>{tr('Tras reservar')}</h3>
+            <p>{tr('Recibes el resumen de la cita y el salón ve la solicitud en su agenda.')}</p>
           </article>
           <article>
             <CheckCircle size={22} />
-            <h3>Confirmación</h3>
-            <p>La reserva queda pendiente o confirmada según disponibilidad y reglas del salón.</p>
+            <h3>{tr('Confirmación')}</h3>
+            <p>{tr('La reserva queda pendiente o confirmada según disponibilidad y reglas del salón.')}</p>
           </article>
           <article>
             <LifeBuoy size={22} />
-            <h3>Cancelar o pedir ayuda</h3>
-            <p>Desde tu cuenta puedes cancelar y contactar si algo no encaja.</p>
+            <h3>{tr('Cancelar o pedir ayuda')}</h3>
+            <p>{tr('Desde tu cuenta puedes cancelar y contactar si algo no encaja.')}</p>
           </article>
         </div>
       </section>
@@ -479,24 +480,24 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         <div className="container">
           <div className="cta-banner cta-split">
             <div className="cta-text">
-              <h2>¿Tienes un salón?<br />Únete a Allop.</h2>
-              <p>Gestiona tu agenda, cobra, fideliza clientes y aparece en el marketplace, todo desde un panel propio.</p>
+              <h2>{tr('¿Tienes un salón?')}<br />{tr('Únete a Allop.')}</h2>
+              <p>{tr('Gestiona tu agenda, cobra, fideliza clientes y aparece en el marketplace, todo desde un panel propio.')}</p>
             </div>
             <div className="cta-actions">
-              <button className="btn btn-lg btn-outline-white" type="button" onClick={onSalonSignup}>Saber más</button>
-              <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>Alta de salón</button>
+              <button className="btn btn-lg btn-outline-white" type="button" onClick={onSalonSignup}>{tr('Saber más')}</button>
+              <button className="btn btn-lg btn-white" type="button" onClick={onSalonSignup}>{tr('Alta de salón')}</button>
             </div>
           </div>
           <div className="marketplace-ctas">
             <article>
-              <h3>¿No encuentras tu salón?</h3>
-              <p>Sugiere un negocio y te avisaremos si conseguimos incorporarlo.</p>
-              <button className="btn btn-ghost" type="button" onClick={() => setLeadType('suggest_salon')}>Sugerir salón</button>
+              <h3>{tr('¿No encuentras tu salón?')}</h3>
+              <p>{tr('Sugiere un negocio y te avisaremos si conseguimos incorporarlo.')}</p>
+              <button className="btn btn-ghost" type="button" onClick={() => setLeadType('suggest_salon')}>{tr('Sugerir salón')}</button>
             </article>
             <article>
-              <h3>¿Es tu ficha?</h3>
-              <p>Si eres propietario, reclama la ficha para actualizar servicios, horarios y equipo.</p>
-              <button className="btn btn-ghost" type="button" onClick={() => setLeadType('claim_listing')}>Reclamar ficha</button>
+              <h3>{tr('¿Es tu ficha?')}</h3>
+              <p>{tr('Si eres propietario, reclama la ficha para actualizar servicios, horarios y equipo.')}</p>
+              <button className="btn btn-ghost" type="button" onClick={() => setLeadType('claim_listing')}>{tr('Reclamar ficha')}</button>
             </article>
           </div>
         </div>
@@ -514,13 +515,13 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
             onSubmit={submitLead}
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 id="market-lead-title">{leadType === 'claim_listing' ? 'Reclamar ficha' : leadType === 'suggest_salon' ? 'Sugerir salón' : 'Avisadme'}</h2>
-            <p>Déjanos tus datos y el equipo de Allop revisará la solicitud.</p>
-            <label>Nombre<input value={lead.name} onChange={(event) => setLead({ ...lead, name: event.target.value })} /></label>
-            <label>Teléfono<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
-            <label>Email<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
-            <label>Ciudad<input value={lead.city || cityQuery} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
-            <label>Mensaje<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={3} /></label>
+            <h2 id="market-lead-title">{leadType === 'claim_listing' ? tr('Reclamar ficha') : leadType === 'suggest_salon' ? tr('Sugerir salón') : tr('Avisadme')}</h2>
+            <p>{tr('Déjanos tus datos y el equipo de Allop revisará la solicitud.')}</p>
+            <label>{tr('Nombre')}<input value={lead.name} onChange={(event) => setLead({ ...lead, name: event.target.value })} /></label>
+            <label>{tr('Teléfono')}<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
+            <label>{tr('Email')}<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
+            <label>{tr('Ciudad')}<input value={lead.city || cityQuery} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
+            <label>{tr('Mensaje')}<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={3} /></label>
             {leadMessage && (
               <p
                 className={`auth-message ${leadMessage.startsWith('Indica') ? 'err' : 'ok'}`}
@@ -531,8 +532,8 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
               </p>
             )}
             <div className="booking-nav">
-              <button className="btn btn-ghost" type="button" onClick={closeLeadModal}>Cerrar</button>
-              <button className="btn btn-primary" type="submit">Enviar</button>
+              <button className="btn btn-ghost" type="button" onClick={closeLeadModal}>{tr('Cerrar')}</button>
+              <button className="btn btn-primary" type="submit">{tr('Enviar')}</button>
             </div>
           </form>
         </div>
@@ -540,9 +541,9 @@ const submitSearch = (event: FormEvent<HTMLFormElement>) => {
 
       <section className="company-section" id="empresa">
         <div className="container company-copy">
-          <p className="eyebrow">Origar SL</p>
-          <h2>Allop conecta salones, clientes y equipos en una plataforma única.</h2>
-          <p>La web pública, el dashboard y las apps móviles trabajan juntos para que cada reserva tenga continuidad desde el descubrimiento hasta el cierre de caja.</p>
+          <p className="eyebrow">{tr('Origar SL')}</p>
+          <h2>{tr('Allop conecta salones, clientes y equipos en una plataforma única.')}</h2>
+          <p>{tr('La web pública, el dashboard y las apps móviles trabajan juntos para que cada reserva tenga continuidad desde el descubrimiento hasta el cierre de caja.')}</p>
         </div>
       </section>
     </>

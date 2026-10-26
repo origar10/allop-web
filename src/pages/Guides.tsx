@@ -5,6 +5,7 @@ import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { EDITORIAL_GUIDES, findGuide } from '../lib/taxonomy';
 import { setSeo } from '../lib/seo';
 
+import { tr } from '../lib/tr';
 export default function Guides() {
   const { audience = '', slug = '' } = useParams();
   const location = useLocation();
@@ -14,7 +15,7 @@ export default function Guides() {
 
   useEffect(() => {
     setSeo({
-      title: guide ? `${guide.title} | Guías Allop` : 'Guías Allop para clientes y salones',
+      title: guide ? `${guide.title} | Guías Allop` : tr('Guías Allop para clientes y salones'),
       description: guide?.summary || 'Guías evergreen para elegir salón, preparar una reserva y digitalizar la operativa de un salón.',
       canonicalPath: guide ? `/guias/${guide.audience}/${guide.slug}` : location.pathname === '/blog' ? '/blog' : '/guias',
     });
@@ -27,7 +28,7 @@ export default function Guides() {
       <section className="guide-page">
         <div className="container guide-layout">
           <article className="guide-article">
-            <p className="eyebrow">{guide.audience === 'clientes' ? 'Guía para clientes' : 'Guía para salones'}</p>
+            <p className="eyebrow">{guide.audience === 'clientes' ? tr('Guía para clientes') : tr('Guía para salones')}</p>
             <h1>{guide.title}</h1>
             <p className="guide-summary">{guide.summary}</p>
             {guide.sections.map((section) => (
@@ -38,14 +39,14 @@ export default function Guides() {
             ))}
             <Link className="btn btn-primary" to="/guias">
               <BookOpen size={16} />
-              Ver todas las guías
+              {tr('Ver todas las guías')}
             </Link>
           </article>
           <aside className="guide-side">
-            <h2>Enlaces útiles</h2>
-            <Link to="/#buscar">Buscar salón <ArrowRight size={14} /></Link>
-            <Link to="/confianza">Reservas verificadas <ArrowRight size={14} /></Link>
-            <Link to="/business">Allop para salones <ArrowRight size={14} /></Link>
+            <h2>{tr('Enlaces útiles')}</h2>
+            <Link to="/#buscar">{tr('Buscar salón')}{' '}<ArrowRight size={14} /></Link>
+            <Link to="/confianza">{tr('Reservas verificadas')}{' '}<ArrowRight size={14} /></Link>
+            <Link to="/business">{tr('Allop para salones')}{' '}<ArrowRight size={14} /></Link>
           </aside>
         </div>
       </section>
@@ -59,13 +60,13 @@ export default function Guides() {
     <section className="guide-page">
       <div className="container">
         <div className="guide-hero">
-          <p className="eyebrow">Contenido editorial</p>
-          <h1>Guías Allop</h1>
-          <p>Contenido evergreen para clientes que reservan y para salones que quieren ordenar su operativa.</p>
+          <p className="eyebrow">{tr('Contenido editorial')}</p>
+          <h1>{tr('Guías Allop')}</h1>
+          <p>{tr('Contenido evergreen para clientes que reservan y para salones que quieren ordenar su operativa.')}</p>
         </div>
         <div className="guide-grid">
-          <GuideColumn icon={<Scissors size={20} />} title="Clientes" guides={clientGuides} />
-          <GuideColumn icon={<CheckCircle size={20} />} title="Salones" guides={businessGuides} />
+          <GuideColumn icon={<Scissors size={20} />} title={tr('Clientes')} guides={clientGuides} />
+          <GuideColumn icon={<CheckCircle size={20} />} title={tr('Salones')} guides={businessGuides} />
         </div>
       </div>
     </section>
@@ -80,7 +81,7 @@ function GuideColumn({ icon, title, guides }: { icon: ReactNode; title: string; 
         <Link className="guide-card" key={guide.slug} to={`/guias/${guide.audience}/${guide.slug}`}>
           <strong>{guide.title}</strong>
           <span>{guide.summary}</span>
-          <em>Leer guía <ArrowRight size={13} /></em>
+          <em>{tr('Leer guía')}{' '}<ArrowRight size={13} /></em>
         </Link>
       ))}
     </article>

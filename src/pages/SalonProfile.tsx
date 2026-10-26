@@ -25,6 +25,7 @@ import { formatPrice, getServices, groupByCategory } from '../lib/salonDetails';
 import { clearStructuredData, setSeo, setStructuredData } from '../lib/seo';
 import { useToast } from '../lib/useToast';
 
+import { tr } from '../lib/tr';
 const REVIEWS_PAGE_SIZE = 4;
 const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 const SCHEMA_DAYS: Record<string, string> = {
@@ -234,8 +235,8 @@ export default function SalonProfile() {
       <section className="salon-profile-hero">
         <div className="container salon-profile-hero-grid">
           <div className="salon-profile-copy">
-            <nav className="breadcrumb-chain" aria-label="Miga de pan">
-              <Link to="/">Marketplace</Link>
+            <nav className="breadcrumb-chain" aria-label={tr('Miga de pan')}>
+              <Link to="/">{tr('Marketplace')}</Link>
               <span>/</span>
               <Link to={`/servicios/${sinAcentos(salon.category)}`}>{salon.category}</Link>
               {salon.location && (
@@ -247,8 +248,8 @@ export default function SalonProfile() {
             </nav>
             {(salon.verified || salon.featured || !!salon.badges?.length) && (
               <div className="salon-profile-badges">
-                {salon.verified && <span><BadgeCheck size={14} /> Verificado</span>}
-                {salon.featured && <span>Destacado</span>}
+                {salon.verified && <span><BadgeCheck size={14} />{' '}{tr('Verificado')}</span>}
+                {salon.featured && <span>{tr('Destacado')}</span>}
                 {salon.badges?.map((badge) => <span key={badge}>{badge}</span>)}
               </div>
             )}
@@ -258,9 +259,9 @@ export default function SalonProfile() {
             {salon.description && <p className="salon-profile-description">{salon.description}</p>}
             <div className="salon-profile-meta">
               {salon.reviews > 0 ? (
-                <a href="#resenas"><Star size={16} fill="#F59E0B" color="#F59E0B" /> {salon.rating.toFixed(1)} · {salon.reviews} {salon.reviews === 1 ? 'reseña' : 'reseñas'}</a>
+                <a href="#resenas"><Star size={16} fill="#F59E0B" color="#F59E0B" /> {salon.rating.toFixed(1)} · {salon.reviews} {salon.reviews === 1 ? tr('reseña') : tr('reseñas')}</a>
               ) : (
-                <span><Sparkles size={16} /> Nuevo en Allop</span>
+                <span><Sparkles size={16} />{' '}{tr('Nuevo en Allop')}</span>
               )}
               {salon.address && <span><MapPin size={16} /> {salon.address}</span>}
               {hoy && <span><Clock size={16} /> {hoy}</span>}
@@ -268,25 +269,25 @@ export default function SalonProfile() {
             <div className="salon-profile-actions">
               <Link className="btn btn-primary btn-lg" to={bookingPath}>
                 <CalendarDays size={17} />
-                Reservar cita
+                {tr('Reservar cita')}
               </Link>
               {salon.phone && (
                 <a className="btn btn-ghost btn-lg" href={`tel:${salon.phone.replace(/\s/g, '')}`}>
                   <Phone size={17} />
-                  Llamar
+                  {tr('Llamar')}
                 </a>
               )}
               <button className="btn btn-ghost btn-lg" type="button" onClick={toggleFavorite} aria-pressed={isFavorite}>
                 <Heart size={17} fill={isFavorite ? 'currentColor' : 'none'} />
-                {isFavorite ? 'Guardado' : 'Guardar'}
+                {isFavorite ? tr('Guardado') : tr('Guardar')}
               </button>
-              <button className="btn btn-ghost btn-lg" type="button" onClick={shareSalon} aria-label="Compartir">
+              <button className="btn btn-ghost btn-lg" type="button" onClick={shareSalon} aria-label={tr('Compartir')}>
                 <Share2 size={17} />
               </button>
             </div>
             {shareMessage && <p className="share-message">{shareMessage}</p>}
           </div>
-          <div className="salon-profile-gallery" aria-label="Galería del salón">
+          <div className="salon-profile-gallery" aria-label={tr('Galería del salón')}>
             {photoUrls.length > 0 ? (
               <img
                 className="salon-profile-main-photo"
@@ -323,20 +324,20 @@ export default function SalonProfile() {
             <section className="profile-block" id="servicios">
               <div className="section-header">
                 <div>
-                  <h2 className="section-title">Servicios</h2>
-                  <p className="section-subtitle">Elige uno y reserva en tiempo real con la agenda del salón</p>
+                  <h2 className="section-title">{tr('Servicios')}</h2>
+                  <p className="section-subtitle">{tr('Elige uno y reserva en tiempo real con la agenda del salón')}</p>
                 </div>
               </div>
               {services.length === 0 ? (
                 <p className="profile-reviews-empty">
-                  Este salón todavía no ha publicado servicios para reservar online.
-                  {salon.phone && <> Puedes pedir cita llamando al <a href={`tel:${salon.phone.replace(/\s/g, '')}`}>{salon.phone}</a>.</>}
+                  {tr('Este salón todavía no ha publicado servicios para reservar online.')}
+                  {salon.phone && <>{' '}{tr('Puedes pedir cita llamando al')}{' '}<a href={`tel:${salon.phone.replace(/\s/g, '')}`}>{salon.phone}</a>.</>}
                 </p>
               ) : (
                 <div className="service-groups">
                   {serviceGroups.map((group) => (
                     <div key={group.category ?? '_'} className="service-group">
-                      {serviceGroups.length > 1 && <h3 className="service-group-title">{group.category ?? 'Otros servicios'}</h3>}
+                      {serviceGroups.length > 1 && <h3 className="service-group-title">{group.category ?? tr('Otros servicios')}</h3>}
                       <div className="services-list">
                         {group.items.map((service) => (
                           <article key={service.id}>
@@ -347,7 +348,7 @@ export default function SalonProfile() {
                             <div className="services-list-actions">
                               {service.price !== null && <strong>{formatPrice(service.price)}</strong>}
                               <Link to={`${bookingPath}?service=${service.id}`} className="btn btn-primary btn-sm">
-                                Reservar
+                                {tr('Reservar')}
                               </Link>
                             </div>
                           </article>
@@ -362,18 +363,18 @@ export default function SalonProfile() {
             <section className="profile-block" id="resenas">
               <div className="section-header">
                 <div>
-                  <h2 className="section-title">Reseñas</h2>
-                  <p className="section-subtitle">Solo pueden opinar clientes que han tenido cita en el salón</p>
+                  <h2 className="section-title">{tr('Reseñas')}</h2>
+                  <p className="section-subtitle">{tr('Solo pueden opinar clientes que han tenido cita en el salón')}</p>
                 </div>
               </div>
 
               {salonReviews.length === 0 ? (
                 <p className="profile-reviews-empty">
-                  Aún no hay reseñas. Si reservas desde Allop, podrás dejar la tuya después de la cita.
+                  {tr('Aún no hay reseñas. Si reservas desde Allop, podrás dejar la tuya después de la cita.')}
                 </p>
               ) : (
                 <>
-                  <div className="rating-distribution" aria-label="Distribución de puntuaciones">
+                  <div className="rating-distribution" aria-label={tr('Distribución de puntuaciones')}>
                     <div className="rating-dist-summary">
                       <span className="rating-dist-score">{salon.rating.toFixed(1)}</span>
                       <div className="rating-dist-stars" aria-label={`${salon.rating} de 5 estrellas`}>
@@ -381,7 +382,7 @@ export default function SalonProfile() {
                           <Star key={s} size={14} fill={s <= Math.round(salon.rating) ? '#F59E0B' : 'none'} color="#F59E0B" />
                         ))}
                       </div>
-                      <span className="rating-dist-total">{salon.reviews} {salon.reviews === 1 ? 'reseña' : 'reseñas'}</span>
+                      <span className="rating-dist-total">{salon.reviews} {salon.reviews === 1 ? tr('reseña') : tr('reseñas')}</span>
                     </div>
                     <div className="rating-dist-bars">
                       {[5, 4, 3, 2, 1].map((star, i) => {
@@ -410,9 +411,9 @@ export default function SalonProfile() {
 
                   {filterRating && (
                     <div className="rating-filter-active">
-                      <span>Mostrando reseñas de {filterRating}★</span>
+                      <span>{tr('Mostrando reseñas de')}{' '}{filterRating}★</span>
                       <button className="btn-link" type="button" onClick={() => setFilterRating(null)}>
-                        Quitar filtro
+                        {tr('Quitar filtro')}
                       </button>
                     </div>
                   )}
@@ -435,7 +436,7 @@ export default function SalonProfile() {
                           <div className="review-owner-reply">
                             <div className="review-owner-reply-header">
                               <MessageSquare size={13} />
-                              <strong>Respuesta del salón</strong>
+                              <strong>{tr('Respuesta del salón')}</strong>
                             </div>
                             <p>{review.ownerReply}</p>
                           </div>
@@ -445,10 +446,10 @@ export default function SalonProfile() {
                           <Link
                             to={`/contacto?motivo=reportar-resena&resena=${review.id}`}
                             className="review-report-link"
-                            aria-label="Reportar esta reseña"
+                            aria-label={tr('Reportar esta reseña')}
                           >
                             <Flag size={12} />
-                            Reportar
+                            {tr('Reportar')}
                           </Link>
                         </div>
                       </article>
@@ -456,7 +457,7 @@ export default function SalonProfile() {
                   </div>
                   {visibleReviews.length < filteredReviews.length && (
                     <button className="btn btn-ghost" type="button" onClick={() => setReviewsPage((page) => page + 1)}>
-                      Ver más reseñas
+                      {tr('Ver más reseñas')}
                     </button>
                   )}
                 </>
@@ -466,17 +467,17 @@ export default function SalonProfile() {
 
           <aside className="salon-profile-side">
             <section className="profile-side-card profile-book-card">
-              <h2>Reserva en 1 minuto</h2>
-              <p>Ves los huecos libres reales del salón y la cita entra directamente en su agenda.</p>
+              <h2>{tr('Reserva en 1 minuto')}</h2>
+              <p>{tr('Ves los huecos libres reales del salón y la cita entra directamente en su agenda.')}</p>
               <Link className="btn btn-primary btn-lg" to={bookingPath}>
                 <CalendarDays size={17} />
-                Ver horas libres
+                {tr('Ver horas libres')}
               </Link>
             </section>
 
             {(salon.address || hasLocation(salon)) && (
               <section className="profile-side-card">
-                <h2>Ubicación</h2>
+                <h2>{tr('Ubicación')}</h2>
                 {hasLocation(salon) && (
                   <AppleMap
                     salons={[salon]}
@@ -489,19 +490,19 @@ export default function SalonProfile() {
                 {salon.address && <p>{salon.address}</p>}
                 <a className="business-email-link" href={getAppleMapsUrl(salon)} target="_blank" rel="noreferrer">
                   <MapPin size={13} />
-                  Cómo llegar
+                  {tr('Cómo llegar')}
                 </a>
               </section>
             )}
 
             {horario.length > 0 && (
               <section className="profile-side-card">
-                <h2>Horario</h2>
+                <h2>{tr('Horario')}</h2>
                 <div className="hours-list">
                   {horario.map((entry) => (
                     <div key={entry.dia} className={sinAcentos(entry.dia) === hoyKey ? 'is-today' : undefined}>
                       <span>{capitalizar(entry.dia)}</span>
-                      <strong>{formatFranjas(entry) ?? 'Cerrado'}</strong>
+                      <strong>{formatFranjas(entry) ?? tr('Cerrado')}</strong>
                     </div>
                   ))}
                 </div>
@@ -510,7 +511,7 @@ export default function SalonProfile() {
 
             {(salon.phone || salon.web) && (
               <section className="profile-side-card">
-                <h2>Contacto</h2>
+                <h2>{tr('Contacto')}</h2>
                 <div className="contact-list">
                   {salon.phone && <a href={`tel:${salon.phone.replace(/\s/g, '')}`}><Phone size={15} /> {salon.phone}</a>}
                   {salon.web && (
@@ -524,13 +525,13 @@ export default function SalonProfile() {
             )}
 
             <section className="profile-side-card">
-              <h2><CreditCard size={15} /> Pago</h2>
-              <p>Reservar en Allop es gratis. Pagas directamente en el salón el día de tu cita.</p>
+              <h2><CreditCard size={15} />{' '}{tr('Pago')}</h2>
+              <p>{tr('Reservar en Allop es gratis. Pagas directamente en el salón el día de tu cita.')}</p>
             </section>
 
             {(salon.category || salon.tags.length > 0) && (
               <section className="profile-side-card">
-                <h2>Especialidades</h2>
+                <h2>{tr('Especialidades')}</h2>
                 <div className="profile-tags">
                   <span>{salon.category}</span>
                   {salon.tags.map((tag) => <span key={tag}>{tag}</span>)}
@@ -539,10 +540,10 @@ export default function SalonProfile() {
             )}
 
             <section className="profile-side-card">
-              <h2>¿Algo no cuadra?</h2>
+              <h2>{tr('¿Algo no cuadra?')}</h2>
               <div className="contact-list">
-                <Link to={`/contacto?motivo=reportar-datos&salon=${salon.slug}`}>Reportar datos incorrectos</Link>
-                <Link to={`/contacto?motivo=reclamar-ficha&salon=${salon.slug}`}>¿Es tu salón? Gestiona la ficha</Link>
+                <Link to={`/contacto?motivo=reportar-datos&salon=${salon.slug}`}>{tr('Reportar datos incorrectos')}</Link>
+                <Link to={`/contacto?motivo=reclamar-ficha&salon=${salon.slug}`}>{tr('¿Es tu salón? Gestiona la ficha')}</Link>
               </div>
             </section>
           </aside>

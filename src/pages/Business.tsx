@@ -26,6 +26,7 @@ import { submitBusinessLead } from '../lib/businessLeads';
 import { trackEvent } from '../lib/analytics';
 import { fetchPublicPricing } from '../lib/billingApi';
 
+import { tr } from '../lib/tr';
 interface BusinessProps {
   supportEmail: string;
   dashboardUrl: string;
@@ -48,16 +49,16 @@ const basicFeatures = [
 ];
 
 const startSteps = [
-  { icon: <Sparkles size={22} />, title: 'Crea tu cuenta', text: 'Rellena los datos del salón y elige pago mensual o anual. En unos minutos tienes el panel listo.' },
-  { icon: <ClipboardCheck size={22} />, title: 'Añade servicios y horario', text: 'Precios, duraciones, horario y tu equipo. Puedes cambiarlo cuando quieras.' },
-  { icon: <CalendarDays size={22} />, title: 'Empieza a recibir reservas', text: 'Comparte tu enlace de reservas y gestiona la agenda desde el ordenador o el móvil.' },
+  { icon: <Sparkles size={22} />, title: tr('Crea tu cuenta'), text: 'Rellena los datos del salón y elige pago mensual o anual. En unos minutos tienes el panel listo.' },
+  { icon: <ClipboardCheck size={22} />, title: tr('Añade servicios y horario'), text: 'Precios, duraciones, horario y tu equipo. Puedes cambiarlo cuando quieras.' },
+  { icon: <CalendarDays size={22} />, title: tr('Empieza a recibir reservas'), text: 'Comparte tu enlace de reservas y gestiona la agenda desde el ordenador o el móvil.' },
 ];
 
 const modules = [
-  { icon: <CalendarDays size={22} />, title: 'Agenda y reservas', text: 'Reservas online, disponibilidad por profesional y gestión de citas desde el panel o la app.' },
-  { icon: <Users size={22} />, title: 'Clientes', text: 'Historial, notas internas y seguimiento de próximas visitas de cada cliente.' },
-  { icon: <Smartphone size={22} />, title: 'App para tu equipo', text: 'Con Allop Pro cada profesional ve su agenda, sus clientes y ficha desde el móvil.' },
-  { icon: <BarChart3 size={22} />, title: 'Cobros y números', text: 'Cobros, ventas del día y ocupación para saber cómo va el salón de un vistazo.' },
+  { icon: <CalendarDays size={22} />, title: tr('Agenda y reservas'), text: 'Reservas online, disponibilidad por profesional y gestión de citas desde el panel o la app.' },
+  { icon: <Users size={22} />, title: tr('Clientes'), text: 'Historial, notas internas y seguimiento de próximas visitas de cada cliente.' },
+  { icon: <Smartphone size={22} />, title: tr('App para tu equipo'), text: 'Con Allop Pro cada profesional ve su agenda, sus clientes y ficha desde el móvil.' },
+  { icon: <BarChart3 size={22} />, title: tr('Cobros y números'), text: 'Cobros, ventas del día y ocupación para saber cómo va el salón de un vistazo.' },
 ];
 
 const metrics = [
@@ -127,10 +128,10 @@ const useCases = [
 ];
 
 const customPillars = [
-  { icon: <Globe size={22} />, title: 'Tu web de reservas', text: 'Con tu marca, tus colores y tu estilo. Tus clientes reservan contigo, no en un directorio.' },
-  { icon: <Smartphone size={22} />, title: 'Tus propias apps', text: 'App para tus clientes y app para tu equipo, con tu nombre y tu logo en App Store y Google Play.' },
-  { icon: <Server size={22} />, title: 'Un servidor solo para ti', text: 'Tu salón funciona en su propia instalación, con sus datos separados y a su ritmo.' },
-  { icon: <Crown size={22} />, title: 'Acompañamiento personal', text: 'Una persona de Allop contigo de principio a fin: migración, formación y lanzamiento.' },
+  { icon: <Globe size={22} />, title: tr('Tu web de reservas'), text: 'Con tu marca, tus colores y tu estilo. Tus clientes reservan contigo, no en un directorio.' },
+  { icon: <Smartphone size={22} />, title: tr('Tus propias apps'), text: 'App para tus clientes y app para tu equipo, con tu nombre y tu logo en App Store y Google Play.' },
+  { icon: <Server size={22} />, title: tr('Un servidor solo para ti'), text: 'Tu salón funciona en su propia instalación, con sus datos separados y a su ritmo.' },
+  { icon: <Crown size={22} />, title: tr('Acompañamiento personal'), text: 'Una persona de Allop contigo de principio a fin: migración, formación y lanzamiento.' },
 ];
 
 const customProcess = [
@@ -218,36 +219,36 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-hero">
         <div className="container business-hero-grid">
           <div className="business-hero-copy">
-            <p className="eyebrow">Allop para salones · Plan Básico</p>
-            <h1>Tu salón con reservas online desde hoy, por {monthlyPrice} al mes.</h1>
+            <p className="eyebrow">{tr('Allop para salones · Plan Básico')}</p>
+            <h1>{tr('Tu salón con reservas online desde hoy, por')}{' '}{monthlyPrice}{' '}{tr('al mes.')}</h1>
             <p>
-              Agenda, ficha en allop.es, clientes y una app para todo tu equipo. Te das de alta en unos minutos, sin llamadas ni permanencia.
+              {tr('Agenda, ficha en allop.es, clientes y una app para todo tu equipo. Te das de alta en unos minutos, sin llamadas ni permanencia.')}
             </p>
             <div className="business-actions">
               <Link className="btn btn-lg btn-primary" to={SIGNUP_HREF} onClick={() => trackSignup('hero')}>
-                Empezar ahora
+                {tr('Empezar ahora')}
                 <ArrowRight size={16} />
               </Link>
-              <a className="btn btn-lg btn-ghost" href="#precios">Ver qué incluye</a>
+              <a className="btn btn-lg btn-ghost" href="#precios">{tr('Ver qué incluye')}</a>
             </div>
-            <ul className="business-hero-trust" aria-label="Condiciones del plan Básico">
-              <li><CheckCircle size={15} /> Alta online en minutos</li>
-              <li><CheckCircle size={15} /> Sin permanencia</li>
-              <li><CheckCircle size={15} /> Reservas ilimitadas</li>
+            <ul className="business-hero-trust" aria-label={tr('Condiciones del plan Básico')}>
+              <li><CheckCircle size={15} />{' '}{tr('Alta online en minutos')}</li>
+              <li><CheckCircle size={15} />{' '}{tr('Sin permanencia')}</li>
+              <li><CheckCircle size={15} />{' '}{tr('Reservas ilimitadas')}</li>
             </ul>
             <p className="business-hero-alt">
-              ¿Ya tienes cuenta? <a href={dashboardUrl}>Entra en tu panel</a>
+              {tr('¿Ya tienes cuenta?')}{' '}<a href={dashboardUrl}>{tr('Entra en tu panel')}</a>
             </p>
           </div>
-          <div className="business-visual" aria-label="Panel de gestión Allop">
+          <div className="business-visual" aria-label={tr('Panel de gestión Allop')}>
             <div className="business-panel">
               <div className="business-panel-top">
-                <span>Hoy</span>
-                <strong>12 citas</strong>
+                <span>{tr('Hoy')}</span>
+                <strong>{tr('12 citas')}</strong>
               </div>
-              <div className="business-panel-row"><CalendarDays size={17} /> 10:30 Corte + color</div>
-              <div className="business-panel-row"><CreditCard size={17} /> Cobrado hoy · 284 €</div>
-              <div className="business-panel-row"><Users size={17} /> 3 clientes nuevos</div>
+              <div className="business-panel-row"><CalendarDays size={17} />{' '}{tr('10:30 Corte + color')}</div>
+              <div className="business-panel-row"><CreditCard size={17} />{' '}{tr('Cobrado hoy · 284 €')}</div>
+              <div className="business-panel-row"><Users size={17} />{' '}{tr('3 clientes nuevos')}</div>
             </div>
           </div>
         </div>
@@ -268,8 +269,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Empieza hoy</p>
-              <h2 className="section-title">Tres pasos y tu salón ya recibe reservas.</h2>
+              <p className="eyebrow">{tr('Empieza hoy')}</p>
+              <h2 className="section-title">{tr('Tres pasos y tu salón ya recibe reservas.')}</h2>
             </div>
           </div>
           <div className="business-steps">
@@ -289,8 +290,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Tu día a día</p>
-              <h2 className="section-title">Una rutina completa, no solo un calendario.</h2>
+              <p className="eyebrow">{tr('Tu día a día')}</p>
+              <h2 className="section-title">{tr('Una rutina completa, no solo un calendario.')}</h2>
             </div>
           </div>
           <div className="business-modules">
@@ -309,20 +310,20 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Precio</p>
-              <h2 className="section-title">Un plan con todo lo que necesita tu salón.</h2>
+              <p className="eyebrow">{tr('Precio')}</p>
+              <h2 className="section-title">{tr('Un plan con todo lo que necesita tu salón.')}</h2>
             </div>
           </div>
           <article className="business-basic-plan">
             <div className="business-basic-price">
-              <span className="plan-badge">Plan Básico</span>
+              <span className="plan-badge">{tr('Plan Básico')}</span>
               <div className="plan-price">{monthlyPrice}<span>/mes + IVA</span></div>
-              <p>O {formatEuros(pricing.annual)} al año{annualSaving > 0 ? ` y te ahorras ${annualSaving} €` : ''}.</p>
+              <p>O {formatEuros(pricing.annual)}{' '}{tr('al año')}{annualSaving > 0 ? ` y te ahorras ${annualSaving} €` : ''}.</p>
               <Link className="btn btn-lg btn-primary" to={SIGNUP_HREF} onClick={() => trackSignup('pricing')}>
-                Crear mi cuenta
+                {tr('Crear mi cuenta')}
                 <ArrowRight size={16} />
               </Link>
-              <small>Sin permanencia. Cancela cuando quieras.</small>
+              <small>{tr('Sin permanencia. Cancela cuando quieras.')}</small>
             </div>
             <ul className="business-basic-features">
               {basicFeatures.map((feature) => (
@@ -332,7 +333,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
           </article>
           <p className="business-custom-teaser">
             <Crown size={16} />
-            ¿Buscas tu propia web y tus propias apps con tu marca? <a href="#a-medida">Descubre Allop A medida</a>
+            {tr('¿Buscas tu propia web y tus propias apps con tu marca?')}{' '}<a href="#a-medida">{tr('Descubre Allop A medida')}</a>
           </p>
         </div>
       </section>
@@ -340,21 +341,21 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-section">
         <div className="container business-calculator-grid">
           <div>
-            <p className="eyebrow">Calculadora de ahorro</p>
-            <h2 className="section-title">Estima citas perdidas evitadas y tiempo recuperado.</h2>
-            <p className="business-demo-copy">Una estimación orientativa de lo que recuperas con reservas online y recordatorios.</p>
+            <p className="eyebrow">{tr('Calculadora de ahorro')}</p>
+            <h2 className="section-title">{tr('Estima citas perdidas evitadas y tiempo recuperado.')}</h2>
+            <p className="business-demo-copy">{tr('Una estimación orientativa de lo que recuperas con reservas online y recordatorios.')}</p>
             <Link className="btn btn-primary business-calculator-cta" to={SIGNUP_HREF} onClick={() => trackSignup('calculator')}>
-              Empezar por {monthlyPrice}/mes
+              {tr('Empezar por')}{' '}{monthlyPrice}/mes
             </Link>
           </div>
           <div className="business-calculator">
-            <label>Reservas al mes <strong>{monthlyBookings}</strong><input type="range" min="40" max="1200" step="20" value={monthlyBookings} onChange={(event) => setMonthlyBookings(Number(event.target.value))} /></label>
-            <label>Clientes que no se presentan <strong>{noShowRate}%</strong><input type="range" min="1" max="25" step="1" value={noShowRate} onChange={(event) => setNoShowRate(Number(event.target.value))} /></label>
-            <label>Horas de gestión al mes <strong>{adminHours} h</strong><input type="range" min="5" max="120" step="5" value={adminHours} onChange={(event) => setAdminHours(Number(event.target.value))} /></label>
+            <label>{tr('Reservas al mes')}{' '}<strong>{monthlyBookings}</strong><input type="range" min="40" max="1200" step="20" value={monthlyBookings} onChange={(event) => setMonthlyBookings(Number(event.target.value))} /></label>
+            <label>{tr('Clientes que no se presentan')}{' '}<strong>{noShowRate}%</strong><input type="range" min="1" max="25" step="1" value={noShowRate} onChange={(event) => setNoShowRate(Number(event.target.value))} /></label>
+            <label>{tr('Horas de gestión al mes')}{' '}<strong>{adminHours} h</strong><input type="range" min="5" max="120" step="5" value={adminHours} onChange={(event) => setAdminHours(Number(event.target.value))} /></label>
             <div className="calculator-results">
-              <article><Calculator size={20} /><strong>{avoidedNoShows}</strong><span>citas perdidas evitables al mes</span></article>
-              <article><Clock size={20} /><strong>{savedHours} h</strong><span>tiempo recuperado</span></article>
-              <article><CreditCard size={20} /><strong>{estimatedValue} €</strong><span>valor mensual estimado</span></article>
+              <article><Calculator size={20} /><strong>{avoidedNoShows}</strong><span>{tr('citas perdidas evitables al mes')}</span></article>
+              <article><Clock size={20} /><strong>{savedHours} h</strong><span>{tr('tiempo recuperado')}</span></article>
+              <article><CreditCard size={20} /><strong>{estimatedValue} €</strong><span>{tr('valor mensual estimado')}</span></article>
             </div>
           </div>
         </div>
@@ -364,8 +365,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Clientes</p>
-              <h2 className="section-title">Salones que ya trabajan con una operativa más ordenada.</h2>
+              <p className="eyebrow">{tr('Clientes')}</p>
+              <h2 className="section-title">{tr('Salones que ya trabajan con una operativa más ordenada.')}</h2>
             </div>
           </div>
           <div className="business-testimonials">
@@ -394,8 +395,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-section">
         <div className="container business-compare-grid">
           <div>
-            <p className="eyebrow">Allop vs agenda de papel</p>
-            <h2 className="section-title">Menos tareas manuales, más control del negocio.</h2>
+            <p className="eyebrow">{tr('Allop vs agenda de papel')}</p>
+            <h2 className="section-title">{tr('Menos tareas manuales, más control del negocio.')}</h2>
           </div>
           <div className="business-comparison">
             {comparisonRows.map(([feature, paper, whatsapp, calendar, allop]) => (
@@ -415,8 +416,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Para cada tipo de salón</p>
-              <h2 className="section-title">Adaptado a cómo trabajas.</h2>
+              <p className="eyebrow">{tr('Para cada tipo de salón')}</p>
+              <h2 className="section-title">{tr('Adaptado a cómo trabajas.')}</h2>
             </div>
           </div>
           <div className="business-use-cases">
@@ -435,8 +436,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
         <div className="container">
           <div className="section-header">
             <div>
-              <p className="eyebrow">Integraciones</p>
-              <h2 className="section-title">Encaja con lo que ya usas.</h2>
+              <p className="eyebrow">{tr('Integraciones')}</p>
+              <h2 className="section-title">{tr('Encaja con lo que ya usas.')}</h2>
             </div>
           </div>
           <div className="business-integrations">
@@ -454,8 +455,8 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-section">
         <div className="container business-faq-grid">
           <div>
-            <p className="eyebrow">Preguntas frecuentes</p>
-            <h2 className="section-title">Antes de dar el salto.</h2>
+            <p className="eyebrow">{tr('Preguntas frecuentes')}</p>
+            <h2 className="section-title">{tr('Antes de dar el salto.')}</h2>
           </div>
           <div className="business-faq">
             {faqs.map(([question, answer], index) => (
@@ -474,16 +475,16 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-final" id="empresa">
         <div className="container business-final-inner">
           <div>
-            <p className="eyebrow">Plan Básico</p>
-            <h2>Empieza hoy y recibe tu primera reserva online esta misma semana.</h2>
-            <p>{monthlyPrice} al mes, sin permanencia. Configuras tu salón a tu ritmo y lo cambias cuando quieras.</p>
+            <p className="eyebrow">{tr('Plan Básico')}</p>
+            <h2>{tr('Empieza hoy y recibe tu primera reserva online esta misma semana.')}</h2>
+            <p>{monthlyPrice}{' '}{tr('al mes, sin permanencia. Configuras tu salón a tu ritmo y lo cambias cuando quieras.')}</p>
           </div>
           <div className="business-actions">
             <Link className="btn btn-lg btn-white" to={SIGNUP_HREF} onClick={() => trackSignup('final')}>
-              Crear mi cuenta
+              {tr('Crear mi cuenta')}
               <ArrowRight size={17} />
             </Link>
-            <a className="btn btn-lg btn-outline-white" href={dashboardUrl}>Ya tengo cuenta</a>
+            <a className="btn btn-lg btn-outline-white" href={dashboardUrl}>{tr('Ya tengo cuenta')}</a>
           </div>
         </div>
       </section>
@@ -491,11 +492,10 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
       <section className="business-exclusive" id="a-medida" aria-labelledby="a-medida-title">
         <div className="container">
           <div className="business-exclusive-head">
-            <p className="business-exclusive-eyebrow"><Crown size={15} /> Allop A medida</p>
-            <h2 id="a-medida-title">Tu marca, en todas partes.</h2>
+            <p className="business-exclusive-eyebrow"><Crown size={15} />{' '}{tr('Allop A medida')}</p>
+            <h2 id="a-medida-title">{tr('Tu marca, en todas partes.')}</h2>
             <p>
-              Para salones que quieren su propia web y sus propias apps, con el motor de Allop por dentro.
-              Trabajamos con pocos salones a la vez para cuidar cada lanzamiento como si fuera el nuestro.
+              {tr('Para salones que quieren su propia web y sus propias apps, con el motor de Allop por dentro. Trabajamos con pocos salones a la vez para cuidar cada lanzamiento como si fuera el nuestro.')}
             </p>
           </div>
 
@@ -510,7 +510,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
           </div>
 
           <div className="business-exclusive-process">
-            <h3>Así lo lanzamos contigo</h3>
+            <h3>{tr('Así lo lanzamos contigo')}</h3>
             <ol>
               {customProcess.map(([title, text]) => (
                 <li key={title}>
@@ -523,27 +523,27 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
 
           <div className="business-exclusive-contact" id="business-contact">
             <div>
-              <h3>Solicita tu plaza</h3>
-              <p>Cuéntanos tu proyecto. Estudiamos cada solicitud y te respondemos personalmente con una propuesta.</p>
-              <p className="business-exclusive-note"><ShieldCheck size={16} /> Precio según proyecto. Sin compromiso hasta que firmes.</p>
-              <a className="business-email-link" href={`mailto:${supportEmail}`}>O escríbenos a {supportEmail}</a>
+              <h3>{tr('Solicita tu plaza')}</h3>
+              <p>{tr('Cuéntanos tu proyecto. Estudiamos cada solicitud y te respondemos personalmente con una propuesta.')}</p>
+              <p className="business-exclusive-note"><ShieldCheck size={16} />{' '}{tr('Precio según proyecto. Sin compromiso hasta que firmes.')}</p>
+              <a className="business-email-link" href={`mailto:${supportEmail}`}>{tr('O escríbenos a')}{' '}{supportEmail}</a>
             </div>
             <form className="business-lead-form" onSubmit={submitLead}>
-              <label>Nombre del salón<input value={lead.salonName} onChange={(event) => setLead({ ...lead, salonName: event.target.value })} /></label>
-              <label>Persona de contacto<input value={lead.contactName} onChange={(event) => setLead({ ...lead, contactName: event.target.value })} /></label>
+              <label>{tr('Nombre del salón')}<input value={lead.salonName} onChange={(event) => setLead({ ...lead, salonName: event.target.value })} /></label>
+              <label>{tr('Persona de contacto')}<input value={lead.contactName} onChange={(event) => setLead({ ...lead, contactName: event.target.value })} /></label>
               <div className="auth-two-cols">
-                <label>Teléfono<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
-                <label>Email<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
+                <label>{tr('Teléfono')}<input value={lead.phone} onChange={(event) => setLead({ ...lead, phone: event.target.value })} type="tel" /></label>
+                <label>{tr('Email')}<input value={lead.email} onChange={(event) => setLead({ ...lead, email: event.target.value })} type="email" /></label>
               </div>
               <div className="auth-two-cols">
-                <label>Ciudad<input value={lead.city} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
-                <label>Sedes<select value={lead.teamSize} onChange={(event) => setLead({ ...lead, teamSize: event.target.value })}>
-                  <option value="1 sede">1 sede</option>
-                  <option value="2-3 sedes">2 o 3 sedes</option>
-                  <option value="4+ sedes">4 sedes o más</option>
+                <label>{tr('Ciudad')}<input value={lead.city} onChange={(event) => setLead({ ...lead, city: event.target.value })} /></label>
+                <label>{tr('Sedes')}<select value={lead.teamSize} onChange={(event) => setLead({ ...lead, teamSize: event.target.value })}>
+                  <option value="1 sede">{tr('1 sede')}</option>
+                  <option value="2-3 sedes">{tr('2 o 3 sedes')}</option>
+                  <option value="4+ sedes">{tr('4 sedes o más')}</option>
                 </select></label>
               </div>
-              <label>Qué te gustaría conseguir<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={4} placeholder="Por ejemplo: app propia para mis clientas, migrar desde Booksy…" /></label>
+              <label>{tr('Qué te gustaría conseguir')}<textarea value={lead.message} onChange={(event) => setLead({ ...lead, message: event.target.value })} rows={4} placeholder={tr('Por ejemplo: app propia para mis clientas, migrar desde Booksy…')} /></label>
               {leadMessage && (
                 <p
                   className={`auth-message ${leadMessage.includes('Indica') ? 'err' : 'ok'}`}
@@ -555,7 +555,7 @@ export default function Business({ supportEmail, dashboardUrl }: BusinessProps) 
               )}
               <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
                 {submitting && <span className="inline-spinner" aria-hidden="true" />}
-                {submitting ? 'Enviando...' : 'Solicitar acceso'}
+                {submitting ? tr('Enviando...') : tr('Solicitar acceso')}
               </button>
             </form>
           </div>

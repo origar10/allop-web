@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 
+import { tr } from '../lib/tr';
 interface LegalSection {
   heading: string;
   text: string[];
@@ -7,7 +8,7 @@ interface LegalSection {
 
 const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: string; sections: LegalSection[] }> = {
   privacidad: {
-    title: 'Política de privacidad',
+    title: tr('Política de privacidad'),
     updatedAt: '2026-06-05',
     intro: 'Esta política explica como Allop trata datos de clientes y salones para prestar el marketplace, reservas, soporte y software operativo.',
     sections: [
@@ -19,7 +20,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     ],
   },
   terminos: {
-    title: 'Términos y condiciones',
+    title: tr('Términos y condiciones'),
     updatedAt: '2026-06-05',
     intro: 'Estos términos regulan el uso de Allop como marketplace para clientes y software operativo para salones.',
     sections: [
@@ -31,7 +32,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     ],
   },
   cookies: {
-    title: 'Política de cookies',
+    title: tr('Política de cookies'),
     updatedAt: '2026-06-05',
     intro: 'Allop usa cookies técnicas y puede usar analítica privacy-first solo con consentimiento previo.',
     sections: [
@@ -41,7 +42,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     ],
   },
   'aviso-legal': {
-    title: 'Aviso legal',
+    title: tr('Aviso legal'),
     updatedAt: '2026-06-05',
     intro: 'Información general del titular de Allop.',
     sections: [
@@ -51,7 +52,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     ],
   },
   rgpd: {
-    title: 'Información RGPD',
+    title: tr('Información RGPD'),
     updatedAt: '2026-06-05',
     intro: 'Resumen práctico de derechos y canales para clientes y salones.',
     sections: [
@@ -61,7 +62,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     ],
   },
   dpa: {
-    title: 'DPA para salones',
+    title: tr('DPA para salones'),
     updatedAt: '2026-06-05',
     intro: 'Acuerdo base de tratamiento de datos para salones que usan Allop como software operativo.',
     sections: [
@@ -73,7 +74,7 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
     ],
   },
   'eliminar-cuenta': {
-    title: 'Eliminar tu cuenta y tus datos',
+    title: tr('Eliminar tu cuenta y tus datos'),
     updatedAt: '2026-06-17',
     intro: 'Esta página explica como solicitar la eliminación de tu cuenta y de los datos asociados en las aplicaciones móviles de Origar SL (Allop y las apps propias de cada salón, como Peluquería Feromi, Jessica Portales, Pels Pels u Olga Calzado), tanto desde la propia app como escribiendo a soporte.',
     sections: [
@@ -111,7 +112,7 @@ export default function LegalPage() {
   return (
     <section className="legal-page">
       <div className="container legal-content">
-        <p className="eyebrow">Legal · Actualizado {content.updatedAt}</p>
+        <p className="eyebrow">{tr('Legal · Actualizado')}{' '}{content.updatedAt}</p>
         <h1>{content.title}</h1>
         <p>{content.intro}</p>
         {content.sections.map((section) => (
@@ -121,12 +122,12 @@ export default function LegalPage() {
           </article>
         ))}
         <div className="legal-links">
-          <Link to="/privacidad">Privacidad</Link>
-          <Link to="/terminos">Términos</Link>
-          <Link to="/cookies">Cookies</Link>
+          <Link to="/privacidad">{tr('Privacidad')}</Link>
+          <Link to="/terminos">{tr('Términos')}</Link>
+          <Link to="/cookies">{tr('Cookies')}</Link>
           <Link to="/rgpd">RGPD</Link>
-          <Link to="/dpa">DPA salones</Link>
-          <Link to="/eliminar-cuenta">Eliminar cuenta</Link>
+          <Link to="/dpa">{tr('DPA salones')}</Link>
+          <Link to="/eliminar-cuenta">{tr('Eliminar cuenta')}</Link>
         </div>
       </div>
     </section>

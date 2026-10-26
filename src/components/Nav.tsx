@@ -6,6 +6,7 @@ import { useI18n } from '../lib/useI18n';
 import { useTheme } from '../lib/useTheme';
 import { useToast } from '../lib/useToast';
 
+import { tr } from '../lib/tr';
 interface NavProps {
   onSearch: (query: string) => void;
   onLogin: () => void;
@@ -64,8 +65,8 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
       <nav className="nav nav-business">
         <div className="nav-inner">
           <Link to="/business" className="nav-logo nav-logo-business">
-            <img src="/allop-icon.svg" alt="allop business" width="28" height="28" decoding="async" />
-            <span>allop business</span>
+            <img src="/allop-icon.svg" alt={tr('allop business')} width="28" height="28" decoding="async" />
+            <span>{tr('allop business')}</span>
           </Link>
           <div className="nav-actions">
             <ThemeToggle />
@@ -102,7 +103,7 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
         <button
           className="nav-hamburger"
           type="button"
-          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-label={menuOpen ? tr('Cerrar menú') : tr('Abrir menú')}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(v => !v)}
         >
@@ -132,7 +133,7 @@ export default function Nav({ onSearch, onLogin, onRegister, onBusiness, dashboa
         )}
       </div>
       {menuOpen && (
-        <nav className="nav-mobile-drawer" aria-label="Menú principal">
+        <nav className="nav-mobile-drawer" aria-label={tr('Menú principal')}>
           <a href="/#buscar" onClick={() => setMenuOpen(false)}>{t('nav.marketplace.searchSalon')}</a>
           <a href="/#como-funciona" onClick={() => setMenuOpen(false)}>{t('nav.marketplace.howItWorks')}</a>
           <button type="button" onClick={() => { setMenuOpen(false); onBusiness(); }}>

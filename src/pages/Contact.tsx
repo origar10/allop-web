@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { saveSupportRequest } from '../lib/supportStore';
 import { firstError, validateEmail, validateFreeText, validateLocator, validateName, validatePhone } from '../lib/validation';
 
+import { tr } from '../lib/tr';
 export default function Contact({ supportEmail }: { supportEmail: string }) {
   const [searchParams] = useSearchParams();
   const traza = searchParams.get('traza') || '';
@@ -52,40 +53,40 @@ export default function Contact({ supportEmail }: { supportEmail: string }) {
     <section className="contact-page">
       <div className="container contact-grid">
         <div>
-          <p className="eyebrow">Contacto</p>
-          <h1>Cuéntanos qué necesitas.</h1>
-          <p>Soporte para clientes, salones, privacidad, prensa y empleo. Si escribes por una reserva, añade el localizador.</p>
+          <p className="eyebrow">{tr('Contacto')}</p>
+          <h1>{tr('Cuéntanos qué necesitas.')}</h1>
+          <p>{tr('Soporte para clientes, salones, privacidad, prensa y empleo. Si escribes por una reserva, añade el localizador.')}</p>
           <div className="contact-details">
-            <span>Email: <a href={`mailto:${supportEmail}`}>{supportEmail}</a></span>
-            <span>Tiempo estimado: 1-2 días laborables</span>
-            <span>Urgencias de reserva: incluye teléfono y localizador</span>
+            <span>{tr('Email:')}{' '}<a href={`mailto:${supportEmail}`}>{supportEmail}</a></span>
+            <span>{tr('Tiempo estimado: 1-2 días laborables')}</span>
+            <span>{tr('Urgencias de reserva: incluye teléfono y localizador')}</span>
           </div>
         </div>
         <form className="business-lead-form" onSubmit={submit}>
           {/* honeypot — bots fill this; humans don't see it */}
           <label style={{ display: 'none' }} aria-hidden="true">
-            No rellenar<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
+            {tr('No rellenar')}<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
           </label>
-          <label>Motivo<select value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })}>
-            <option value="cliente">Cliente</option>
-            <option value="soporte-reserva">Soporte por reserva</option>
-            <option value="error-reserva">Error al reservar</option>
-            <option value="error-tecnico">Error técnico</option>
-            <option value="salon">Salón</option>
-            <option value="reportar-datos">Reportar datos incorrectos</option>
-            <option value="reportar-resena">Reportar reseña</option>
-            <option value="reclamar-ficha">Reclamar ficha</option>
-            <option value="privacidad">Privacidad</option>
-            <option value="prensa">Prensa</option>
-            <option value="empleo">Empleo</option>
+          <label>{tr('Motivo')}<select value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })}>
+            <option value="cliente">{tr('Cliente')}</option>
+            <option value="soporte-reserva">{tr('Soporte por reserva')}</option>
+            <option value="error-reserva">{tr('Error al reservar')}</option>
+            <option value="error-tecnico">{tr('Error técnico')}</option>
+            <option value="salon">{tr('Salón')}</option>
+            <option value="reportar-datos">{tr('Reportar datos incorrectos')}</option>
+            <option value="reportar-resena">{tr('Reportar reseña')}</option>
+            <option value="reclamar-ficha">{tr('Reclamar ficha')}</option>
+            <option value="privacidad">{tr('Privacidad')}</option>
+            <option value="prensa">{tr('Prensa')}</option>
+            <option value="empleo">{tr('Empleo')}</option>
           </select></label>
-          <label>Nombre<input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+          <label>{tr('Nombre')}<input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
           <div className="auth-two-cols">
-            <label>Email<input value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} type="email" /></label>
-            <label>Teléfono<input value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} type="tel" /></label>
+            <label>{tr('Email')}<input value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} type="email" /></label>
+            <label>{tr('Teléfono')}<input value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} type="tel" /></label>
           </div>
-          <label>Número de reserva opcional<input value={form.bookingLocator} onChange={(event) => setForm({ ...form, bookingLocator: event.target.value })} placeholder="ALP-..." /></label>
-          <label>Mensaje<textarea value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} rows={5} /></label>
+          <label>{tr('Número de reserva opcional')}<input value={form.bookingLocator} onChange={(event) => setForm({ ...form, bookingLocator: event.target.value })} placeholder={tr('ALP-...')} /></label>
+          <label>{tr('Mensaje')}<textarea value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} rows={5} /></label>
           {message && (
             <p
               className={`auth-message ${message.startsWith('Indica') ? 'err' : 'ok'}`}
@@ -95,7 +96,7 @@ export default function Contact({ supportEmail }: { supportEmail: string }) {
               {message}
             </p>
           )}
-          <button className="btn btn-primary btn-lg" type="submit">Enviar solicitud</button>
+          <button className="btn btn-primary btn-lg" type="submit">{tr('Enviar solicitud')}</button>
         </form>
       </div>
     </section>

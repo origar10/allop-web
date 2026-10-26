@@ -1,5 +1,6 @@
 import type { PublicService, Salon } from '../data/salons';
 
+import { tr } from './tr';
 export interface ServiceItem {
   /** Id del servicio en el core del salón (lo que se reserva). */
   id: string;
@@ -91,7 +92,7 @@ export function getAvailableDates(days = 14) {
     return {
       // Fecha LOCAL: con toISOString() el día se corría a medianoche (UTC) y se pedían huecos del día anterior.
       id: localIsoDate(date),
-      label: index === 0 ? 'Hoy' : index === 1 ? 'Mañana' : formatter.format(date),
+      label: index === 0 ? tr('Hoy') : index === 1 ? tr('Mañana') : formatter.format(date),
       value: date,
     };
   });

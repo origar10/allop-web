@@ -3,6 +3,7 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { type Salon } from '../data/salons';
 import { getMapKitToken } from '../lib/mapkitApi';
 
+import { tr } from '../lib/tr';
 const MAPKIT_SCRIPT_ID = 'apple-mapkit-js';
 const MAPKIT_SCRIPT_SRC = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
 
@@ -53,7 +54,7 @@ function loadMapKitScript() {
         return;
       }
       existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error('No se pudo cargar MapKit JS.')), { once: true });
+      existing.addEventListener('error', () => reject(new Error(tr('No se pudo cargar MapKit JS.'))), { once: true });
     });
   }
 
@@ -64,7 +65,7 @@ function loadMapKitScript() {
     script.async = true;
     script.crossOrigin = 'anonymous';
     script.addEventListener('load', () => resolve(), { once: true });
-    script.addEventListener('error', () => reject(new Error('No se pudo cargar MapKit JS.')), { once: true });
+    script.addEventListener('error', () => reject(new Error(tr('No se pudo cargar MapKit JS.'))), { once: true });
     document.head.appendChild(script);
   });
 }

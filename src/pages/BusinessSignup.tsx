@@ -21,6 +21,7 @@ import {
 } from '../lib/billingApi';
 import { setSeo } from '../lib/seo';
 
+import { tr } from '../lib/tr';
 const emptyProfile: BillingProfile = {
   salonName: '',
   contactName: '',
@@ -54,7 +55,7 @@ export default function BusinessSignup() {
 
   useEffect(() => {
     setSeo({
-      title: 'Da de alta tu salón | Allop',
+      title: tr('Da de alta tu salón | Allop'),
       description: 'Crea tu cuenta del plan Básico en unos minutos o solicita Allop A medida.',
       canonicalPath: '/business/alta',
     });
@@ -123,25 +124,25 @@ export default function BusinessSignup() {
     <section className="billing-page">
       <div className="container billing-layout">
         <div className="billing-copy">
-          <p className="eyebrow">Alta de salón</p>
-          <h1>Tu salón en Allop, en unos minutos.</h1>
-          <p>Con el plan Básico creas tu cuenta ahora mismo y empiezas a configurar tu salón al momento. Si buscas web y apps con tu marca, solicita Allop A medida y te escribimos personalmente.</p>
+          <p className="eyebrow">{tr('Alta de salón')}</p>
+          <h1>{tr('Tu salón en Allop, en unos minutos.')}</h1>
+          <p>{tr('Con el plan Básico creas tu cuenta ahora mismo y empiezas a configurar tu salón al momento. Si buscas web y apps con tu marca, solicita Allop A medida y te escribimos personalmente.')}</p>
           <div className="billing-security">
-            <span><ShieldCheck size={16} /> Activo al momento</span>
-            <span><RotateCcw size={16} /> Lo cambias cuando quieras</span>
-            <span><Lock size={16} /> Pago seguro, sin permanencia</span>
+            <span><ShieldCheck size={16} />{' '}{tr('Activo al momento')}</span>
+            <span><RotateCcw size={16} />{' '}{tr('Lo cambias cuando quieras')}</span>
+            <span><Lock size={16} />{' '}{tr('Pago seguro, sin permanencia')}</span>
           </div>
         </div>
 
         <form className="billing-card" onSubmit={submitSignup}>
           <label style={{ display: 'none' }} aria-hidden="true">
-            No rellenar<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
+            {tr('No rellenar')}<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
           </label>
 
           {canSelectInterval && (
-            <div className="billing-toggle" aria-label="Forma de pago">
-              <button type="button" className={interval === 'monthly' ? 'active' : ''} onClick={() => setInterval('monthly')}>Mensual</button>
-              <button type="button" className={interval === 'annual' ? 'active' : ''} onClick={() => setInterval('annual')}>Anual</button>
+            <div className="billing-toggle" aria-label={tr('Forma de pago')}>
+              <button type="button" className={interval === 'monthly' ? 'active' : ''} onClick={() => setInterval('monthly')}>{tr('Mensual')}</button>
+              <button type="button" className={interval === 'annual' ? 'active' : ''} onClick={() => setInterval('annual')}>{tr('Anual')}</button>
             </div>
           )}
 
@@ -150,7 +151,7 @@ export default function BusinessSignup() {
               <button key={item.id} type="button" className={planId === item.id ? 'active' : ''} onClick={() => setPlanId(item.id)}>
                 <strong>{item.name}</strong>
                 <span>{formatPlanPrice(item, interval)}</span>
-                {item.selfService ? <small>Activo al momento</small> : <small>Por solicitud</small>}
+                {item.selfService ? <small>{tr('Activo al momento')}</small> : <small>{tr('Por solicitud')}</small>}
               </button>
             ))}
           </div>
@@ -164,37 +165,37 @@ export default function BusinessSignup() {
               ))}
             </div>
             <div className="billing-total">
-              <span>Precio</span>
-              <strong>{basePrice === null ? 'Pedir presupuesto' : `${basePrice} EUR`}</strong>
-              <span>IVA 21%</span>
-              <strong>{vat === null ? 'Se confirma antes de contratar' : `${vat.toFixed(2)} EUR`}</strong>
-              <span>Total</span>
-              <strong>{finalPrice === null ? (plan.selfService ? 'Alta online' : 'Según proyecto') : `${finalPrice.toFixed(2)} EUR`}</strong>
+              <span>{tr('Precio')}</span>
+              <strong>{basePrice === null ? tr('Pedir presupuesto') : `${basePrice} EUR`}</strong>
+              <span>{tr('IVA 21%')}</span>
+              <strong>{vat === null ? tr('Se confirma antes de contratar') : `${vat.toFixed(2)} EUR`}</strong>
+              <span>{tr('Total')}</span>
+              <strong>{finalPrice === null ? (plan.selfService ? tr('Alta online') : tr('Según proyecto')) : `${finalPrice.toFixed(2)} EUR`}</strong>
             </div>
           </div>
 
           <div className="auth-two-cols">
-            <label>Salón<input value={profile.salonName} onChange={(event) => setProfile({ ...profile, salonName: event.target.value })} /></label>
-            <label>Contacto<input value={profile.contactName} onChange={(event) => setProfile({ ...profile, contactName: event.target.value })} /></label>
+            <label>{tr('Salón')}<input value={profile.salonName} onChange={(event) => setProfile({ ...profile, salonName: event.target.value })} /></label>
+            <label>{tr('Contacto')}<input value={profile.contactName} onChange={(event) => setProfile({ ...profile, contactName: event.target.value })} /></label>
           </div>
           <div className="auth-two-cols">
-            <label>Email de facturación<input type="email" value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} /></label>
-            <label>Teléfono<input type="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
+            <label>{tr('Email de facturación')}<input type="email" value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} /></label>
+            <label>{tr('Teléfono')}<input type="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
           </div>
           <div className="auth-two-cols">
-            <label>Razón social<input value={profile.fiscalName} onChange={(event) => setProfile({ ...profile, fiscalName: event.target.value })} /></label>
-            <label>NIF/CIF<input value={profile.taxId} onChange={(event) => setProfile({ ...profile, taxId: event.target.value })} /></label>
+            <label>{tr('Razón social')}<input value={profile.fiscalName} onChange={(event) => setProfile({ ...profile, fiscalName: event.target.value })} /></label>
+            <label>{tr('NIF/CIF')}<input value={profile.taxId} onChange={(event) => setProfile({ ...profile, taxId: event.target.value })} /></label>
           </div>
           {plan.selfService && (
-            <label>Contraseña para entrar en tu panel y en la app
+            <label>{tr('Contraseña para entrar en tu panel y en la app')}
               <input type="password" autoComplete="new-password" minLength={8} value={password}
-                onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo 8 caracteres" />
+                onChange={(event) => setPassword(event.target.value)} placeholder={tr('Mínimo 8 caracteres')} />
             </label>
           )}
-          <label>Dirección fiscal<input value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
+          <label>{tr('Dirección fiscal')}<input value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
           <div className="auth-two-cols">
-            <label>Ciudad<input value={profile.city} onChange={(event) => setProfile({ ...profile, city: event.target.value })} /></label>
-            <label>Cupón<input value={profile.coupon} onChange={(event) => setProfile({ ...profile, coupon: event.target.value })} placeholder="Opcional" /></label>
+            <label>{tr('Ciudad')}<input value={profile.city} onChange={(event) => setProfile({ ...profile, city: event.target.value })} /></label>
+            <label>{tr('Cupón')}<input value={profile.coupon} onChange={(event) => setProfile({ ...profile, coupon: event.target.value })} placeholder={tr('Opcional')} /></label>
           </div>
 
           {message && (
@@ -206,19 +207,19 @@ export default function BusinessSignup() {
           <button className="btn btn-primary btn-lg" type="submit" disabled={submitting}>
             {submitting && <span className="inline-spinner" aria-hidden="true" />}
             {plan.selfService ? <CreditCard size={16} /> : <MessageCircle size={16} />}
-            {submitting ? 'Preparando...' : plan.selfService ? 'Continuar al pago' : 'Solicitar A medida'}
+            {submitting ? tr('Preparando...') : plan.selfService ? tr('Continuar al pago') : tr('Solicitar A medida')}
           </button>
           {plan.selfService
-            ? <p className="billing-note"><FileText size={14} /> El pago lo gestiona Stripe de forma segura. Allop no guarda los datos de tu tarjeta.</p>
-            : <p className="billing-note"><FileText size={14} /> Se abrirá un correo a {CONTRACT_EMAIL} con tus datos para estudiar tu proyecto.</p>
+            ? <p className="billing-note"><FileText size={14} />{' '}{tr('El pago lo gestiona Stripe de forma segura. Allop no guarda los datos de tu tarjeta.')}</p>
+            : <p className="billing-note"><FileText size={14} />{' '}{tr('Se abrirá un correo a')}{' '}{CONTRACT_EMAIL}{' '}{tr('con tus datos para estudiar tu proyecto.')}</p>
           }
         </form>
       </div>
 
       <div className="container billing-next">
-        <article><Sparkles size={18} /><strong>Activo al momento</strong><span>El plan Básico queda activo en cuanto completas el alta.</span></article>
-        <article><CheckCircle size={18} /><strong>Configuración</strong><span>Después añades servicios, horarios, equipo y datos fiscales a tu ritmo.</span></article>
-        <article><ArrowRight size={18} /><strong>A medida</strong><span>Web y apps con tu marca. Escríbenos a {CONTRACT_EMAIL} y lo estudiamos contigo.</span></article>
+        <article><Sparkles size={18} /><strong>{tr('Activo al momento')}</strong><span>{tr('El plan Básico queda activo en cuanto completas el alta.')}</span></article>
+        <article><CheckCircle size={18} /><strong>{tr('Configuración')}</strong><span>{tr('Después añades servicios, horarios, equipo y datos fiscales a tu ritmo.')}</span></article>
+        <article><ArrowRight size={18} /><strong>{tr('A medida')}</strong><span>{tr('Web y apps con tu marca. Escríbenos a')}{' '}{CONTRACT_EMAIL}{' '}{tr('y lo estudiamos contigo.')}</span></article>
       </div>
     </section>
   );

@@ -2,6 +2,7 @@ import { SALONS, type PublicReview, type PublicService, type Salon } from '../da
 import { apiGet } from '../shared/apiClient';
 import { cachedRequest } from '../shared/requestCache';
 
+import { tr } from './tr';
 type PublicSalonPayload = Partial<{
   id: string | number;
   slug: string;
@@ -138,7 +139,7 @@ export async function listMarketplaceSalons(signal?: AbortSignal): Promise<Salon
       : [];
 
   if (!items.length) {
-    throw new Error('La API no devolvió salones publicados.');
+    throw new Error(tr('La API no devolvió salones publicados.'));
   }
 
   return items.map((item, index) => mapApiSalon(item, index));

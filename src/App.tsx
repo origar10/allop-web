@@ -14,6 +14,7 @@ import { useI18n } from './lib/useI18n';
 import { formatPrice } from './lib/salonDetails';
 import { region } from './lib/region';
 
+import { tr } from './lib/tr';
 const Home = lazy(() => import('./pages/Home'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
 const SalonsDirectory = lazy(() => import('./pages/SalonsDirectory'));
@@ -106,31 +107,31 @@ function RouteSeo() {
     };
     const routeSeo: Record<string, { title: string; description: string }> = {
       '/login': {
-        title: 'Entrar en Allop',
+        title: tr('Entrar en Allop'),
         description: 'Accede a Allop para gestionar tus reservas, favoritos y perfil de cliente.',
       },
       '/register': {
-        title: 'Crear cuenta en Allop',
+        title: tr('Crear cuenta en Allop'),
         description: 'Crea una cuenta de cliente en Allop para reservar salones y guardar tu historial.',
       },
       '/mi-cuenta': {
-        title: 'Mi cuenta Allop',
+        title: tr('Mi cuenta Allop'),
         description: 'Consulta reservas, favoritos, perfil, puntos y preferencias de notificación en Allop.',
       },
       '/business': {
-        title: 'Allop Business para salones',
+        title: tr('Allop Business para salones'),
         description: 'Software y marketplace para que salones gestionen agenda, caja, clientes, equipo y reservas online.',
       },
       '/confianza': {
-        title: 'Confianza y reservas verificadas | Allop',
+        title: tr('Confianza y reservas verificadas | Allop'),
         description: 'Como Allop verifica reservas, salones, reseñas y privacidad antes de reservar.',
       },
       '/ayuda': {
-        title: 'Centro de ayuda | Allop',
+        title: tr('Centro de ayuda | Allop'),
         description: 'Preguntas frecuentes para clientes y salones sobre reservas, soporte, fichas y uso de Allop.',
       },
       '/contacto': {
-        title: 'Contacto | Allop',
+        title: tr('Contacto | Allop'),
         description: 'Contacta con Allop para soporte de reservas, salones, privacidad, prensa o empleo.',
       },
     };
@@ -144,7 +145,7 @@ function RouteSeo() {
         title: `${legalTitles[pathname]} | Allop`,
         description: `${legalTitles[pathname]} de Allop y Origar SL.`,
       } : {
-        title: 'Allop',
+        title: tr('Allop'),
         description: 'Marketplace de salones con reserva online, soporte y gestión para negocios.',
       });
 
@@ -294,7 +295,7 @@ export default function App() {
             tabIndex={-1}
             onClick={(event) => event.stopPropagation()}
           >
-            <button className="modal-close" type="button" aria-label="Cerrar ficha" onClick={closeSalonPreview}>
+            <button className="modal-close" type="button" aria-label={tr('Cerrar ficha')} onClick={closeSalonPreview}>
               <X size={18} />
             </button>
             <div className={`salon-modal-media ${selectedSalon.photos?.[0] ? '' : selectedSalon.imageClass}`}>
@@ -305,23 +306,23 @@ export default function App() {
               <h2 id="salon-modal-title">{selectedSalon.name}</h2>
               <p>{selectedSalon.description}</p>
               <div className="modal-facts">
-                {selectedSalon.desde > 0 && <span>Desde {formatPrice(selectedSalon.desde)}</span>}
-                <span>{selectedSalon.reviews > 0 ? `★ ${selectedSalon.rating.toFixed(1)} · ${selectedSalon.reviews} reseñas` : 'Nuevo en Allop'}</span>
+                {selectedSalon.desde > 0 && <span>{tr('Desde')}{' '}{formatPrice(selectedSalon.desde)}</span>}
+                <span>{selectedSalon.reviews > 0 ? `★ ${selectedSalon.rating.toFixed(1)} · ${selectedSalon.reviews} reseñas` : tr('Nuevo en Allop')}</span>
               </div>
               <div className="modal-actions">
                 <button className="btn btn-primary" type="button" onClick={() => openSalonProfile(selectedSalon)}>
                   <CalendarDays size={16} />
-                  Reservar
+                  {tr('Reservar')}
                 </button>
                 {selectedSalon.phone && (
                   <a className="btn btn-ghost" href={`tel:${selectedSalon.phone.replace(/\s/g, '')}`}>
                     <Phone size={16} />
-                    Llamar
+                    {tr('Llamar')}
                   </a>
                 )}
                 <button className="btn btn-ghost" type="button" onClick={() => openSalonProfile(selectedSalon)}>
                   <ExternalLink size={16} />
-                  Ver perfil
+                  {tr('Ver perfil')}
                 </button>
               </div>
             </div>

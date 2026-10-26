@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../lib/useI18n';
 
+import { tr } from '../lib/tr';
 interface FooterProps {
   dashboardUrl: string;
   signupUrl: string;
@@ -23,8 +24,8 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           <div className="footer-grid footer-business-grid">
             <div className="footer-brand">
               <div className="footer-logo">
-                <img src="/allop-icon.svg" alt="allop business" width="28" height="28" decoding="async" />
-                allop business
+                <img src="/allop-icon.svg" alt={tr('allop business')} width="28" height="28" decoding="async" />
+                {tr('allop business')}
               </div>
               <p className="footer-desc">{t('footer.business.description')}</p>
               <p className="footer-copy">{t('footer.copy')}</p>
@@ -51,7 +52,7 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
             </div>
           </div>
           <div className="footer-bottom">
-            © 2026 Origar SL · <Link to="/privacidad" style={{ color: 'inherit' }}>{t('common.privacy')}</Link> · <Link to="/terminos" style={{ color: 'inherit' }}>{t('common.terms')}</Link>
+            {tr('© 2026 Origar SL ·')}{' '}<Link to="/privacidad" style={{ color: 'inherit' }}>{t('common.privacy')}</Link> · <Link to="/terminos" style={{ color: 'inherit' }}>{t('common.terms')}</Link>
           </div>
         </div>
       </footer>
@@ -74,7 +75,7 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           <div className="footer-col">
             <h4>{t('footer.marketplace')}</h4>
             <a href="/#buscar">{t('footer.findSalon')}</a>
-            <Link to="/salones">Directorio de salones</Link>
+            <Link to="/salones">{tr('Directorio de salones')}</Link>
             <a href="/#como-funciona">{t('footer.howItWorks')}</a>
             <Link to="/confianza">{t('footer.trust')}</Link>
             <Link to={`${signupUrl}#precios`}>{t('footer.rates')}</Link>
@@ -106,7 +107,7 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
           </div>
         </div>
         <div className="footer-bottom">
-          © 2026 Origar SL · <Link to="/privacidad" style={{ color: 'inherit' }}>{t('common.privacy')}</Link> · <Link to="/terminos" style={{ color: 'inherit' }}>{t('common.terms')}</Link> · <Link to="/cookies" style={{ color: 'inherit' }}>{t('common.cookies')}</Link>
+          {tr('© 2026 Origar SL ·')}{' '}<Link to="/privacidad" style={{ color: 'inherit' }}>{t('common.privacy')}</Link> · <Link to="/terminos" style={{ color: 'inherit' }}>{t('common.terms')}</Link> · <Link to="/cookies" style={{ color: 'inherit' }}>{t('common.cookies')}</Link>
         </div>
       </div>
     </footer>

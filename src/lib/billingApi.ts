@@ -1,6 +1,7 @@
 import { trackEvent, type AnalyticsEventName } from './analytics';
 import { apiGet, apiPost } from '../shared/apiClient';
 import { formatCurrency } from '../shared/formatters';
+import { tr } from './tr';
 const BILLING_STATE_KEY = 'allop.billing.subscription';
 const BILLING_EVENTS_KEY = 'allop.billing.events';
 
@@ -213,7 +214,7 @@ export async function createCheckoutSession(planId: BillingPlanId, interval: Bil
   // Sin página de pago no hay alta: el error llega a la pantalla (antes se simulaba un éxito).
   const data = await apiPost<{ url?: string; subscription?: SubscriptionSnapshot }>('/billing/checkout-sessions', payload);
   if (data.subscription) writeSubscription(data.subscription);
-  if (!data.url) throw new Error('No hemos podido abrir la página de pago. Inténtalo de nuevo en unos minutos.');
+  if (!data.url) throw new Error(tr('No hemos podido abrir la página de pago. Inténtalo de nuevo en unos minutos.'));
   return { url: data.url, localFallback: false };
 }
 
@@ -247,7 +248,7 @@ export async function openCustomerPortal() {
 
   try {
     const data = await apiPost<{ url?: string }>('/billing/customer-portal');
-    if (!data.url) throw new Error('El backend no devolvio URL de portal.');
+    if (!data.url) throw new Error(tr('El backend no devolvio URL de portal.'));
 
     return { url: data.url, localFallback: false };
   } catch {

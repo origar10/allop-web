@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { setSeo } from '../lib/seo';
 import { apiGet } from '../shared/apiClient';
 
+import { tr } from '../lib/tr';
 interface ServiceStatus {
   name: string;
   key: string;
@@ -38,7 +39,7 @@ export default function SystemStatus() {
 
   useEffect(() => {
     setSeo({
-      title: 'Estado del sistema | Allop',
+      title: tr('Estado del sistema | Allop'),
       description: 'Estado actual de los servicios de Allop: reservas, autenticación, pagos y notificaciones.',
       canonicalPath: '/estado',
     });
@@ -76,20 +77,20 @@ export default function SystemStatus() {
   return (
     <section className="status-page">
       <div className="container">
-        <p className="eyebrow">Infraestructura</p>
-        <h1>Estado del sistema</h1>
-        <p>Disponibilidad en tiempo real de los servicios de Allop.</p>
+        <p className="eyebrow">{tr('Infraestructura')}</p>
+        <h1>{tr('Estado del sistema')}</h1>
+        <p>{tr('Disponibilidad en tiempo real de los servicios de Allop.')}</p>
 
         <div className={`status-overall ${anyDown ? 'down' : allOperational ? 'operational' : 'degraded'}`}>
           {anyDown ? <XCircle size={22} /> : <CheckCircle size={22} />}
           <strong>
             {anyDown
-              ? 'Uno o más servicios con incidencia activa'
+              ? tr('Uno o más servicios con incidencia activa')
               : allOperational
-                ? 'Todos los servicios operativos'
-                : 'Algunos servicios degradados'}
+                ? tr('Todos los servicios operativos')
+                : tr('Algunos servicios degradados')}
           </strong>
-          {checkedAt && <span>Última verificación: {checkedAt}</span>}
+          {checkedAt && <span>{tr('Última verificación:')}{' '}{checkedAt}</span>}
         </div>
 
         <div className="status-services-list">
@@ -114,13 +115,13 @@ export default function SystemStatus() {
 
         {EXTERNAL_STATUS_URL && (
           <a href={EXTERNAL_STATUS_URL} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
-            <ExternalLink size={15} /> Ver historial de incidencias
+            <ExternalLink size={15} />{' '}{tr('Ver historial de incidencias')}
           </a>
         )}
 
         <div className="status-footer-links">
-          <p>¿Tienes un problema que no aparece aquí?</p>
-          <Link to="/contacto?motivo=error-tecnico" className="btn btn-primary">Contactar soporte</Link>
+          <p>{tr('¿Tienes un problema que no aparece aquí?')}</p>
+          <Link to="/contacto?motivo=error-tecnico" className="btn btn-primary">{tr('Contactar soporte')}</Link>
         </div>
       </div>
     </section>

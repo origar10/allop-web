@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 
+import { tr } from '../lib/tr';
 const clientFaq = [
   ['¿Cómo sé si mi reserva está confirmada?', 'La pantalla de confirmación indica si la reserva queda pendiente o confirmada. También verás el estado en Mi cuenta.'],
   ['¿Puedo cancelar?', 'Sí. Puedes cancelar desde la confirmación o desde el área de cliente mientras la reserva esté pendiente o confirmada.'],
@@ -17,13 +18,13 @@ export default function Help() {
     <section className="help-page">
       <div className="container">
         <div className="trust-hero">
-          <p className="eyebrow">Centro de ayuda</p>
-          <h1>Ayuda para clientes y salones.</h1>
-          <p>Preguntas separadas para reservar con tranquilidad o gestionar tu negocio con Allop.</p>
+          <p className="eyebrow">{tr('Centro de ayuda')}</p>
+          <h1>{tr('Ayuda para clientes y salones.')}</h1>
+          <p>{tr('Preguntas separadas para reservar con tranquilidad o gestionar tu negocio con Allop.')}</p>
         </div>
         <div className="help-grid">
           <section>
-            <h2>Clientes</h2>
+            <h2>{tr('Clientes')}</h2>
             {clientFaq.map(([question, answer]) => (
               <article key={question}>
                 <h3>{question}</h3>
@@ -32,7 +33,7 @@ export default function Help() {
             ))}
           </section>
           <section>
-            <h2>Salones</h2>
+            <h2>{tr('Salones')}</h2>
             {salonFaq.map(([question, answer]) => (
               <article key={question}>
                 <h3>{question}</h3>
@@ -43,10 +44,10 @@ export default function Help() {
         </div>
         <div className="trust-cta">
           <div>
-            <h2>¿No encuentras la respuesta?</h2>
-            <p>Escríbenos con el motivo y número de reserva si aplica.</p>
+            <h2>{tr('¿No encuentras la respuesta?')}</h2>
+            <p>{tr('Escríbenos con el motivo y número de reserva si aplica.')}</p>
           </div>
-          <Link className="btn btn-primary" to="/contacto">Abrir soporte</Link>
+          <Link className="btn btn-primary" to="/contacto">{tr('Abrir soporte')}</Link>
         </div>
       </div>
     </section>

@@ -6,6 +6,7 @@ import { useToast } from '../lib/useToast';
 import { getSafeNext } from '../lib/safeNext';
 
 
+import { tr } from '../lib/tr';
 export default function GoogleCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function GoogleCallback() {
           navigate('/login', { replace: true });
           return;
         }
-        setError('No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.');
+        setError(tr('No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.'));
         return;
       }
 
@@ -51,7 +52,7 @@ export default function GoogleCallback() {
           navigate(next, { replace: true });
         }
       } catch {
-        setError('Error al completar el inicio de sesión con Google. Inténtalo de nuevo.');
+        setError(tr('Error al completar el inicio de sesión con Google. Inténtalo de nuevo.'));
       }
     }
 
@@ -65,7 +66,7 @@ export default function GoogleCallback() {
           <div className="client-auth-card" style={{ gridColumn: '1 / -1', maxWidth: 480, margin: '0 auto' }}>
             <p className="auth-message err" role="alert">{error}</p>
             <Link to="/login" className="btn btn-primary btn-lg" style={{ marginTop: '1rem', display: 'inline-flex' }}>
-              Volver al inicio de sesión
+              {tr('Volver al inicio de sesión')}
             </Link>
           </div>
         </div>
@@ -78,7 +79,7 @@ export default function GoogleCallback() {
       <div className="container client-auth-grid">
         <div className="client-auth-card" style={{ gridColumn: '1 / -1', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
           <span className="inline-spinner" aria-hidden="true" style={{ width: 28, height: 28 }} />
-          <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>Iniciando sesión con Google…</p>
+          <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>{tr('Iniciando sesión con Google…')}</p>
         </div>
       </div>
     </section>

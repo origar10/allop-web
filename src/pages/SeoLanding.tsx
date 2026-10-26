@@ -7,6 +7,7 @@ import { CATEGORIES, CITIES, EDITORIAL_FAQS, EDITORIAL_GUIDES, SERVICE_CITY_ROUT
 import { setSeo } from '../lib/seo';
 import { trackEvent } from '../lib/analytics';
 
+import { tr } from '../lib/tr';
 type SeoLandingType = 'city' | 'service' | 'serviceCity' | 'category';
 
 export default function SeoLanding({ type }: { type: SeoLandingType }) {
@@ -80,29 +81,29 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
     <section className="seo-landing">
       <div className="container">
         <div className="seo-landing-hero">
-          <p className="eyebrow">{type === 'serviceCity' ? 'Guía local' : type === 'city' ? 'Ciudad popular' : type === 'category' ? 'Categoría' : 'Servicio popular'}</p>
+          <p className="eyebrow">{type === 'serviceCity' ? tr('Guía local') : type === 'city' ? tr('Ciudad popular') : type === 'category' ? tr('Categoría') : tr('Servicio popular')}</p>
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="seo-landing-actions">
             <Link className="btn btn-primary btn-lg" to="/#buscar">
               <Search size={17} />
-              Buscar ahora
+              {tr('Buscar ahora')}
             </Link>
             <Link className="btn btn-ghost btn-lg" to="/guias">
               <BookOpen size={17} />
-              Ver guías
+              {tr('Ver guías')}
             </Link>
           </div>
         </div>
 
         <div className="section-header">
           <h2 className="section-title">
-            <Star size={20} fill="#F59E0B" color="#F59E0B" /> Salones destacados
+            <Star size={20} fill="#F59E0B" color="#F59E0B" />{' '}{tr('Salones destacados')}
           </h2>
-          <Link className="see-all" to="/#buscar">Ver marketplace <ArrowRight size={14} /></Link>
+          <Link className="see-all" to="/#buscar">{tr('Ver marketplace')}{' '}<ArrowRight size={14} /></Link>
         </div>
         {salons !== null && visibleSalons.length === 0 && (
-          <div className="account-loading">Todavía no hay salones publicados aquí. <Link to="/buscar">Ver todos los salones</Link></div>
+          <div className="account-loading">{tr('Todavía no hay salones publicados aquí.')}{' '}<Link to="/buscar">{tr('Ver todos los salones')}</Link></div>
         )}
         <div className="salons-grid">
           {visibleSalons.map((salon) => (
@@ -120,7 +121,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
 
         <div className="seo-landing-grid">
           <article>
-            <h2>Servicios relacionados</h2>
+            <h2>{tr('Servicios relacionados')}</h2>
             <div className="profile-tags">
               {(category ? categoryServices : SERVICES.filter((item) => item.slug !== service?.slug)).slice(0, 7).map((item) => (
                 <Link key={item.slug} to={`/servicios/${item.slug}`}>{item.label}</Link>
@@ -128,7 +129,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             </div>
           </article>
           <article>
-            <h2>Categorías</h2>
+            <h2>{tr('Categorías')}</h2>
             <div className="profile-tags">
               {CATEGORIES.map((item) => (
                 <Link key={item.slug} to={`/categoria/${item.slug}`}>{item.label}</Link>
@@ -136,7 +137,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             </div>
           </article>
           <article>
-            <h2>Ciudades populares</h2>
+            <h2>{tr('Ciudades populares')}</h2>
             <div className="profile-tags">
               {CITIES.map((item) => (
                 <Link key={item.slug} to={`/ciudad/${item.slug}`}><MapPin size={13} /> {item.label}</Link>
@@ -144,7 +145,7 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             </div>
           </article>
           <article>
-            <h2>Rutas locales prioritarias</h2>
+            <h2>{tr('Rutas locales prioritarias')}</h2>
             <div className="profile-tags">
               {relatedServiceCityRoutes.map((route) => {
                 const routeService = findService(route.serviceSlug);
@@ -158,8 +159,8 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
 
         <div className="seo-faq-grid">
           <article>
-            <p className="eyebrow">FAQ indexable</p>
-            <h2>Preguntas frecuentes sobre precio, duración y reservas</h2>
+            <p className="eyebrow">{tr('FAQ indexable')}</p>
+            <h2>{tr('Preguntas frecuentes sobre precio, duración y reservas')}</h2>
             {EDITORIAL_FAQS.map((faq) => (
               <div className="seo-faq-item" key={faq.intent}>
                 <h3>{faq.question}</h3>
@@ -168,8 +169,8 @@ export default function SeoLanding({ type }: { type: SeoLandingType }) {
             ))}
           </article>
           <article>
-            <p className="eyebrow">Guías para clientes</p>
-            <h2>Antes y después de reservar</h2>
+            <p className="eyebrow">{tr('Guías para clientes')}</p>
+            <h2>{tr('Antes y después de reservar')}</h2>
             {clientGuides.map((guide) => (
               <Link className="guide-row" key={guide.slug} to={`/guias/clientes/${guide.slug}`}>
                 <strong>{guide.title}</strong>

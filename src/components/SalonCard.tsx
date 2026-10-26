@@ -1,6 +1,7 @@
 import { BadgeCheck, Star } from 'lucide-react';
 import { formatPrice } from '../lib/salonDetails';
 
+import { tr } from '../lib/tr';
 interface SalonCardProps {
   name: string;
   location: string;
@@ -79,12 +80,12 @@ export default function SalonCard({
         </div>
         {place && <div className="salon-loc">{place}</div>}
         {promoted && (
-          <div className="salon-promoted" aria-label="Resultado patrocinado">
-            <span className="salon-promoted-label">Patrocinado</span>
+          <div className="salon-promoted" aria-label={tr('Resultado patrocinado')}>
+            <span className="salon-promoted-label">{tr('Patrocinado')}</span>
           </div>
         )}
         {!!badges.length && (
-          <div className="salon-badges" aria-label="Estado del salón">
+          <div className="salon-badges" aria-label={tr('Estado del salón')}>
             {badges.slice(0, 2).map((badge) => <span key={badge}>{badge}</span>)}
           </div>
         )}
@@ -98,9 +99,9 @@ export default function SalonCard({
               <span style={{ color: 'var(--fg-4)' }}>({reviews})</span>
             </>
           ) : (
-            <span className="salon-new">Nuevo en Allop</span>
+            <span className="salon-new">{tr('Nuevo en Allop')}</span>
           )}
-          {price && <span className="salon-price">Desde {price}</span>}
+          {price && <span className="salon-price">{tr('Desde')}{' '}{price}</span>}
         </div>
         {!!tags.length && (
           <div className="salon-tags">

@@ -11,6 +11,7 @@ import { setSeo } from '../lib/seo';
 import { statusFromItems } from '../shared/asyncState';
 import { formatDistanceKm } from '../shared/formatters';
 
+import { tr } from '../lib/tr';
 const POPULAR_CITIES = ['Barcelona', 'Rubí', 'Sabadell', 'Terrassa'];
 const INITIAL_VISIBLE_COUNT = 6;
 
@@ -136,7 +137,7 @@ export default function SearchResults() {
 
   useEffect(() => {
     setSeo({
-      title: query || city ? `Buscar ${query || 'salones'} ${city ? `en ${city}` : ''} | Allop` : 'Buscar salones | Allop',
+      title: query || city ? `Buscar ${query || 'salones'} ${city ? `en ${city}` : ''} | Allop` : tr('Buscar salones | Allop'),
       description: 'Búsqueda compartible de salones en Allop con filtros por servicio, ciudad, disponibilidad y mapa.',
       canonicalPath: '/buscar',
     });
@@ -249,21 +250,21 @@ export default function SearchResults() {
     <section className="directory-page">
       <div className="container">
         <div className="directory-hero">
-          <p className="eyebrow">Búsqueda</p>
-          <h1>Resultados de búsqueda</h1>
-          <p>Busca por servicio, salón, categoría, barrio o ciudad y cambia entre lista y mapa.</p>
+          <p className="eyebrow">{tr('Búsqueda')}</p>
+          <h1>{tr('Resultados de búsqueda')}</h1>
+          <p>{tr('Busca por servicio, salón, categoría, barrio o ciudad y cambia entre lista y mapa.')}</p>
           <form className="directory-search" onSubmit={submit}>
             <label>
-              Servicio o salón
-              <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Peluquería, manicura, barbería..." />
+              {tr('Servicio o salón')}
+              <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder={tr('Peluquería, manicura, barbería...')} />
             </label>
             <label>
-              Ciudad o barrio
-              <input value={draftCity} onChange={(event) => setDraftCity(event.target.value)} placeholder="Barcelona, Rubí, Terrassa..." />
+              {tr('Ciudad o barrio')}
+              <input value={draftCity} onChange={(event) => setDraftCity(event.target.value)} placeholder={tr('Barcelona, Rubí, Terrassa...')} />
             </label>
             <button className="btn btn-primary" type="submit">
               <Search size={16} />
-              Buscar
+              {tr('Buscar')}
             </button>
           </form>
         </div>
@@ -271,10 +272,10 @@ export default function SearchResults() {
         <div className="filters-panel">
           <div className="filters-title">
             <SlidersHorizontal size={18} />
-            <strong>Filtros</strong>
+            <strong>{tr('Filtros')}</strong>
           </div>
           <label>
-            Precio máximo
+            {tr('Precio máximo')}
             <span>{maxPrice} EUR</span>
             <input
               type="range"
@@ -286,47 +287,47 @@ export default function SearchResults() {
             />
           </label>
           <label>
-            Valoración mínima
+            {tr('Valoración mínima')}
             <select value={minRating} onChange={(event) => setMinRating(Number(event.target.value))}>
-              <option value={0}>Todas</option>
+              <option value={0}>{tr('Todas')}</option>
               <option value={4}>4.0+</option>
               <option value={4.5}>4.5+</option>
               <option value={4.8}>4.8+</option>
             </select>
           </label>
           <label>
-            Distancia
+            {tr('Distancia')}
             <select value={maxDistance} onChange={(event) => setMaxDistance(event.target.value)}>
-              <option value="all">Cualquier distancia</option>
-              <option value="3">Hasta 3 km</option>
-              <option value="8">Hasta 8 km</option>
-              <option value="15">Hasta 15 km</option>
+              <option value="all">{tr('Cualquier distancia')}</option>
+              <option value="3">{tr('Hasta 3 km')}</option>
+              <option value="8">{tr('Hasta 8 km')}</option>
+              <option value="15">{tr('Hasta 15 km')}</option>
             </select>
           </label>
           <label>
-            Disponibilidad
+            {tr('Disponibilidad')}
             <select value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)}>
-              <option value="all">Cualquier dia</option>
-              <option value="today">Hoy</option>
-              <option value="tomorrow">Mañana</option>
-              <option value="week">Esta semana</option>
+              <option value="all">{tr('Cualquier dia')}</option>
+              <option value="today">{tr('Hoy')}</option>
+              <option value="tomorrow">{tr('Mañana')}</option>
+              <option value="week">{tr('Esta semana')}</option>
             </select>
           </label>
           <label>
-            Ordenar
+            {tr('Ordenar')}
             <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortMode)}>
-              <option value="recommended">Recomendados</option>
-              <option value="rating">Mejor valorados</option>
-              <option value="price">Precio mas bajo</option>
-              <option value="distance">Mas cerca</option>
-              <option value="availability">Antes disponible</option>
+              <option value="recommended">{tr('Recomendados')}</option>
+              <option value="rating">{tr('Mejor valorados')}</option>
+              <option value="price">{tr('Precio mas bajo')}</option>
+              <option value="distance">{tr('Mas cerca')}</option>
+              <option value="availability">{tr('Antes disponible')}</option>
             </select>
           </label>
         </div>
 
         {loadError && (
           <div className="market-alert" role="status">
-            Mostrando datos locales mientras la API pública no responde: {loadError}
+            {tr('Mostrando datos locales mientras la API pública no responde:')}{' '}{loadError}
           </div>
         )}
 
@@ -338,28 +339,28 @@ export default function SearchResults() {
           ))}
           <button type="button" onClick={useNearby}>
             <LocateFixed size={14} />
-            {geoEnabled ? 'Cerca de ti' : 'Usar ubicación'}
+            {geoEnabled ? tr('Cerca de ti') : tr('Usar ubicación')}
           </button>
         </div>
 
         <div className="section-header">
           <div>
-            <h2 className="section-title">Resultados</h2>
+            <h2 className="section-title">{tr('Resultados')}</h2>
             <p className="section-subtitle">{resultText}</p>
           </div>
           <div className="results-actions">
-            <div className="view-toggle" aria-label="Cambiar vista">
+            <div className="view-toggle" aria-label={tr('Cambiar vista')}>
               <button type="button" className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}>
                 <Search size={14} />
-                Lista
+                {tr('Lista')}
               </button>
               <button type="button" className={viewMode === 'map' ? 'active' : ''} onClick={() => setViewMode('map')}>
                 <MapIcon size={14} />
-                Mapa
+                {tr('Mapa')}
               </button>
             </div>
-            <button className="see-all" type="button" onClick={clearFilters}>Limpiar filtros</button>
-            <Link className="see-all" to="/salones">Directorio <ArrowRight size={14} /></Link>
+            <button className="see-all" type="button" onClick={clearFilters}>{tr('Limpiar filtros')}</button>
+            <Link className="see-all" to="/salones">{tr('Directorio')}{' '}<ArrowRight size={14} /></Link>
           </div>
         </div>
 
@@ -404,7 +405,7 @@ export default function SearchResults() {
                   </button>
                   <a href={getAppleMapsUrl(salon)} target="_blank" rel="noreferrer">
                     <MapPin size={13} />
-                    Abrir en Apple Maps
+                    {tr('Abrir en Apple Maps')}
                   </a>
                 </article>
               ))}
@@ -415,16 +416,16 @@ export default function SearchResults() {
         {!isLoadingSalons && !isFiltering && filteredSalons.length === 0 && (
           <div className="empty-results">
             <MapPin size={22} />
-            <strong>No hay salones con esos criterios.</strong>
-            <p>Prueba una búsqueda mas amplia, cambia la ciudad o limpia filtros.</p>
-            <button className="btn btn-primary" type="button" onClick={clearFilters}>Ver todos los salones</button>
+            <strong>{tr('No hay salones con esos criterios.')}</strong>
+            <p>{tr('Prueba una búsqueda mas amplia, cambia la ciudad o limpia filtros.')}</p>
+            <button className="btn btn-primary" type="button" onClick={clearFilters}>{tr('Ver todos los salones')}</button>
           </div>
         )}
 
         {!isLoadingSalons && !isFiltering && visibleCount < filteredSalons.length && (
           <div className="load-more">
             <button className="btn btn-ghost" type="button" onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_COUNT)}>
-              Cargar mas salones
+              {tr('Cargar mas salones')}
             </button>
           </div>
         )}

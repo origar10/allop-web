@@ -44,14 +44,15 @@ import { statusFromItems, type AsyncStatus } from '../shared/asyncState';
 import { formatDateTime } from '../shared/formatters';
 import { formatPrice } from '../lib/salonDetails';
 
+import { tr } from '../lib/tr';
 type AccountView = 'dashboard' | 'reservas' | 'favoritos' | 'perfil' | 'puntos' | 'comunicaciones';
 
 const ACCOUNT_NAV: { view: AccountView; label: string }[] = [
-  { view: 'dashboard', label: 'Resumen' },
-  { view: 'reservas', label: 'Reservas' },
-  { view: 'favoritos', label: 'Favoritos' },
-  { view: 'perfil', label: 'Perfil' },
-  { view: 'comunicaciones', label: 'Comunicaciones' },
+  { view: 'dashboard', label: tr('Resumen') },
+  { view: 'reservas', label: tr('Reservas') },
+  { view: 'favoritos', label: tr('Favoritos') },
+  { view: 'perfil', label: tr('Perfil') },
+  { view: 'comunicaciones', label: tr('Comunicaciones') },
 ];
 
 function getView(pathname: string): AccountView {
@@ -136,9 +137,9 @@ export default function Account() {
       <section className="account-page">
         <div className="container account-empty">
           <UserRound size={34} />
-          <h1>Accede a tu cuenta</h1>
-          <p>Necesitas iniciar sesión para ver reservas, favoritos, puntos y preferencias.</p>
-          <Link className="btn btn-primary btn-lg" to={`/login?next=${encodeURIComponent(location.pathname)}`}>Entrar</Link>
+          <h1>{tr('Accede a tu cuenta')}</h1>
+          <p>{tr('Necesitas iniciar sesión para ver reservas, favoritos, puntos y preferencias.')}</p>
+          <Link className="btn btn-primary btn-lg" to={`/login?next=${encodeURIComponent(location.pathname)}`}>{tr('Entrar')}</Link>
         </div>
       </section>
     );
@@ -252,7 +253,7 @@ export default function Account() {
             <strong>{profile.nombre} {profile.apellidos}</strong>
             <span>{profile.telefono}</span>
           </div>
-          <nav className="account-nav" aria-label="Área de cliente">
+          <nav className="account-nav" aria-label={tr('Área de cliente')}>
             {ACCOUNT_NAV.map((item) => (
               <Link key={item.view} className={view === item.view ? 'active' : ''} to={viewPath(item.view)}>
                 {item.label}
@@ -263,29 +264,29 @@ export default function Account() {
 
         <main className="account-main">
           <div className="account-heading">
-            <p className="eyebrow">Allop clientes</p>
-            <h1>Mi cuenta</h1>
-            <p>Gestiona reservas, favoritos, perfil y notificaciones desde un único sitio.</p>
+            <p className="eyebrow">{tr('Allop clientes')}</p>
+            <h1>{tr('Mi cuenta')}</h1>
+            <p>{tr('Gestiona reservas, favoritos, perfil y notificaciones desde un único sitio.')}</p>
           </div>
 
           {view === 'dashboard' && (
             <>
               <div className="account-metrics">
-                <article><CalendarDays size={20} /><strong>{upcomingBookings.length}</strong><span>Próximas reservas</span></article>
-                <article><Heart size={20} /><strong>{favoriteSlugs.length}</strong><span>Favoritos</span></article>
-                <article><CheckCircle size={20} /><strong>{bookings.filter((b) => b.status === 'completada').length}</strong><span>Visitas</span></article>
+                <article><CalendarDays size={20} /><strong>{upcomingBookings.length}</strong><span>{tr('Próximas reservas')}</span></article>
+                <article><Heart size={20} /><strong>{favoriteSlugs.length}</strong><span>{tr('Favoritos')}</span></article>
+                <article><CheckCircle size={20} /><strong>{bookings.filter((b) => b.status === 'completada').length}</strong><span>{tr('Visitas')}</span></article>
               </div>
               <section className="account-card">
                 <div className="section-header">
-                  <h2 className="section-title">Próximas reservas</h2>
-                  <Link className="see-all" to="/mi-cuenta/reservas">Ver historial</Link>
+                  <h2 className="section-title">{tr('Próximas reservas')}</h2>
+                  <Link className="see-all" to="/mi-cuenta/reservas">{tr('Ver historial')}</Link>
                 </div>
                 <BookingList bookings={upcomingBookings.slice(0, 3)} loading={loadingBookings} onCancel={cancelBooking} />
               </section>
               <section className="account-card">
                 <div className="section-header">
-                  <h2 className="section-title">Favoritos</h2>
-                  <Link className="see-all" to="/mi-cuenta/favoritos">Ver todos</Link>
+                  <h2 className="section-title">{tr('Favoritos')}</h2>
+                  <Link className="see-all" to="/mi-cuenta/favoritos">{tr('Ver todos')}</Link>
                 </div>
                 <FavoriteGrid slugs={favoriteSlugs} onChange={setFavoriteSlugs} />
               </section>
@@ -296,16 +297,16 @@ export default function Account() {
             <section className="account-card">
               <div className="section-header">
                 <div>
-                  <h2 className="section-title">Reservas</h2>
-                  <p className="section-subtitle">Historial completo con estado y acciones disponibles</p>
+                  <h2 className="section-title">{tr('Reservas')}</h2>
+                  <p className="section-subtitle">{tr('Historial completo con estado y acciones disponibles')}</p>
                 </div>
               </div>
-              {bookingError && <p className="market-alert" role="status" aria-live="polite">No se pudo cargar el historial ({bookingError}). Mostramos las reservas guardadas en este dispositivo.</p>}
+              {bookingError && <p className="market-alert" role="status" aria-live="polite">{tr('No se pudo cargar el historial (')}{bookingError}{tr('). Mostramos las reservas guardadas en este dispositivo.')}</p>}
               <BookingList bookings={bookings} loading={loadingBookings} status={bookingStatus} onCancel={cancelBooking} />
               <form className="review-form" onSubmit={submitReview}>
-                <h3><MessageSquare size={18} /> Añadir reseña</h3>
+                <h3><MessageSquare size={18} />{' '}{tr('Añadir reseña')}</h3>
                 <select value={reviewBookingId} onChange={(event) => setReviewBookingId(event.target.value)}>
-                  <option value="">Selecciona una visita completada</option>
+                  <option value="">{tr('Selecciona una visita completada')}</option>
                   {bookings.filter((booking) => booking.canReview).map((booking) => (
                     <option key={`${booking.salonSlug}:${booking.id}`} value={`${booking.salonSlug}:${booking.id}`}>
                       {booking.salonName} · {booking.serviceName}
@@ -317,9 +318,9 @@ export default function Account() {
                     <option key={n} value={n}>{n} {n === 1 ? 'estrella' : 'estrellas'}</option>
                   ))}
                 </select>
-                <textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} rows={3} placeholder="Cuenta brevemente cómo fue la visita" />
+                <textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} rows={3} placeholder={tr('Cuenta brevemente cómo fue la visita')} />
                 <button className="btn btn-primary" type="submit" disabled={sendingReview || !reviewBookingId || reviewText.trim().length < 4}>
-                  {sendingReview ? 'Publicando…' : 'Publicar reseña'}
+                  {sendingReview ? tr('Publicando…') : tr('Publicar reseña')}
                 </button>
               </form>
             </section>
@@ -329,8 +330,8 @@ export default function Account() {
             <section className="account-card">
               <div className="section-header">
                 <div>
-                  <h2 className="section-title">Salones favoritos</h2>
-                  <p className="section-subtitle">Acceso rápido a los salones que has guardado</p>
+                  <h2 className="section-title">{tr('Salones favoritos')}</h2>
+                  <p className="section-subtitle">{tr('Acceso rápido a los salones que has guardado')}</p>
                 </div>
               </div>
               <FavoriteGrid slugs={favoriteSlugs} onChange={setFavoriteSlugs} />
@@ -340,26 +341,26 @@ export default function Account() {
           {view === 'perfil' && (
             <>
               <form className="account-card account-form" onSubmit={submitProfile}>
-                <h2 className="section-title">Perfil editable</h2>
+                <h2 className="section-title">{tr('Perfil editable')}</h2>
                 <div className="auth-two-cols">
-                  <label>Nombre<input value={profile.nombre} onChange={(event) => setProfile({ ...profile, nombre: event.target.value })} /></label>
-                  <label>Apellidos<input value={profile.apellidos} onChange={(event) => setProfile({ ...profile, apellidos: event.target.value })} /></label>
+                  <label>{tr('Nombre')}<input value={profile.nombre} onChange={(event) => setProfile({ ...profile, nombre: event.target.value })} /></label>
+                  <label>{tr('Apellidos')}<input value={profile.apellidos} onChange={(event) => setProfile({ ...profile, apellidos: event.target.value })} /></label>
                 </div>
                 <div className="auth-two-cols">
-                  <label>Email<input value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} type="email" /></label>
-                  <label>Teléfono<input value={profile.telefono} onChange={(event) => setProfile({ ...profile, telefono: event.target.value })} type="tel" /></label>
+                  <label>{tr('Email')}<input value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} type="email" /></label>
+                  <label>{tr('Teléfono')}<input value={profile.telefono} onChange={(event) => setProfile({ ...profile, telefono: event.target.value })} type="tel" /></label>
                 </div>
-                <label>Foto de perfil<input value={profile.photoUrl} onChange={(event) => setProfile({ ...profile, photoUrl: event.target.value })} placeholder="URL de imagen" /></label>
+                <label>{tr('Foto de perfil')}<input value={profile.photoUrl} onChange={(event) => setProfile({ ...profile, photoUrl: event.target.value })} placeholder={tr('URL de imagen')} /></label>
                 {profileMessage && <p className="auth-message ok" role="status" aria-live="polite">{profileMessage}</p>}
-                <button className="btn btn-primary btn-lg" type="submit">Guardar perfil</button>
+                <button className="btn btn-primary btn-lg" type="submit">{tr('Guardar perfil')}</button>
               </form>
 
               <section className="account-card">
-                <h2 className="section-title"><Bell size={20} /> Preferencias de notificación</h2>
-                <p className="section-subtitle">Elige cómo y cuándo quieres recibir mensajes de Allop. Los mensajes transaccionales solo se envían si tienes al menos un canal activo.</p>
+                <h2 className="section-title"><Bell size={20} />{' '}{tr('Preferencias de notificación')}</h2>
+                <p className="section-subtitle">{tr('Elige cómo y cuándo quieres recibir mensajes de Allop. Los mensajes transaccionales solo se envían si tienes al menos un canal activo.')}</p>
 
                 <div className="prefs-group">
-                  <h3 className="prefs-group-title">Canales</h3>
+                  <h3 className="prefs-group-title">{tr('Canales')}</h3>
                   <div className="toggle-list">
                     <label>
                       <input type="checkbox" checked={prefs.sms} onChange={(e) => updatePrefs({ ...prefs, sms: e.target.checked })} />
@@ -367,93 +368,93 @@ export default function Account() {
                     </label>
                     <label>
                       <input type="checkbox" checked={prefs.email} onChange={(e) => updatePrefs({ ...prefs, email: e.target.checked })} />
-                      <Mail size={14} /> Email
+                      <Mail size={14} />{' '}{tr('Email')}
                     </label>
                     <label>
                       <input type="checkbox" checked={prefs.whatsapp} onChange={(e) => updatePrefs({ ...prefs, whatsapp: e.target.checked })} />
-                      <MessageSquare size={14} /> WhatsApp
+                      <MessageSquare size={14} />{' '}{tr('WhatsApp')}
                     </label>
                   </div>
                 </div>
 
                 <div className="prefs-group">
-                  <h3 className="prefs-group-title">Notificaciones transaccionales</h3>
-                  <p className="prefs-group-desc">Mensajes relacionados con tus reservas. No tienen finalidad comercial.</p>
+                  <h3 className="prefs-group-title">{tr('Notificaciones transaccionales')}</h3>
+                  <p className="prefs-group-desc">{tr('Mensajes relacionados con tus reservas. No tienen finalidad comercial.')}</p>
                   <div className="toggle-list">
                     <label>
                       <input type="checkbox" checked={prefs.confirmaciones} onChange={(e) => updatePrefs({ ...prefs, confirmaciones: e.target.checked })} />
-                      Confirmación de reserva
+                      {tr('Confirmación de reserva')}
                     </label>
                     <label>
                       <input type="checkbox" checked={prefs.recordatorios} onChange={(e) => updatePrefs({ ...prefs, recordatorios: e.target.checked })} />
-                      Recordatorio 24h y 2h antes
+                      {tr('Recordatorio 24h y 2h antes')}
                     </label>
                     <label>
                       <input type="checkbox" checked={prefs.cancelaciones} onChange={(e) => updatePrefs({ ...prefs, cancelaciones: e.target.checked })} />
-                      Aviso de cancelación o reprogramación
+                      {tr('Aviso de cancelación o reprogramación')}
                     </label>
                   </div>
                 </div>
 
                 <div className="prefs-group">
-                  <h3 className="prefs-group-title">Novedades y ofertas</h3>
-                  <p className="prefs-group-desc">Mensajes opcionales sobre salones, promociones y novedades de Allop.</p>
+                  <h3 className="prefs-group-title">{tr('Novedades y ofertas')}</h3>
+                  <p className="prefs-group-desc">{tr('Mensajes opcionales sobre salones, promociones y novedades de Allop.')}</p>
                   <div className="toggle-list">
                     <label>
                       <input type="checkbox" checked={prefs.novedades} onChange={(e) => updatePrefs({ ...prefs, novedades: e.target.checked })} />
-                      Novedades de salones guardados
+                      {tr('Novedades de salones guardados')}
                     </label>
                     <label>
                       <input type="checkbox" checked={prefs.ofertas} onChange={(e) => updatePrefs({ ...prefs, ofertas: e.target.checked })} />
-                      Ofertas y promociones activas
+                      {tr('Ofertas y promociones activas')}
                     </label>
                   </div>
                 </div>
               </section>
 
               <section className="account-card">
-                <h2 className="section-title"><ShieldCheck size={20} /> Seguridad</h2>
+                <h2 className="section-title"><ShieldCheck size={20} />{' '}{tr('Seguridad')}</h2>
                 <div className="security-list">
-                  <span>Sesión activa desde {formatDateTime(session.createdAt)}</span>
-                  <span>Salón de origen: {session.salonName}</span>
+                  <span>{tr('Sesión activa desde')}{' '}{formatDateTime(session.createdAt)}</span>
+                  <span>{tr('Salón de origen:')}{' '}{session.salonName}</span>
                 </div>
                 <button className="btn btn-ghost btn-lg" type="button" onClick={logoutEverywhere}>
                   <LogOut size={16} />
-                  Cerrar sesión en todos los dispositivos
+                  {tr('Cerrar sesión en todos los dispositivos')}
                 </button>
               </section>
 
               <section className="account-card">
-                <h2 className="section-title"><Trash2 size={20} /> Privacidad y derechos RGPD</h2>
-                <p className="section-subtitle">Puedes exportar tus datos locales o eliminar la información guardada en este navegador. Para supresión completa en el servidor, contacta con soporte.</p>
+                <h2 className="section-title"><Trash2 size={20} />{' '}{tr('Privacidad y derechos RGPD')}</h2>
+                <p className="section-subtitle">{tr('Puedes exportar tus datos locales o eliminar la información guardada en este navegador. Para supresión completa en el servidor, contacta con soporte.')}</p>
                 {privacyMessage && <p className="auth-message ok" role="status" aria-live="polite">{privacyMessage}</p>}
                 <div className="privacy-actions">
-                  <button className="btn btn-ghost btn-lg" type="button" onClick={exportData}>Exportar mis datos</button>
+                  <button className="btn btn-ghost btn-lg" type="button" onClick={exportData}>{tr('Exportar mis datos')}</button>
                   {deleteConfirm ? (
                     <div className="confirm-row">
-                      <span>¿Eliminar todos los datos locales guardados?</span>
-                      <button className="btn btn-sm danger" type="button" onClick={deleteData}>Sí, eliminar</button>
-                      <button className="btn btn-sm btn-ghost" type="button" onClick={() => setDeleteConfirm(false)}>Cancelar</button>
+                      <span>{tr('¿Eliminar todos los datos locales guardados?')}</span>
+                      <button className="btn btn-sm danger" type="button" onClick={deleteData}>{tr('Sí, eliminar')}</button>
+                      <button className="btn btn-sm btn-ghost" type="button" onClick={() => setDeleteConfirm(false)}>{tr('Cancelar')}</button>
                     </div>
                   ) : (
                     <button className="btn btn-ghost btn-lg danger" type="button" onClick={() => setDeleteConfirm(true)}>
                       <Trash2 size={16} />
-                      Eliminar mi cuenta
+                      {tr('Eliminar mi cuenta')}
                     </button>
                   )}
                 </div>
-                <Link className="see-all" to="/rgpd">Ver información RGPD</Link>
+                <Link className="see-all" to="/rgpd">{tr('Ver información RGPD')}</Link>
               </section>
             </>
           )}
 
           {view === 'comunicaciones' && (
             <section className="account-card">
-              <h2 className="section-title"><Inbox size={20} /> Historial de comunicaciones</h2>
-              <p className="section-subtitle">Registro de mensajes transaccionales enviados relacionados con tus reservas. Solo útil para soporte.</p>
+              <h2 className="section-title"><Inbox size={20} />{' '}{tr('Historial de comunicaciones')}</h2>
+              <p className="section-subtitle">{tr('Registro de mensajes transaccionales enviados relacionados con tus reservas. Solo útil para soporte.')}</p>
               {commsHistory.length === 0 ? (
                 <div className="account-loading">
-                  No hay comunicaciones registradas. Aparecerán aquí tras tu próxima reserva o cancelación.
+                  {tr('No hay comunicaciones registradas. Aparecerán aquí tras tu próxima reserva o cancelación.')}
                 </div>
               ) : (
                 <div className="comms-history-list">
@@ -478,7 +479,7 @@ export default function Account() {
                 </div>
               )}
               <p className="comms-history-note">
-                Este historial se almacena localmente en tu dispositivo. Para incidencias con una comunicación, incluye el localizador de reserva al contactar con soporte.
+                {tr('Este historial se almacena localmente en tu dispositivo. Para incidencias con una comunicación, incluye el localizador de reserva al contactar con soporte.')}
               </p>
             </section>
           )}
@@ -523,13 +524,13 @@ function BookingList({ bookings, loading, onCancel }: {
     return (
       <div className="account-loading account-loading-skeleton" role="status" aria-live="polite">
         <span className="inline-spinner" aria-hidden="true" />
-        Cargando reservas...
+        {tr('Cargando reservas...')}
       </div>
     );
   }
 
   if (!bookings.length) {
-    return <div className="account-loading">Aún no hay reservas en esta sección.</div>;
+    return <div className="account-loading">{tr('Aún no hay reservas en esta sección.')}</div>;
   }
 
   return (
@@ -550,14 +551,14 @@ function BookingList({ bookings, loading, onCancel }: {
                 onClick={() => copyLocator(booking.locator)}
                 aria-label={`Copiar localizador ${booking.locator}`}
               >
-                {copiedLocator === booking.locator ? 'Copiado' : 'Copiar'}
+                {copiedLocator === booking.locator ? tr('Copiado') : tr('Copiar')}
               </button>
               <a
                 href={`/contacto?motivo=soporte-reserva&localizador=${booking.locator}`}
                 className="booking-locator-support"
                 aria-label={`Soporte para reserva ${booking.locator}`}
               >
-                <Headphones size={12} /> Soporte
+                <Headphones size={12} />{' '}{tr('Soporte')}
               </a>
             </div>
           </div>
@@ -566,7 +567,7 @@ function BookingList({ bookings, loading, onCancel }: {
             {isUpcoming(booking) && (
               pendingCancelId === booking.id ? (
                 <div className="confirm-row">
-                  <span>¿Cancelar?</span>
+                  <span>{tr('¿Cancelar?')}</span>
                   <button
                     type="button"
                     className="btn btn-sm danger"
@@ -578,14 +579,14 @@ function BookingList({ bookings, loading, onCancel }: {
                       setPendingCancelId(null);
                     }}
                   >
-                    {cancellingKey === booking.id ? 'Cancelando…' : 'Sí'}
+                    {cancellingKey === booking.id ? tr('Cancelando…') : tr('Sí')}
                   </button>
-                  <button type="button" className="btn btn-sm btn-ghost" onClick={() => setPendingCancelId(null)}>No</button>
+                  <button type="button" className="btn btn-sm btn-ghost" onClick={() => setPendingCancelId(null)}>{tr('No')}</button>
                 </div>
               ) : (
                 <button type="button" onClick={() => setPendingCancelId(booking.id)}>
                   <Trash2 size={14} />
-                  Cancelar
+                  {tr('Cancelar')}
                 </button>
               )
             )}
@@ -613,12 +614,12 @@ function FavoriteGrid({ slugs, onChange }: { slugs: string[]; onChange: (slugs: 
   if (!slugs.length) {
     return (
       <div className="account-loading">
-        Aún no tienes favoritos. Pulsa <Heart size={13} /> Guardar en la ficha de un salón para tenerlo a mano. <Link to="/buscar">Buscar salones</Link>
+        {tr('Aún no tienes favoritos. Pulsa')}{' '}<Heart size={13} />{' '}{tr('Guardar en la ficha de un salón para tenerlo a mano.')}{' '}<Link to="/buscar">{tr('Buscar salones')}</Link>
       </div>
     );
   }
   if (allSalons === null) {
-    return <div className="account-loading"><span className="inline-spinner" aria-hidden="true" /> Cargando favoritos…</div>;
+    return <div className="account-loading"><span className="inline-spinner" aria-hidden="true" />{' '}{tr('Cargando favoritos…')}</div>;
   }
 
   const removeFavorite = (slug: string) => {
@@ -641,8 +642,8 @@ function FavoriteGrid({ slugs, onChange }: { slugs: string[]; onChange: (slugs: 
                 .filter(Boolean).join(' · ')}
             </p>
             <div>
-              <Link className="btn btn-primary" to={`/salones/${salon.slug}`}>Ver ficha</Link>
-              {slugs.includes(salon.slug) && <button className="btn btn-ghost" type="button" onClick={() => removeFavorite(salon.slug)}>Quitar</button>}
+              <Link className="btn btn-primary" to={`/salones/${salon.slug}`}>{tr('Ver ficha')}</Link>
+              {slugs.includes(salon.slug) && <button className="btn btn-ghost" type="button" onClick={() => removeFavorite(salon.slug)}>{tr('Quitar')}</button>}
             </div>
           </div>
         </article>

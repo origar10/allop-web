@@ -42,6 +42,7 @@ import { useToast } from '../lib/useToast';
 import { captureError } from '../lib/monitoring';
 import { ApiError } from '../shared/apiClient';
 
+import { tr } from '../lib/tr';
 type BookingStep = 1 | 2 | 3 | 4 | 5;
 const STEP_LABELS = ['Servicio', 'Profesional', 'Día y hora', 'Confirmar'];
 
@@ -327,7 +328,7 @@ export default function BookingFlow() {
   const submitBooking = async () => {
     setError('');
     if (!selectedService || !selectedDate || !selectedTime) {
-      setError('Elige servicio, día y hora.');
+      setError(tr('Elige servicio, día y hora.'));
       return;
     }
 
@@ -353,9 +354,9 @@ export default function BookingFlow() {
       const status = err instanceof ApiError ? err.status : undefined;
       setError(
         status === 409 || (err instanceof Error && /ocupad|disponib|solap/i.test(err.message))
-          ? 'Esa hora se acaba de ocupar. Elige otra, por favor.'
-          : status ? (err as Error).message || 'No se pudo confirmar la reserva.'
-            : 'No hay conexión con el salón. Revisa tu conexión y vuelve a intentarlo.',
+          ? tr('Esa hora se acaba de ocupar. Elige otra, por favor.')
+          : status ? (err as Error).message || tr('No se pudo confirmar la reserva.')
+            : tr('No hay conexión con el salón. Revisa tu conexión y vuelve a intentarlo.'),
       );
       setLoading(false);
       return;
@@ -407,21 +408,21 @@ export default function BookingFlow() {
     <section className="booking-flow">
       <div className="container booking-layout">
         <div className="booking-main">
-          <nav className="breadcrumb-chain" aria-label="Miga de pan">
-            <Link to="/">Marketplace</Link>
+          <nav className="breadcrumb-chain" aria-label={tr('Miga de pan')}>
+            <Link to="/">{tr('Marketplace')}</Link>
             <span>/</span>
             <Link to={`/salones/${salon.slug}`}>{salon.name}</Link>
             <span>/</span>
-            <span>Reserva</span>
+            <span>{tr('Reserva')}</span>
           </nav>
           <div className="booking-heading">
-            <p className="eyebrow">Reserva online</p>
+            <p className="eyebrow">{tr('Reserva online')}</p>
             <h1>{salon.name}</h1>
             {salon.address && <p><MapPin size={14} /> {salon.address}</p>}
           </div>
 
           {step < 5 && (
-            <ol className="booking-steps-labeled" aria-label="Progreso de reserva">
+            <ol className="booking-steps-labeled" aria-label={tr('Progreso de reserva')}>
               {visibleSteps.map((item, index) => (
                 <li key={item} className={step === item ? 'current' : step > item ? 'done' : ''}>
                   <span>{index + 1}</span>
@@ -433,15 +434,15 @@ export default function BookingFlow() {
 
           {step === 1 && (
             <div className="booking-card">
-              <h2><Scissors size={20} /> ¿Qué te quieres hacer?</h2>
+              <h2><Scissors size={20} />{' '}{tr('¿Qué te quieres hacer?')}</h2>
               {services.length === 0 ? (
                 <p className="booking-slots-state">
-                  {apiServices === null ? 'Cargando servicios…' : 'Este salón todavía no tiene servicios para reservar online.'}
+                  {apiServices === null ? tr('Cargando servicios…') : tr('Este salón todavía no tiene servicios para reservar online.')}
                 </p>
               ) : (
                 serviceGroups.map((group) => (
                   <div key={group.category ?? '_'} className="booking-service-group">
-                    {serviceGroups.length > 1 && <h3>{group.category ?? 'Otros servicios'}</h3>}
+                    {serviceGroups.length > 1 && <h3>{group.category ?? tr('Otros servicios')}</h3>}
                     <div className="booking-options">
                       {group.items.map((service) => (
                         <button
@@ -463,16 +464,16 @@ export default function BookingFlow() {
                 ))
               )}
               <button className="btn btn-primary btn-lg" type="button" onClick={goNext} disabled={!selectedService}>
-                Continuar
+                {tr('Continuar')}
               </button>
             </div>
           )}
 
           {step === 2 && (
             <div className="booking-card">
-              <h2><UserRound size={20} /> ¿Con quién?</h2>
+              <h2><UserRound size={20} />{' '}{tr('¿Con quién?')}</h2>
               {professionals === null ? (
-                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" /> Cargando el equipo…</p>
+                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" />{' '}{tr('Cargando el equipo…')}</p>
               ) : (
                 <div className="booking-options booking-pros">
                   {professionalOptions.map((professional) => (
@@ -486,23 +487,23 @@ export default function BookingFlow() {
                       <ProfessionalAvatar professional={professional} />
                       <span className="pro-text">
                         <strong>{professional.name}</strong>
-                        <span>{professional.id === 'any' ? 'Más horas disponibles' : professional.role}</span>
+                        <span>{professional.id === 'any' ? tr('Más horas disponibles') : professional.role}</span>
                       </span>
                     </button>
                   ))}
                 </div>
               )}
               <div className="booking-nav">
-                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
-                <button className="btn btn-primary btn-lg" type="button" onClick={goNext}>Continuar</button>
+                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>{tr('Atrás')}</button>
+                <button className="btn btn-primary btn-lg" type="button" onClick={goNext}>{tr('Continuar')}</button>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div className="booking-card">
-              <h2><CalendarDays size={20} /> ¿Cuándo te va bien?</h2>
-              <div className="booking-day-strip" role="listbox" aria-label="Días">
+              <h2><CalendarDays size={20} />{' '}{tr('¿Cuándo te va bien?')}</h2>
+              <div className="booking-day-strip" role="listbox" aria-label={tr('Días')}>
                 {dates.map((date, index) => {
                   const info = dayStatus[date.id];
                   // Hoy, pasada la última hora, la agenda lo da por "cerrado" aunque el salón abra: para el cliente está completo.
@@ -518,36 +519,36 @@ export default function BookingFlow() {
                       className={selectedDate === date.id ? 'active' : ''}
                       type="button"
                       disabled={disabled}
-                      title={closed ? 'Cerrado' : full ? 'Sin huecos' : undefined}
+                      title={closed ? tr('Cerrado') : full ? tr('Sin huecos') : undefined}
                       onClick={() => { setSelectedDate(date.id); setSelectedTime(''); }}
                     >
-                      <small>{index === 0 ? 'Hoy' : index === 1 ? 'Mañana' : weekdayFmt.format(date.value)}</small>
+                      <small>{index === 0 ? tr('Hoy') : index === 1 ? tr('Mañana') : weekdayFmt.format(date.value)}</small>
                       <strong>{date.value.getDate()}</strong>
-                      <small>{closed ? 'Cerrado' : full ? 'Completo' : monthFmt.format(date.value)}</small>
+                      <small>{closed ? tr('Cerrado') : full ? tr('Completo') : monthFmt.format(date.value)}</small>
                     </button>
                   );
                 })}
               </div>
 
               {rangeLoading ? (
-                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" /> Consultando la agenda…</p>
+                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" />{' '}{tr('Consultando la agenda…')}</p>
               ) : rangeError ? (
                 <p className="booking-slots-state err">
-                  No se pudo consultar la agenda del salón. Revisa tu conexión y vuelve a intentarlo.
-                  {salon.phone && <> También puedes llamar al <a href={`tel:${salon.phone.replace(/\s/g, '')}`}>{salon.phone}</a>.</>}
+                  {tr('No se pudo consultar la agenda del salón. Revisa tu conexión y vuelve a intentarlo.')}
+                  {salon.phone && <>{' '}{tr('También puedes llamar al')}{' '}<a href={`tel:${salon.phone.replace(/\s/g, '')}`}>{salon.phone}</a>.</>}
                 </p>
               ) : !hasAnyAvailability ? (
                 <p className="booking-slots-state">
-                  No quedan huecos online en las próximas semanas{selectedProfessionalId !== 'any' ? ' con este profesional' : ''}.
-                  {selectedProfessionalId !== 'any' && <> <button className="btn-link-inline" type="button" onClick={() => setSelectedProfessionalId('any')}>Probar con cualquiera</button></>}
-                  {salon.phone && <> También puedes llamar al <a href={`tel:${salon.phone.replace(/\s/g, '')}`}>{salon.phone}</a>.</>}
+                  {tr('No quedan huecos online en las próximas semanas')}{selectedProfessionalId !== 'any' ? tr(' con este profesional') : ''}.
+                  {selectedProfessionalId !== 'any' && <> <button className="btn-link-inline" type="button" onClick={() => setSelectedProfessionalId('any')}>{tr('Probar con cualquiera')}</button></>}
+                  {salon.phone && <>{' '}{tr('También puedes llamar al')}{' '}<a href={`tel:${salon.phone.replace(/\s/g, '')}`}>{salon.phone}</a>.</>}
                 </p>
               ) : slotsLoading ? (
-                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" /> Buscando horas libres…</p>
+                <p className="booking-slots-state"><span className="inline-spinner" aria-hidden="true" />{' '}{tr('Buscando horas libres…')}</p>
               ) : slotsError ? (
-                <p className="booking-slots-state err">No se pudo cargar la disponibilidad. Inténtalo de nuevo en un momento.</p>
+                <p className="booking-slots-state err">{tr('No se pudo cargar la disponibilidad. Inténtalo de nuevo en un momento.')}</p>
               ) : daySlots.length === 0 ? (
-                <p className="booking-slots-state">No quedan horas libres este día. Prueba con otro.</p>
+                <p className="booking-slots-state">{tr('No quedan horas libres este día. Prueba con otro.')}</p>
               ) : (
                 <div className="booking-slot-groups">
                   {[['Mañana', morning], ['Tarde', afternoon]].map(([label, times]) => (times as string[]).length > 0 && (
@@ -571,71 +572,71 @@ export default function BookingFlow() {
                 </div>
               )}
               <div className="booking-nav">
-                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
-                <button className="btn btn-primary btn-lg" type="button" onClick={goNext} disabled={!selectedTime}>Continuar</button>
+                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>{tr('Atrás')}</button>
+                <button className="btn btn-primary btn-lg" type="button" onClick={goNext} disabled={!selectedTime}>{tr('Continuar')}</button>
               </div>
             </div>
           )}
 
           {step === 4 && !session && (
             <div className="booking-card">
-              <h2><LogIn size={20} /> Entra para confirmar</h2>
+              <h2><LogIn size={20} />{' '}{tr('Entra para confirmar')}</h2>
               <p className="booking-lead">
-                Guardamos tu selección. Entra o crea tu cuenta de Allop (es gratis) y vuelves aquí para confirmar.
+                {tr('Guardamos tu selección. Entra o crea tu cuenta de Allop (es gratis) y vuelves aquí para confirmar.')}
               </p>
               <div className="booking-nav">
-                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
-                <Link className="btn btn-primary btn-lg" to={`/login?next=/reservar/${salon.slug}`}>Entrar o registrarme</Link>
+                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>{tr('Atrás')}</button>
+                <Link className="btn btn-primary btn-lg" to={`/login?next=/reservar/${salon.slug}`}>{tr('Entrar o registrarme')}</Link>
               </div>
             </div>
           )}
 
           {step === 4 && session && !phone && (
             <div className="booking-card">
-              <h2><Phone size={20} /> Falta tu teléfono</h2>
+              <h2><Phone size={20} />{' '}{tr('Falta tu teléfono')}</h2>
               <p className="booking-lead">
-                El salón necesita tu móvil para reconocerte y avisarte de la cita. Solo lo tienes que añadir una vez.
+                {tr('El salón necesita tu móvil para reconocerte y avisarte de la cita. Solo lo tienes que añadir una vez.')}
               </p>
               <div className="booking-nav">
-                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>Atrás</button>
-                <Link className="btn btn-primary btn-lg" to={`/completar-perfil?next=/reservar/${salon.slug}`}>Añadir teléfono</Link>
+                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack}>{tr('Atrás')}</button>
+                <Link className="btn btn-primary btn-lg" to={`/completar-perfil?next=/reservar/${salon.slug}`}>{tr('Añadir teléfono')}</Link>
               </div>
             </div>
           )}
 
           {step === 4 && session && phone && (
             <div className="booking-card">
-              <h2><ShieldCheck size={20} /> Revisa y confirma</h2>
+              <h2><ShieldCheck size={20} />{' '}{tr('Revisa y confirma')}</h2>
               <dl className="booking-review">
-                <div><dt>Servicio</dt><dd>{selectedService?.name}</dd></div>
-                <div><dt>Profesional</dt><dd>{selectedProfessional.name}</dd></div>
-                <div><dt>Cuándo</dt><dd>{longDate(selectedDate)} a las {selectedTime}</dd></div>
-                <div><dt>Duración</dt><dd>{selectedService?.duration}</dd></div>
+                <div><dt>{tr('Servicio')}</dt><dd>{selectedService?.name}</dd></div>
+                <div><dt>{tr('Profesional')}</dt><dd>{selectedProfessional.name}</dd></div>
+                <div><dt>{tr('Cuándo')}</dt><dd>{longDate(selectedDate)}{' '}{tr('a las')}{' '}{selectedTime}</dd></div>
+                <div><dt>{tr('Duración')}</dt><dd>{selectedService?.duration}</dd></div>
                 {selectedService?.price !== null && selectedService?.price !== undefined && (
-                  <div><dt>Precio</dt><dd>{formatPrice(selectedService.price)}</dd></div>
+                  <div><dt>{tr('Precio')}</dt><dd>{formatPrice(selectedService.price)}</dd></div>
                 )}
-                <div><dt>A nombre de</dt><dd>{session.cliente.nombre} · {phone}</dd></div>
+                <div><dt>{tr('A nombre de')}</dt><dd>{session.cliente.nombre} · {phone}</dd></div>
               </dl>
               <p className="booking-lead">
-                Pagas en el salón. Si luego no puedes ir, cancela desde <Link to="/mi-cuenta/reservas">Mi cuenta</Link> o llamando al salón.
+                {tr('Pagas en el salón. Si luego no puedes ir, cancela desde')}{' '}<Link to="/mi-cuenta/reservas">{tr('Mi cuenta')}</Link>{' '}{tr('o llamando al salón.')}
               </p>
               {error && (
                 <div role="alert" aria-live="assertive">
                   <p className="auth-message err">{error}</p>
                   {errorTraceId && (
                     <p className="error-trace-id">
-                      Referencia: <code>{errorTraceId}</code>
+                      {tr('Referencia:')}{' '}<code>{errorTraceId}</code>
                       {' '}·{' '}
-                      <a href={`/contacto?motivo=error-reserva&traza=${errorTraceId}`} className="btn-link-inline">Contactar soporte</a>
+                      <a href={`/contacto?motivo=error-reserva&traza=${errorTraceId}`} className="btn-link-inline">{tr('Contactar soporte')}</a>
                     </p>
                   )}
                 </div>
               )}
               <div className="booking-nav">
-                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack} disabled={loading}>Cambiar hora</button>
+                <button className="btn btn-ghost btn-lg" type="button" onClick={goBack} disabled={loading}>{tr('Cambiar hora')}</button>
                 <button className="btn btn-primary btn-lg" type="button" onClick={submitBooking} disabled={loading}>
                   {loading && <span className="inline-spinner" aria-hidden="true" />}
-                  {loading ? 'Reservando…' : 'Confirmar cita'}
+                  {loading ? tr('Reservando…') : tr('Confirmar cita')}
                 </button>
               </div>
             </div>
@@ -644,10 +645,10 @@ export default function BookingFlow() {
           {step === 5 && confirmation && (
             <div className={`booking-card booking-confirmation ${cancelled ? 'cancelled' : ''}`}>
               {cancelled ? <XCircle size={40} /> : <CheckCircle size={40} />}
-              <h2>{cancelled ? 'Cita cancelada' : '¡Cita reservada!'}</h2>
+              <h2>{cancelled ? tr('Cita cancelada') : tr('¡Cita reservada!')}</h2>
               <p>
                 {cancelled
-                  ? 'Hemos liberado el hueco en la agenda del salón.'
+                  ? tr('Hemos liberado el hueco en la agenda del salón.')
                   : `${selectedService?.name ?? 'Tu cita'} · ${longDate(selectedDate)} a las ${selectedTime}`}
               </p>
               {!cancelled && (
@@ -658,20 +659,20 @@ export default function BookingFlow() {
                 </>
               )}
               <div className="booking-nav">
-                <Link className="btn btn-primary btn-lg" to="/mi-cuenta/reservas">Mis reservas</Link>
-                <Link className="btn btn-ghost btn-lg" to={`/salones/${salon.slug}`}>Volver al salón</Link>
+                <Link className="btn btn-primary btn-lg" to="/mi-cuenta/reservas">{tr('Mis reservas')}</Link>
+                <Link className="btn btn-ghost btn-lg" to={`/salones/${salon.slug}`}>{tr('Volver al salón')}</Link>
               </div>
               {!cancelled && (
                 cancelConfirm ? (
                   <div className="confirm-row">
-                    <span>¿Seguro que quieres cancelarla?</span>
+                    <span>{tr('¿Seguro que quieres cancelarla?')}</span>
                     <button className="btn btn-sm danger" type="button" onClick={cancelFromConfirmation} disabled={cancelling}>
-                      {cancelling ? 'Cancelando…' : 'Sí, cancelar'}
+                      {cancelling ? tr('Cancelando…') : tr('Sí, cancelar')}
                     </button>
-                    <button className="btn btn-sm btn-ghost" type="button" onClick={() => setCancelConfirm(false)} disabled={cancelling}>No</button>
+                    <button className="btn btn-sm btn-ghost" type="button" onClick={() => setCancelConfirm(false)} disabled={cancelling}>{tr('No')}</button>
                   </div>
                 ) : (
-                  <button className="btn-link-inline" type="button" onClick={() => setCancelConfirm(true)}>Cancelar esta cita</button>
+                  <button className="btn-link-inline" type="button" onClick={() => setCancelConfirm(true)}>{tr('Cancelar esta cita')}</button>
                 )
               )}
             </div>
@@ -682,32 +683,32 @@ export default function BookingFlow() {
           {salon.photos?.[0]
             ? <img className="booking-summary-media" src={salon.photos[0]} alt="" />
             : <div className="booking-summary-media salon-photo-empty" aria-hidden="true"><span>{initials(salon.name)}</span></div>}
-          <h2>Tu cita</h2>
+          <h2>{tr('Tu cita')}</h2>
           <dl>
             <div>
-              <dt>Salón</dt>
+              <dt>{tr('Salón')}</dt>
               <dd>{salon.name}</dd>
             </div>
             <div>
-              <dt>Servicio</dt>
+              <dt>{tr('Servicio')}</dt>
               <dd>{selectedService?.name || '—'}</dd>
             </div>
             <div>
-              <dt>Profesional</dt>
+              <dt>{tr('Profesional')}</dt>
               <dd>{selectedProfessional.name}</dd>
             </div>
             <div>
-              <dt>Cuándo</dt>
+              <dt>{tr('Cuándo')}</dt>
               <dd>{selectedDate && selectedTime ? `${longDate(selectedDate)} · ${selectedTime}` : '—'}</dd>
             </div>
             {selectedService?.price !== null && selectedService?.price !== undefined && (
               <div>
-                <dt>Precio</dt>
+                <dt>{tr('Precio')}</dt>
                 <dd>{formatPrice(selectedService.price)}</dd>
               </div>
             )}
           </dl>
-          <p><ShieldCheck size={15} /> Reserva gratis. Pagas en el salón.</p>
+          <p><ShieldCheck size={15} />{' '}{tr('Reserva gratis. Pagas en el salón.')}</p>
         </aside>
       </div>
     </section>

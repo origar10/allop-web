@@ -6,6 +6,7 @@ import { useToast } from '../lib/useToast';
 import { normalizePhone } from '../shared/formatters';
 import { getSafeNext } from '../lib/safeNext';
 
+import { tr } from '../lib/tr';
 const MARKETPLACE_SLUG = 'marketplace';
 
 
@@ -37,11 +38,11 @@ export default function CompleteProfile() {
     }
     const telefono = normalizePhone(phone);
     if (telefono.length < 8) {
-      setError('Introduce un teléfono válido.');
+      setError(tr('Introduce un teléfono válido.'));
       return;
     }
     if (!isGoogle && password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+      setError(tr('La contraseña debe tener al menos 8 caracteres.'));
       return;
     }
     setLoading(true);
@@ -52,7 +53,7 @@ export default function CompleteProfile() {
       setChallenge({ id: response.challengeId, telefono, debugCode });
       setCode(debugCode ?? '');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo enviar el código.');
+      setError(err instanceof Error ? err.message : tr('No se pudo enviar el código.'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +62,7 @@ export default function CompleteProfile() {
   const confirm = async () => {
     if (!challenge) return;
     if (code.trim().length < 4) {
-      setError('Introduce el código que te hemos enviado por SMS.');
+      setError(tr('Introduce el código que te hemos enviado por SMS.'));
       return;
     }
     setLoading(true);
@@ -87,7 +88,7 @@ export default function CompleteProfile() {
       notify('Perfil completado correctamente.', 'success');
       navigate(next, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo verificar el código.');
+      setError(err instanceof Error ? err.message : tr('No se pudo verificar el código.'));
     } finally {
       setLoading(false);
     }
@@ -106,15 +107,15 @@ export default function CompleteProfile() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <h2>Completa tu perfil</h2>
+          <h2>{tr('Completa tu perfil')}</h2>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
             {isGoogle
-              ? 'Añade tu teléfono para completar el registro.'
-              : 'Añade tu teléfono y elige una contraseña para poder acceder con email o teléfono en el futuro.'}
+              ? tr('Añade tu teléfono para completar el registro.')
+              : tr('Añade tu teléfono y elige una contraseña para poder acceder con email o teléfono en el futuro.')}
           </p>
 
           <label>
-            Teléfono
+            {tr('Teléfono')}
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -122,12 +123,12 @@ export default function CompleteProfile() {
               autoComplete="tel"
               disabled={loading || Boolean(challenge)}
             />
-            <span className="auth-help">Te enviaremos un código por SMS para confirmarlo.</span>
+            <span className="auth-help">{tr('Te enviaremos un código por SMS para confirmarlo.')}</span>
           </label>
 
           {challenge && (
             <label>
-              Código SMS
+              {tr('Código SMS')}
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -137,18 +138,18 @@ export default function CompleteProfile() {
                 disabled={loading}
               />
               <span className="auth-help">
-                Enviado al {challenge.telefono}.{' '}
+                {tr('Enviado al')}{' '}{challenge.telefono}.{' '}
                 <button type="button" className="btn-link-inline" disabled={loading} onClick={() => { setChallenge(null); setCode(''); setError(null); }}>
-                  Cambiar teléfono
+                  {tr('Cambiar teléfono')}
                 </button>
               </span>
-              {challenge.debugCode && <span className="auth-debug">Código de entorno de pruebas: {challenge.debugCode}</span>}
+              {challenge.debugCode && <span className="auth-debug">{tr('Código de entorno de pruebas:')}{' '}{challenge.debugCode}</span>}
             </label>
           )}
 
           {!isGoogle && !challenge && (
             <label>
-              Contraseña
+              {tr('Contraseña')}
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -156,7 +157,7 @@ export default function CompleteProfile() {
                 autoComplete="new-password"
                 disabled={loading}
               />
-              <span className="auth-help">Mínimo 8 caracteres.</span>
+              <span className="auth-help">{tr('Mínimo 8 caracteres.')}</span>
             </label>
           )}
 
@@ -166,7 +167,7 @@ export default function CompleteProfile() {
 
           <button className="btn btn-primary btn-lg" type="submit" disabled={loading}>
             {loading && <span className="inline-spinner" aria-hidden="true" />}
-            {loading ? 'Un momento…' : challenge ? 'Confirmar teléfono' : 'Enviar código'}
+            {loading ? tr('Un momento…') : challenge ? tr('Confirmar teléfono') : tr('Enviar código')}
           </button>
         </form>
       </div>
