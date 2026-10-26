@@ -12,6 +12,7 @@ import { trackEvent, trackPageView } from './lib/analytics';
 import { useFocusTrap } from './hooks/useFocusTrap';
 import { useI18n } from './lib/useI18n';
 import { formatPrice } from './lib/salonDetails';
+import { region } from './lib/region';
 
 const Home = lazy(() => import('./pages/Home'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
@@ -29,6 +30,7 @@ const LegalPage = lazy(() => import('./pages/LegalPage'));
 const Guides = lazy(() => import('./pages/Guides'));
 const Press = lazy(() => import('./pages/Press'));
 const BusinessSignup = lazy(() => import('./pages/BusinessSignup'));
+const AltaPrueba = lazy(() => import('./pages/AltaPrueba'));
 const BusinessVerify = lazy(() => import('./pages/BusinessVerify'));
 const BusinessBillingResult = lazy(() => import('./pages/BusinessBillingResult'));
 const AppleCallback = lazy(() => import('./pages/AppleCallback'));
@@ -37,9 +39,16 @@ const CompleteProfile = lazy(() => import('./pages/CompleteProfile'));
 const SystemStatus = lazy(() => import('./pages/SystemStatus'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-const DASHBOARD_URL = 'https://dashboard.allop.es';
+// Panel del país (dashboard.allop.es, dashboard.allop.no…): la región ya está cargada al importar App.
+const DASHBOARD_URL = `https://dashboard.${region().dominio}`;
 const BUSINESS_URL = '/business';
 const SUPPORT_EMAIL = 'soporte@allop.es';
+
+/** Alta con prueba sin tarjeta (Noruega): ?slug=…&pagar=1 abre el pago de la suscripción. */
+function AltaPruebaRoute() {
+  const params = new URLSearchParams(useLocation().search);
+  return <AltaPrueba slug={params.get('slug')} pagar={params.get('pagar') === '1'} />;
+}
 
 function HashScroller() {
   const location = useLocation();
@@ -258,7 +267,7 @@ export default function App() {
             <Route path="/guias/:audience/:slug" element={<Guides />} />
             <Route path="/prensa" element={<Press supportEmail={SUPPORT_EMAIL} />} />
             <Route path="/business" element={<Business supportEmail={SUPPORT_EMAIL} dashboardUrl={DASHBOARD_URL} />} />
-            <Route path="/business/alta" element={<BusinessSignup />} />
+            <Route path="/business/alta" element={region().prueba_gratis_dias ? <AltaPruebaRoute /> : <BusinessSignup />} />
             <Route path="/business/verificar" element={<BusinessVerify dashboardUrl={DASHBOARD_URL} />} />
             <Route path="/business/alta/success" element={<BusinessBillingResult mode="success" />} />
             <Route path="/business/alta/cancel" element={<BusinessBillingResult mode="cancel" />} />
