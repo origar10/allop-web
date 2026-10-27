@@ -1,6 +1,8 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 
-import { tr } from '../lib/tr';
+import { tr, idioma } from '../lib/tr';
+import { region } from '../lib/region';
+import { LEGAL_NORGE, ENLACES_LEGALES_NORGE } from './legalNorge';
 interface LegalSection {
   heading: string;
   text: string[];
@@ -105,7 +107,9 @@ const LEGAL_CONTENT: Record<string, { title: string; updatedAt: string; intro: s
 
 export default function LegalPage() {
   const { slug = '' } = useParams();
-  const content = LEGAL_CONTENT[slug];
+  // Noruega: textos propios (bokmål/inglés) en lugar de los de España.
+  const norge = region().code === 'no' ? LEGAL_NORGE[idioma() === 'en' ? 'en' : 'nb'] : null;
+  const content = norge ? norge[slug] : LEGAL_CONTENT[slug];
 
   if (!content) return <Navigate to="/404" replace />;
 
@@ -121,6 +125,11 @@ export default function LegalPage() {
             {section.text.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
           </article>
         ))}
+        {norge ? (
+          <div className="legal-links">
+            {ENLACES_LEGALES_NORGE.map((k) => <Link key={k} to={`/${k}`}>{norge[k].title}</Link>)}
+          </div>
+        ) : (
         <div className="legal-links">
           <Link to="/privacidad">{tr('Privacidad')}</Link>
           <Link to="/terminos">{tr('Términos')}</Link>
@@ -129,6 +138,7 @@ export default function LegalPage() {
           <Link to="/dpa">{tr('DPA salones')}</Link>
           <Link to="/eliminar-cuenta">{tr('Eliminar cuenta')}</Link>
         </div>
+        )}
       </div>
     </section>
   );

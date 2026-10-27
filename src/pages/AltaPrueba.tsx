@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CheckCircle, CreditCard, Lock, MailCheck, ShieldCheck, Sparkles } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { firstError, validateEmail, validateName } from '../lib/validation';
@@ -135,6 +136,10 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
               <CheckCircle size={16} /> {enviando ? tr('Preparando...') : tr('Empezar {n} días gratis', { n: dias })}
             </button>
             <p className="billing-note"><Lock size={14} /> {tr('Sin tarjeta. Al terminar la prueba te pediremos activar la suscripción para seguir.')}</p>
+            <p className="billing-note">
+              {tr('Al crear la cuenta aceptas las')}{' '}<Link to="/terminos">{tr('condiciones para salones')}</Link>{' '}
+              {tr('y la')}{' '}<Link to="/privacidad">{tr('política de privacidad')}</Link>.
+            </p>
           </form>
         )}
       </div>

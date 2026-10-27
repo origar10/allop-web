@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../lib/useI18n';
 
-import { tr } from '../lib/tr';
+import { tr, idioma } from '../lib/tr';
 import { region } from '../lib/region';
+import { LEGAL_NORGE, ENLACES_LEGALES_NORGE } from '../pages/legalNorge';
 interface FooterProps {
   dashboardUrl: string;
   signupUrl: string;
@@ -18,9 +19,10 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
   const isBusiness = isBusinessPath(location.pathname);
   const { t } = useI18n();
 
-  // Noruega (alta self-service): pie mínimo. Los textos legales de la plataforma en noruego están
-  // pendientes; los de cada salón viven en {slug}.allop.no/personvern.
+  // Noruega (alta self-service): pie mínimo con los textos legales de la plataforma (legalNorge.ts);
+  // los de cada salón viven en {slug}.allop.no/personvern.
   if (region().prueba_gratis_dias) {
+    const legales = LEGAL_NORGE[idioma() === 'en' ? 'en' : 'nb'];
     return (
       <footer className="footer footer-business">
         <div className="container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'center', padding: '28px 16px' }}>
@@ -29,6 +31,9 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
             <a href={dashboardUrl}>{t('nav.business.dashboard')}</a>
             <Link to="/business/alta">{tr('Empezar gratis')}</Link>
             <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+          </span>
+          <span style={{ display: 'flex', gap: 16, flexWrap: 'wrap', width: '100%', fontSize: 13, opacity: 0.8 }}>
+            {ENLACES_LEGALES_NORGE.map((k) => <Link key={k} to={`/${k}`}>{legales[k].title}</Link>)}
           </span>
         </div>
       </footer>
