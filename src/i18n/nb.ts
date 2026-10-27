@@ -510,6 +510,12 @@ const nb: Record<string, string> = {
   '¿Seguro que quieres cancelarla?': 'Er du sikker på at du vil avbestille?',
   '¿Ya tienes cuenta?': 'Har du allerede konto?',
   'Área de cliente': 'Kundeområde',
+  'sin IVA': 'eks. mva',
+  'Número de empresa': 'Organisasjonsnummer',
+  'Buscando en el registro…': 'Søker i Enhetsregisteret …',
+  'No encontramos este número en el registro de empresas.': 'Fant ikke nummeret i Enhetsregisteret.',
+  'Indica el número de empresa (9 cifras).': 'Skriv inn organisasjonsnummeret (9 sifre).',
+  'Precios sin IVA. Solo para empresas: facturamos desde España sin IVA y tu empresa declara el IVA (inversión del sujeto pasivo).': 'Alle priser er oppgitt eks. mva. Tjenesten leveres kun til næringsdrivende og faktureres fra Spania uten mva. (snudd avregning).',
 };
 
 export default nb;

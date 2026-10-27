@@ -510,6 +510,12 @@ const en: Record<string, string> = {
   '¿Seguro que quieres cancelarla?': 'Are you sure you want to cancel it?',
   '¿Ya tienes cuenta?': 'Already have an account?',
   'Área de cliente': 'Client area',
+  'sin IVA': 'excl. VAT',
+  'Número de empresa': 'Organisation number',
+  'Buscando en el registro…': 'Looking up the register…',
+  'No encontramos este número en el registro de empresas.': 'We could not find this number in the Register of Business Enterprises.',
+  'Indica el número de empresa (9 cifras).': 'Enter the organisation number (9 digits).',
+  'Precios sin IVA. Solo para empresas: facturamos desde España sin IVA y tu empresa declara el IVA (inversión del sujeto pasivo).': 'All prices exclude VAT. The service is for businesses only and is invoiced from Spain without VAT (reverse charge).',
 };
 
 export default en;

@@ -73,7 +73,8 @@ const nb: Record<string, PaginaLegal> = {
         'Når prøveperioden er over uten aktivt abonnement, stenges bestillingssiden og panelet til abonnementet aktiveres. Dataene blir liggende.',
       ] },
       { heading: 'Pris og betaling', text: [
-        'Basis koster 499 kr per måned eller 4 990 kr per år, inkludert mva. Det er ingen provisjon per bestilling.',
+        'Basis koster 499 kr per måned eller 4 990 kr per år, eks. mva. Det er ingen provisjon per bestilling.',
+        'Tjenesten leveres bare til næringsdrivende med norsk organisasjonsnummer. Den faktureres fra Spania uten mva.; kunden beregner merverdiavgiften selv (snudd avregning, merverdiavgiftsloven § 3-30).',
         'Betaling skjer forskuddsvis med kort via Stripe. Aktiveres abonnementet mens prøveperioden pågår, trekkes første betaling når prøveperioden er over.',
         'Prisendringer varsles minst 30 dager før de gjelder.',
       ] },
@@ -192,7 +193,8 @@ const en: Record<string, PaginaLegal> = {
         'When the trial ends without an active subscription, the booking page and the panel are closed until the subscription is activated. The data is kept.',
       ] },
       { heading: 'Price and payment', text: [
-        'Basic costs NOK 499 per month or NOK 4,990 per year, VAT included. There is no commission per booking.',
+        'Basic costs NOK 499 per month or NOK 4,990 per year, excluding VAT. There is no commission per booking.',
+        'The service is only provided to businesses with a Norwegian organisation number. It is invoiced from Spain without VAT; the customer accounts for the VAT itself (reverse charge, Merverdiavgiftsloven § 3-30).',
         'Payment is made in advance by card through Stripe. If the subscription is activated during the trial, the first payment is taken when the trial ends.',
         'Price changes are announced at least 30 days before they apply.',
       ] },

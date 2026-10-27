@@ -190,7 +190,20 @@ export async function registerSalon(profile: BillingProfile, password: string) {
     password,
     telefono: profile.phone.trim(),
     ciudad: profile.city.trim(),
+    // Org.nr (Noruega): el backend lo exige y lo comprueba en el Enhetsregisteret.
+    ...(profile.taxId.trim() ? { orgnr: profile.taxId.trim() } : {}),
   });
+}
+
+export interface EmpresaRegistro { orgnr: string; navn: string; organisasjonsform: string | null; mva: boolean; activa: boolean }
+
+/** Nombre de la empresa de un org.nr mientras se rellena el alta. null = no existe o no es válido. */
+export async function consultarOrgnr(orgnr: string): Promise<EmpresaRegistro | null> {
+  try {
+    return await apiGet<EmpresaRegistro>(`/registro/orgnr/${encodeURIComponent(orgnr)}`);
+  } catch {
+    return null;
+  }
 }
 
 export async function createCheckoutSession(planId: BillingPlanId, interval: BillingInterval, profile: BillingProfile, slug?: string) {

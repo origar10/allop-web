@@ -5,6 +5,8 @@ import { firstError, validateEmail, validateName } from '../lib/validation';
 import {
   type BillingProfile,
   applyPublicPricing,
+  consultarOrgnr,
+  type EmpresaRegistro,
   fetchPublicPricing,
   getBillingPlan,
   registerSalon,
@@ -33,6 +35,11 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
   const [enviando, setEnviando] = useState(false);
   const [hecho, setHecho] = useState(false);
   const [, setPrecios] = useState(0);
+  // Solo empresas (Noruega): org.nr obligatorio y nombre del registro mientras se escribe.
+  const conOrgnr = region().inversion_sujeto_pasivo;
+  const [consulta, setConsulta] = useState<{ orgnr: string; empresa: EmpresaRegistro | 'no' } | null>(null);
+  const orgnr9 = conOrgnr ? perfil.taxId.replace(/\D/g, '') : '';
+  const empresa = orgnr9.length !== 9 ? null : consulta?.orgnr === orgnr9 ? consulta.empresa : 'buscando';
   const plan = getBillingPlan('basic');
   // Solo informativo (precio mensual): el pago se elige y se abre en el panel.
   const precio = plan.monthlyPrice;
@@ -46,6 +53,13 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
     fetchPublicPricing().then((p) => { if (p) { applyPublicPricing(p); setPrecios((n) => n + 1); } });
   }, [pagar, dias]);
 
+  useEffect(() => {
+    if (orgnr9.length !== 9) return;
+    let vigente = true;
+    consultarOrgnr(orgnr9).then((r) => { if (vigente) setConsulta({ orgnr: orgnr9, empresa: r ?? 'no' }); });
+    return () => { vigente = false; };
+  }, [orgnr9]);
+
   const alta = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (honeypot) return;
@@ -55,6 +69,7 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
       validateEmail(perfil.email),
     );
     if (error) { setMensaje(error); return; }
+    if (conOrgnr && orgnr9.length !== 9) { setMensaje(tr('Indica el número de empresa (9 cifras).')); return; }
     if (password.length < 8) { setMensaje(tr('La contraseña debe tener al menos 8 caracteres.')); return; }
     setEnviando(true);
     setMensaje('');
@@ -104,7 +119,7 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
               <h2>{tr('Básico')}</h2>
               <div className="billing-total">
                 <span>{tr('Precio')}</span>
-                <strong>{precio === null ? '—' : `${fmtMoney(precio, 0)} ${tr('/mes')}`}</strong>
+                <strong>{precio === null ? '—' : `${fmtMoney(precio, 0)} ${tr('/mes')}${conOrgnr ? ` ${tr('sin IVA')}` : ''}`}</strong>
               </div>
               <p>{tr('Activa la suscripción desde tu panel, en Suscripción. Si aún te quedan días de prueba, el primer cobro llega cuando terminan.')}</p>
             </div>
@@ -125,6 +140,15 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
               <label>{tr('Email')}<input type="email" autoComplete="email" value={perfil.email} onChange={(e) => setPerfil({ ...perfil, email: e.target.value })} /></label>
               <label>{tr('Teléfono (opcional)')}<input type="tel" autoComplete="tel" value={perfil.phone} onChange={(e) => setPerfil({ ...perfil, phone: e.target.value })} /></label>
             </div>
+            {conOrgnr && (
+              <label>{tr('Número de empresa')}
+                <input inputMode="numeric" autoComplete="off" placeholder="123 456 789" value={perfil.taxId}
+                  onChange={(e) => setPerfil({ ...perfil, taxId: e.target.value })} />
+                {empresa === 'buscando' && <small>{tr('Buscando en el registro…')}</small>}
+                {empresa === 'no' && <small className="auth-message err">{tr('No encontramos este número en el registro de empresas.')}</small>}
+                {empresa && typeof empresa === 'object' && <small>✓ {empresa.navn}{empresa.organisasjonsform ? ` (${empresa.organisasjonsform})` : ''}</small>}
+              </label>
+            )}
             <label>{tr('Ciudad')}<input value={perfil.city} onChange={(e) => setPerfil({ ...perfil, city: e.target.value })} /></label>
             <label>{tr('Contraseña para entrar en tu panel y en la app')}
               <input type="password" autoComplete="new-password" minLength={8} value={password}
@@ -136,6 +160,7 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
               <CheckCircle size={16} /> {enviando ? tr('Preparando...') : tr('Empezar {n} días gratis', { n: dias })}
             </button>
             <p className="billing-note"><Lock size={14} /> {tr('Sin tarjeta. Al terminar la prueba te pediremos activar la suscripción para seguir.')}</p>
+            {conOrgnr && <p className="billing-note">{tr('Precios sin IVA. Solo para empresas: facturamos desde España sin IVA y tu empresa declara el IVA (inversión del sujeto pasivo).')}</p>}
             <p className="billing-note">
               {tr('Al crear la cuenta aceptas las')}{' '}<Link to="/vilkar">{tr('condiciones para salones')}</Link>{' '}
               {tr('y la')}{' '}<Link to="/personvern">{tr('política de privacidad')}</Link>.
