@@ -2,7 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 
 import { tr, idioma } from '../lib/tr';
 import { region } from '../lib/region';
-import { LEGAL_NORGE, ENLACES_LEGALES_NORGE } from './legalNorge';
+import { LEGAL_NORGE, ENLACES_LEGALES_NORGE, RUTA_LEGAL_NORGE } from './legalNorge';
 interface LegalSection {
   heading: string;
   text: string[];
@@ -109,7 +109,7 @@ export default function LegalPage() {
   const { slug = '' } = useParams();
   // Noruega: textos propios (bokmål/inglés) en lugar de los de España.
   const norge = region().code === 'no' ? LEGAL_NORGE[idioma() === 'en' ? 'en' : 'nb'] : null;
-  const content = norge ? norge[slug] : LEGAL_CONTENT[slug];
+  const content = norge ? norge[RUTA_LEGAL_NORGE[slug] ?? slug] : LEGAL_CONTENT[slug];
 
   if (!content) return <Navigate to="/404" replace />;
 
@@ -127,7 +127,7 @@ export default function LegalPage() {
         ))}
         {norge ? (
           <div className="legal-links">
-            {ENLACES_LEGALES_NORGE.map((k) => <Link key={k} to={`/${k}`}>{norge[k].title}</Link>)}
+            {ENLACES_LEGALES_NORGE.map((k) => <Link key={k} to={`/${k}`}>{norge[RUTA_LEGAL_NORGE[k]].title}</Link>)}
           </div>
         ) : (
         <div className="legal-links">

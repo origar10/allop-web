@@ -137,8 +137,8 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
             </button>
             <p className="billing-note"><Lock size={14} /> {tr('Sin tarjeta. Al terminar la prueba te pediremos activar la suscripción para seguir.')}</p>
             <p className="billing-note">
-              {tr('Al crear la cuenta aceptas las')}{' '}<Link to="/terminos">{tr('condiciones para salones')}</Link>{' '}
-              {tr('y la')}{' '}<Link to="/privacidad">{tr('política de privacidad')}</Link>.
+              {tr('Al crear la cuenta aceptas las')}{' '}<Link to="/vilkar">{tr('condiciones para salones')}</Link>{' '}
+              {tr('y la')}{' '}<Link to="/personvern">{tr('política de privacidad')}</Link>.
             </p>
           </form>
         )}

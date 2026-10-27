@@ -12,13 +12,15 @@ import { apiPost } from '../shared/apiClient';
 // Sin promesas que no se cumplen: la página de reservas está lista el mismo día; la app con su
 // marca es del plan a medida.
 
-type Nicho = 'frisor' | 'barber' | 'massasje' | 'hudpleie';
+type Nicho = 'frisor' | 'barber' | 'massasje' | 'hudpleie' | 'tatovering';
 
 const NICHOS: { id: Nicho; nombre: string; servicios: [string, number, number][] }[] = [
   { id: 'frisor', nombre: tr('Peluquería'), servicios: [[tr('Corte de mujer'), 690, 60], [tr('Corte de hombre'), 450, 30], [tr('Color completo'), 1490, 120], [tr('Mechas'), 1890, 150]] },
   { id: 'barber', nombre: tr('Barbería'), servicios: [[tr('Corte de pelo'), 420, 30], [tr('Corte + barba'), 590, 45], [tr('Arreglo de barba'), 290, 20], [tr('Afeitado clásico'), 390, 30]] },
   { id: 'massasje', nombre: tr('Masaje y tratamientos'), servicios: [[tr('Masaje relajante'), 790, 60], [tr('Masaje deportivo'), 890, 60], [tr('Masaje de espalda'), 550, 30], [tr('Piedras calientes'), 990, 75]] },
   { id: 'hudpleie', nombre: tr('Estética'), servicios: [[tr('Limpieza facial'), 890, 60], [tr('Manicura'), 490, 45], [tr('Pestañas y cejas'), 390, 30], [tr('Depilación con cera'), 450, 30]] },
+  // Mismo catálogo que la categoría «Tatovering & piercing» del salón demo (el botón lleva a ella).
+  { id: 'tatovering', nombre: tr('Tatuajes y piercing'), servicios: [[tr('Consulta'), 0, 30], [tr('Tatuaje pequeño'), 1200, 60], [tr('Sesión de medio día'), 3500, 180], [tr('Sesión de día completo'), 6500, 360]] },
 ];
 
 const COLORES = [
@@ -98,7 +100,7 @@ export default function LandingNorge() {
               {servicios.map(([s, precio, min]) => (
                 <div key={s} className="lno-serv">
                   <div><strong>{s}</strong><span>{min} min</span></div>
-                  <span style={{ color }}>{fmtMoney(precio, 0)}</span>
+                  <span style={{ color }}>{precio === 0 ? tr('Gratis') : fmtMoney(precio, 0)}</span>
                 </div>
               ))}
               <button type="button" className="lno-reservar" style={{ background: color }}>{tr('Reservar cita')}</button>

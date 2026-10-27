@@ -3,7 +3,7 @@ import { useI18n } from '../lib/useI18n';
 
 import { tr, idioma } from '../lib/tr';
 import { region } from '../lib/region';
-import { LEGAL_NORGE, ENLACES_LEGALES_NORGE } from '../pages/legalNorge';
+import { LEGAL_NORGE, ENLACES_LEGALES_NORGE, RUTA_LEGAL_NORGE } from '../pages/legalNorge';
 interface FooterProps {
   dashboardUrl: string;
   signupUrl: string;
@@ -33,7 +33,7 @@ export default function Footer({ dashboardUrl, signupUrl, supportEmail }: Footer
             <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
           </span>
           <span style={{ display: 'flex', gap: 16, flexWrap: 'wrap', width: '100%', fontSize: 13, opacity: 0.8 }}>
-            {ENLACES_LEGALES_NORGE.map((k) => <Link key={k} to={`/${k}`}>{legales[k].title}</Link>)}
+            {ENLACES_LEGALES_NORGE.map((k) => <Link key={k} to={`/${k}`}>{legales[RUTA_LEGAL_NORGE[k]].title}</Link>)}
           </span>
         </div>
       </footer>

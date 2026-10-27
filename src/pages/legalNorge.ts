@@ -1,6 +1,7 @@
 // Textos legales de la plataforma en Noruega (allop.no): bokmål y inglés. Los de España siguen en
 // LegalPage.tsx. Las políticas de cada salón (sus clientes) viven en {slug}.allop.no/personvern.
-// Mismos slugs que en España (/privacidad, /terminos, /cookies, /dpa) para no romper enlaces.
+// Rutas en noruego (/personvern, /vilkar, /informasjonskapsler, /databehandleravtale); los slugs de
+// España (/privacidad, /terminos, /cookies, /dpa) siguen funcionando y muestran lo mismo.
 
 export interface SeccionLegal { heading: string; text: string[] }
 export interface PaginaLegal { title: string; updatedAt: string; intro: string; sections: SeccionLegal[] }
@@ -16,12 +17,18 @@ const nb: Record<string, PaginaLegal> = {
     updatedAt: ACTUALIZADO,
     intro: 'Slik behandler Allop personopplysninger når du besøker allop.no, registrerer en salong eller kontakter oss.',
     sections: [
-      { heading: 'Behandlingsansvarlig', text: [`${EMPRESA} (Spania) driver Allop og er behandlingsansvarlig for opplysningene på denne siden. Kontakt om personvern: ${PERSONVERN}.`] },
+      { heading: 'Behandlingsansvarlig og databehandler', text: [
+        `${EMPRESA} (Spania) driver Allop. Vi følger personvernforordningen (GDPR, forordning (EU) 2016/679) og personopplysningsloven.`,
+        'Allop er behandlingsansvarlig for opplysningene om salongene og eierne deres: konto, abonnement og fakturering.',
+        'Allop er databehandler for opplysningene om kundene som bestiller time hos en salong (navn, e-post for innloggingskoden og timehistorikk). Der er salongen behandlingsansvarlig.',
+        `Kontakt om personvern: ${PERSONVERN}.`,
+      ] },
       { heading: 'Hvilke opplysninger vi behandler', text: [
         'Salongkontoer: salongens navn, ditt navn, e-post, telefon (valgfritt), by og adresse, innloggingsdata og abonnementsstatus.',
         'Henvendelser via skjemaet «Vi setter det opp for deg»: salongens navn, Instagram eller nettside, navn, telefon/WhatsApp og e-post.',
         'Teknisk informasjon som IP-adresse og nettlesertype i serverlogger, for sikkerhet og feilsøking.',
         'Betalingskortet ditt behandles av Stripe; Allop ser eller lagrer aldri kortnummeret.',
+        'Vi sender bare transaksjonelle e-poster: bekreftelse av kontoen, innloggingskoder, timepåminnelser og varsler om abonnementet.',
       ] },
       { heading: 'Formål og rettslig grunnlag', text: [
         'Opprette og drifte salongkontoen, prøveperioden og abonnementet (avtale, GDPR art. 6 nr. 1 b).',
@@ -31,7 +38,7 @@ const nb: Record<string, PaginaLegal> = {
         'Analyse av besøk bare hvis du godtar det i informasjonskapsel-banneret (samtykke, art. 6 nr. 1 a).',
       ] },
       { heading: 'Hvem vi deler med (databehandlere)', text: [
-        'Hetzner Online GmbH: servere i Helsingfors (Finland, EØS).',
+        'Hetzner Online GmbH: alle servere og data ligger i Helsingfors (Finland, EØS).',
         'Stripe: betaling og fakturering av abonnementet.',
         'Cloudflare: DNS for allop.no.',
         'Apple: kart (MapKit) på søkesidene.',
@@ -44,7 +51,7 @@ const nb: Record<string, PaginaLegal> = {
         'Henvendelser som ikke fører til en konto slettes når de ikke lenger er aktuelle.',
       ] },
       { heading: 'Dine rettigheter', text: [
-        `Du kan be om innsyn, retting, sletting, begrensning, dataportabilitet og protestere mot behandling ved å skrive til ${PERSONVERN}.`,
+        `Du har rett til innsyn, retting, sletting («retten til å bli glemt»), begrensning og dataportabilitet, og til å protestere mot behandling. Skriv til ${PERSONVERN} eller ${SUPPORT}.`,
         'Du kan klage til Datatilsynet (datatilsynet.no).',
       ] },
       { heading: 'Salongenes kunder', text: [
@@ -71,11 +78,11 @@ const nb: Record<string, PaginaLegal> = {
         'Prisendringer varsles minst 30 dager før de gjelder.',
       ] },
       { heading: 'Ingen binding og oppsigelse', text: [
-        'Abonnementet kan sies opp når som helst fra panelet (Abonnement → Faktureringsportal). Det løper ut den perioden som er betalt, og påbegynte perioder refunderes ikke.',
+        'Ingen bindingstid: fornyelsen kan sies opp når som helst fra panelet (Abonnement → Faktureringsportal), senest før neste faktureringsperiode. Abonnementet løper ut den perioden som er betalt, og påbegynte perioder refunderes ikke.',
         'Ved manglende betaling prøver vi igjen i noen dager; deretter kan kontoen bli suspendert.',
       ] },
       { heading: 'Salongens ansvar', text: [
-        'Salongen er ansvarlig for at opplysningene om tjenester, priser og åpningstider er riktige, og for tjenestene den yter til kundene.',
+        'Salongen er ansvarlig for at opplysningene om tjenester, priser og åpningstider er riktige, for riktig bruk av timeboken og for tjenestene den yter til kundene, inkludert egne regler for avbestilling og uteblivelse.',
         'Salongen er behandlingsansvarlig for kundenes opplysninger og skal ha en lovlig grunn for å registrere dem (se databehandleravtalen).',
         'Innloggingsdata er personlige og skal holdes hemmelige.',
       ] },
@@ -129,12 +136,18 @@ const en: Record<string, PaginaLegal> = {
     updatedAt: ACTUALIZADO,
     intro: 'How Allop handles personal data when you visit allop.no, register a salon or contact us.',
     sections: [
-      { heading: 'Controller', text: [`${EMPRESA} (Spain) operates Allop and is the controller for the data on this site. Privacy contact: ${PERSONVERN}.`] },
+      { heading: 'Controller and processor', text: [
+        `${EMPRESA} (Spain) operates Allop. We comply with the GDPR (Regulation (EU) 2016/679) and the Norwegian Personal Data Act (personopplysningsloven).`,
+        'Allop is the controller for data about salons and their owners: account, subscription and billing.',
+        'Allop is the processor for data about the clients who book at a salon (name, email for the login code and booking history). For that data the salon is the controller.',
+        `Privacy contact: ${PERSONVERN}.`,
+      ] },
       { heading: 'What we process', text: [
         'Salon accounts: salon name, your name, email, phone (optional), city and address, login data and subscription status.',
         'Requests through the «We set it up for you» form: salon name, Instagram or website, name, phone/WhatsApp and email.',
         'Technical information such as IP address and browser type in server logs, for security and troubleshooting.',
         'Your card is handled by Stripe; Allop never sees or stores the card number.',
+        'We only send transactional emails: account confirmation, login codes, booking reminders and subscription notices.',
       ] },
       { heading: 'Purposes and legal basis', text: [
         'Running the salon account, trial and subscription (contract, GDPR art. 6(1)(b)).',
@@ -144,7 +157,7 @@ const en: Record<string, PaginaLegal> = {
         'Visit analytics only if you accept it in the cookie banner (consent, art. 6(1)(a)).',
       ] },
       { heading: 'Who we share with (processors)', text: [
-        'Hetzner Online GmbH: servers in Helsinki (Finland, EEA).',
+        'Hetzner Online GmbH: all servers and data are in Helsinki (Finland, EEA).',
         'Stripe: subscription payments and invoicing.',
         'Cloudflare: DNS for allop.no.',
         'Apple: maps (MapKit) on the search pages.',
@@ -184,11 +197,11 @@ const en: Record<string, PaginaLegal> = {
         'Price changes are announced at least 30 days before they apply.',
       ] },
       { heading: 'No commitment and cancellation', text: [
-        'The subscription can be cancelled at any time from the panel (Subscription → Billing portal). It runs until the end of the paid period; started periods are not refunded.',
+        'No commitment period: the renewal can be cancelled at any time from the panel (Subscription → Billing portal), at the latest before the next billing period. It runs until the end of the paid period; started periods are not refunded.',
         'If a payment fails we retry for a few days; after that the account may be suspended.',
       ] },
       { heading: 'Salon’s responsibilities', text: [
-        'The salon is responsible for the accuracy of its services, prices and opening hours, and for the services it provides to its clients.',
+        'The salon is responsible for the accuracy of its services, prices and opening hours, for using the calendar correctly and for the services it provides to its clients, including its own cancellation and no-show policies.',
         'The salon is the controller of its clients’ data and must have a lawful basis for registering them (see the data processing agreement).',
         'Login details are personal and must be kept secret.',
       ] },
@@ -236,5 +249,10 @@ const en: Record<string, PaginaLegal> = {
 
 export const LEGAL_NORGE: Record<'nb' | 'en', Record<string, PaginaLegal>> = { nb, en };
 
-/** Enlaces del pie de Noruega: slug → título en el idioma. */
-export const ENLACES_LEGALES_NORGE = ['privacidad', 'terminos', 'cookies', 'dpa'] as const;
+/** Rutas noruegas → clave del contenido. Las de España (privacidad, terminos…) también valen. */
+export const RUTA_LEGAL_NORGE: Record<string, string> = {
+  personvern: 'privacidad', vilkar: 'terminos', informasjonskapsler: 'cookies', databehandleravtale: 'dpa',
+};
+
+/** Enlaces del pie de Noruega (ruta) en orden. */
+export const ENLACES_LEGALES_NORGE = ['personvern', 'vilkar', 'informasjonskapsler', 'databehandleravtale'] as const;
