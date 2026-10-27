@@ -10,6 +10,8 @@ export interface Region {
   cobros: boolean;
   /** Días de prueba gratis sin tarjeta del alta Tier 1 (null = se paga al darse de alta). */
   prueba_gratis_dias: number | null;
+  /** Promoción de lanzamiento: gratis para todos hasta esta fecha (YYYY-MM-DD), o null. */
+  gratis_hasta: string | null;
   acceso_cliente: 'telefono' | 'email';
   /** Noruega: solo empresas (alta con org.nr) y precios sin IVA (se factura con inversión del sujeto pasivo). */
   inversion_sujeto_pasivo: boolean;
@@ -18,7 +20,7 @@ export interface Region {
 
 const ESPANA: Region = {
   code: 'es', locale: 'es-ES', currency: 'EUR', cobros: true,
-  prueba_gratis_dias: null, acceso_cliente: 'telefono', inversion_sujeto_pasivo: false, dominio: 'allop.es',
+  prueba_gratis_dias: null, gratis_hasta: null, acceso_cliente: 'telefono', inversion_sujeto_pasivo: false, dominio: 'allop.es',
 };
 
 let actual: Region = ESPANA;

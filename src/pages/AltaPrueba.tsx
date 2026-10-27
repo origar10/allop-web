@@ -13,7 +13,7 @@ import {
 } from '../lib/billingApi';
 import { setSeo } from '../lib/seo';
 import { region } from '../lib/region';
-import { fmtMoney, tr } from '../lib/tr';
+import { fechaGratis, fmtMoney, tr } from '../lib/tr';
 
 // Alta Tier 1 en países con prueba gratis SIN tarjeta (region.prueba_gratis_dias, Noruega):
 //  - modo alta:  nombre, contacto, email, ciudad y contraseña → email de verificación → la cuenta
@@ -28,6 +28,7 @@ const vacio: BillingProfile = {
 
 export default function AltaPrueba({ pagar }: { pagar: boolean }) {
   const dias = region().prueba_gratis_dias ?? 0;
+  const gratis = fechaGratis();
   const [perfil, setPerfil] = useState<BillingProfile>(vacio);
   const [password, setPassword] = useState('');
   const [honeypot, setHoneypot] = useState('');
@@ -91,7 +92,9 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
           <MailCheck size={38} />
           <p className="eyebrow">{tr('Alta de salón')}</p>
           <h1>{tr('Revisa tu email.')}</h1>
-          <p>{tr('Te hemos enviado un enlace a {email}. Al confirmarlo empiezan tus {n} días gratis y ya puedes entrar en tu panel.', { email: perfil.email.trim(), n: dias })}</p>
+          <p>{gratis
+            ? tr('Te hemos enviado un enlace a {email}. Al confirmarlo ya puedes entrar en tu panel y usar Allop gratis hasta el {fecha}.', { email: perfil.email.trim(), fecha: gratis })
+            : tr('Te hemos enviado un enlace a {email}. Al confirmarlo empiezan tus {n} días gratis y ya puedes entrar en tu panel.', { email: perfil.email.trim(), n: dias })}</p>
         </div>
       </section>
     );
@@ -105,11 +108,13 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
           <h1>{pagar ? tr('Sigue usando Allop.') : tr('Tu salón con reservas online, en unos minutos.')}</h1>
           <p>{pagar
             ? tr('Activa la suscripción para seguir con tu agenda, tus clientes y tu página de reservas. Sin permanencia: la cancelas cuando quieras.')
-            : tr('Crea tu cuenta y prueba Allop {n} días gratis. No pedimos tarjeta: al terminar la prueba decides si sigues.', { n: dias })}</p>
+            : gratis
+              ? tr('Crea tu cuenta y usa Allop gratis hasta el {fecha}: estamos en fase de pruebas. No pedimos tarjeta.', { fecha: gratis })
+              : tr('Crea tu cuenta y prueba Allop {n} días gratis. No pedimos tarjeta: al terminar la prueba decides si sigues.', { n: dias })}</p>
           <div className="billing-security">
             {pagar
               ? <><span><Lock size={16} /> {tr('Pago seguro con Stripe')}</span><span><ShieldCheck size={16} /> {tr('Sin permanencia')}</span></>
-              : <><span><Sparkles size={16} /> {tr('{n} días gratis', { n: dias })}</span><span><CreditCard size={16} /> {tr('Sin tarjeta')}</span><span><ShieldCheck size={16} /> {tr('Sin permanencia')}</span></>}
+              : <><span><Sparkles size={16} /> {gratis ? tr('Gratis hasta el {fecha}', { fecha: gratis }) : tr('{n} días gratis', { n: dias })}</span><span><CreditCard size={16} /> {tr('Sin tarjeta')}</span><span><ShieldCheck size={16} /> {tr('Sin permanencia')}</span></>}
           </div>
         </div>
 
@@ -157,9 +162,9 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
             {mensaje && <p className="auth-message err" role="alert">{mensaje}</p>}
             <button className="btn btn-primary btn-lg" type="submit" disabled={enviando}>
               {enviando && <span className="inline-spinner" aria-hidden="true" />}
-              <CheckCircle size={16} /> {enviando ? tr('Preparando...') : tr('Empezar {n} días gratis', { n: dias })}
+              <CheckCircle size={16} /> {enviando ? tr('Preparando...') : gratis ? tr('Crear cuenta gratis') : tr('Empezar {n} días gratis', { n: dias })}
             </button>
-            <p className="billing-note"><Lock size={14} /> {tr('Sin tarjeta. Al terminar la prueba te pediremos activar la suscripción para seguir.')}</p>
+            <p className="billing-note"><Lock size={14} /> {gratis ? tr('Sin tarjeta. Antes del {fecha} te avisaremos para activar la suscripción si quieres seguir.', { fecha: gratis }) : tr('Sin tarjeta. Al terminar la prueba te pediremos activar la suscripción para seguir.')}</p>
             {conOrgnr && <p className="billing-note">{tr('Precios sin IVA. Solo para empresas: facturamos desde España sin IVA y tu empresa declara el IVA (inversión del sujeto pasivo).')}</p>}
             <p className="billing-note">
               {tr('Al crear la cuenta aceptas las')}{' '}<Link to="/vilkar">{tr('condiciones para salones')}</Link>{' '}

@@ -516,6 +516,15 @@ const en: Record<string, string> = {
   'No encontramos este número en el registro de empresas.': 'We could not find this number in the Register of Business Enterprises.',
   'Indica el número de empresa (9 cifras).': 'Enter the organisation number (9 digits).',
   'Precios sin IVA. Solo para empresas: facturamos desde España sin IVA y tu empresa declara el IVA (inversión del sujeto pasivo).': 'All prices exclude VAT. The service is for businesses only and is invoiced from Spain without VAT (reverse charge).',
+  'Gratis hasta el {fecha}.': 'Free until {fecha}.',
+  'Estamos en fase de pruebas: crea tu cuenta y úsala sin pagar nada, sin tarjeta.': "We're in our testing phase: create an account and use it without paying anything, no card needed.",
+  'Nuevo en Noruega · gratis hasta el {fecha}': 'New in Norway · free until {fecha}',
+  'Crea tu cuenta en dos minutos y usa Allop gratis hasta el {fecha}. Sin tarjeta: estamos en fase de pruebas.': "Create your account in two minutes and use Allop free until {fecha}. No card: we're in our testing phase.",
+  'Crear cuenta gratis': 'Create a free account',
+  'Te hemos enviado un enlace a {email}. Al confirmarlo ya puedes entrar en tu panel y usar Allop gratis hasta el {fecha}.': "We've sent a link to {email}. Once you confirm it you can log in to your panel and use Allop free until {fecha}.",
+  'Crea tu cuenta y usa Allop gratis hasta el {fecha}: estamos en fase de pruebas. No pedimos tarjeta.': "Create your account and use Allop free until {fecha}: we're in our testing phase. No card required.",
+  'Gratis hasta el {fecha}': 'Free until {fecha}',
+  'Sin tarjeta. Antes del {fecha} te avisaremos para activar la suscripción si quieres seguir.': "No card. Before {fecha} we'll remind you to activate the subscription if you want to continue.",
 };
 
 export default en;

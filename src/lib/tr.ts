@@ -46,6 +46,13 @@ export function tr(texto: string, vars?: Record<string, string | number>): strin
 }
 
 /** Importe en la moneda del país (EUR, NOK…) con el formato del idioma activo. */
+/** «1. september 2027» / «1 de septiembre de 2027» de la promoción gratis, o null si no hay. */
+export function fechaGratis(): string | null {
+  const f = region().gratis_hasta;
+  if (!f) return null;
+  return new Date(`${f}T12:00:00Z`).toLocaleDateString(getLocale(), { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 export function fmtMoney(n: number, decimales = 2): string {
   return new Intl.NumberFormat(getLocale(), {
     style: 'currency', currency: region().currency,

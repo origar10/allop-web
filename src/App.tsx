@@ -5,6 +5,7 @@ import './index.css';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
+import BannerGratis from './components/BannerGratis';
 import { SALONS, type Salon } from './data/salons';
 import { setSeo } from './lib/seo';
 import { CITIES, SERVICES } from './lib/taxonomy';
@@ -224,6 +225,7 @@ export default function App() {
       <HashScroller />
       <RouteSeo />
       <a className="skip-link" href="#main-content">{t('skip.main')}</a>
+      <BannerGratis />
       <Nav
         onSearch={handleSearch}
         onLogin={openClientLogin}

@@ -516,6 +516,15 @@ const nb: Record<string, string> = {
   'No encontramos este número en el registro de empresas.': 'Fant ikke nummeret i Enhetsregisteret.',
   'Indica el número de empresa (9 cifras).': 'Skriv inn organisasjonsnummeret (9 sifre).',
   'Precios sin IVA. Solo para empresas: facturamos desde España sin IVA y tu empresa declara el IVA (inversión del sujeto pasivo).': 'Alle priser er oppgitt eks. mva. Tjenesten leveres kun til næringsdrivende og faktureres fra Spania uten mva. (snudd avregning).',
+  'Gratis hasta el {fecha}.': 'Gratis til {fecha}.',
+  'Estamos en fase de pruebas: crea tu cuenta y úsala sin pagar nada, sin tarjeta.': 'Vi er i testfasen: opprett en konto og bruk Allop uten å betale noe, uten betalingskort.',
+  'Nuevo en Noruega · gratis hasta el {fecha}': 'Nytt i Norge · gratis til {fecha}',
+  'Crea tu cuenta en dos minutos y usa Allop gratis hasta el {fecha}. Sin tarjeta: estamos en fase de pruebas.': 'Opprett kontoen på to minutter og bruk Allop gratis til {fecha}. Uten betalingskort: vi er i testfasen.',
+  'Crear cuenta gratis': 'Opprett gratis konto',
+  'Te hemos enviado un enlace a {email}. Al confirmarlo ya puedes entrar en tu panel y usar Allop gratis hasta el {fecha}.': 'Vi har sendt en lenke til {email}. Når du har bekreftet, kan du logge inn i panelet og bruke Allop gratis til {fecha}.',
+  'Crea tu cuenta y usa Allop gratis hasta el {fecha}: estamos en fase de pruebas. No pedimos tarjeta.': 'Opprett kontoen og bruk Allop gratis til {fecha}: vi er i testfasen. Vi ber ikke om betalingskort.',
+  'Gratis hasta el {fecha}': 'Gratis til {fecha}',
+  'Sin tarjeta. Antes del {fecha} te avisaremos para activar la suscripción si quieres seguir.': 'Uten betalingskort. Før {fecha} varsler vi deg, så du kan aktivere abonnementet hvis du vil fortsette.',
 };
 
 export default nb;

@@ -2,7 +2,7 @@ import { ArrowRight, AtSign, Bell, CalendarCheck, Check, Globe, Smartphone, User
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { region } from '../lib/region';
-import { fmtMoney, tr } from '../lib/tr';
+import { fechaGratis, fmtMoney, tr } from '../lib/tr';
 import { setSeo } from '../lib/seo';
 import { apiPost } from '../shared/apiClient';
 
@@ -35,6 +35,8 @@ const iniciales = (nombre: string) =>
 
 export default function LandingNorge() {
   const dias = region().prueba_gratis_dias ?? 14;
+  // Promoción de lanzamiento: «gratis hasta…» sustituye a los días de prueba en los textos.
+  const gratis = fechaGratis();
   const [nombre, setNombre] = useState('');
   const [nicho, setNicho] = useState<Nicho>('frisor');
   const [color, setColor] = useState(COLORES[0].hex);
@@ -55,7 +57,7 @@ export default function LandingNorge() {
       <style>{CSS}</style>
 
       <section className="lno-hero container">
-        <span className="lno-badge">{tr('Nuevo en Noruega · {n} días gratis, sin tarjeta', { n: dias })}</span>
+        <span className="lno-badge">{gratis ? tr('Nuevo en Noruega · gratis hasta el {fecha}', { fecha: gratis }) : tr('Nuevo en Noruega · {n} días gratis, sin tarjeta', { n: dias })}</span>
         <h1>{tr('Tu propio sistema de reservas, con tu nombre, listo hoy.')}</h1>
         <p className="lno-sub">{tr('La plataforma que ya usan salones en España, ahora para barberías y salones independientes de Noruega. Precio fijo, sin comisiones por reserva y sin permanencia.')}</p>
         <div className="lno-ctas">
@@ -140,8 +142,10 @@ export default function LandingNorge() {
       <section className="lno-cierre container">
         <div className="lno-card">
           <h2>{tr('Empieza hoy, gratis')}</h2>
-          <p>{tr('Crea tu cuenta en dos minutos y prueba Allop {n} días. Sin tarjeta: al terminar decides si sigues.', { n: dias })}</p>
-          <Link className="btn btn-primary btn-lg" to="/business/alta">{tr('Empezar {n} días gratis', { n: dias })}</Link>
+          <p>{gratis
+            ? tr('Crea tu cuenta en dos minutos y usa Allop gratis hasta el {fecha}. Sin tarjeta: estamos en fase de pruebas.', { fecha: gratis })
+            : tr('Crea tu cuenta en dos minutos y prueba Allop {n} días. Sin tarjeta: al terminar decides si sigues.', { n: dias })}</p>
+          <Link className="btn btn-primary btn-lg" to="/business/alta">{gratis ? tr('Crear cuenta gratis') : tr('Empezar {n} días gratis', { n: dias })}</Link>
         </div>
         <FormularioMontaje />
       </section>
