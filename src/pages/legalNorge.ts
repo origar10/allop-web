@@ -7,8 +7,10 @@ export interface SeccionLegal { heading: string; text: string[] }
 export interface PaginaLegal { title: string; updatedAt: string; intro: string; sections: SeccionLegal[] }
 
 const ACTUALIZADO = '2026-10-27';
-const EMPRESA = 'Origarsolutions, S.L.';
-const PERSONVERN = 'privacidad@origar.es';
+// Titular en Noruega: Ramon Garcia Arrasa (Stavanger). Cuando registre su empresa (ENK), su
+// nombre y org.nr. van aquí. Origarsolutions, S.L. todavía no existe: no nombrarla.
+const EMPRESA = 'Ramon Garcia Arrasa';
+const PERSONVERN = 'soporte@allop.es';
 const SUPPORT = 'soporte@allop.es';
 
 const nb: Record<string, PaginaLegal> = {
@@ -18,7 +20,7 @@ const nb: Record<string, PaginaLegal> = {
     intro: 'Slik behandler Allop personopplysninger når du besøker allop.no, registrerer en salong eller kontakter oss.',
     sections: [
       { heading: 'Behandlingsansvarlig og databehandler', text: [
-        `${EMPRESA} (Spania) driver Allop. Vi følger personvernforordningen (GDPR, forordning (EU) 2016/679) og personopplysningsloven.`,
+        `${EMPRESA} (Stavanger) driver Allop i Norge. Vi følger personvernforordningen (GDPR, forordning (EU) 2016/679) og personopplysningsloven.`,
         'Allop er behandlingsansvarlig for opplysningene om salongene og eierne deres: konto, abonnement og fakturering.',
         'Allop er databehandler for opplysningene om kundene som bestiller time hos en salong (navn, e-post for innloggingskoden og timehistorikk). Der er salongen behandlingsansvarlig.',
         `Kontakt om personvern: ${PERSONVERN}.`,
@@ -74,7 +76,7 @@ const nb: Record<string, PaginaLegal> = {
       ] },
       { heading: 'Pris og betaling', text: [
         'Basis koster 499 kr per måned eller 4 990 kr per år, eks. mva. Det er ingen provisjon per bestilling.',
-        'Tjenesten leveres bare til næringsdrivende med norsk organisasjonsnummer. Den faktureres fra Spania uten mva.; kunden beregner merverdiavgiften selv (snudd avregning, merverdiavgiftsloven § 3-30).',
+        'Tjenesten leveres bare til næringsdrivende med norsk organisasjonsnummer. Merverdiavgift beregnes etter gjeldende regler.',
         'Betaling skjer forskuddsvis med kort via Stripe. Aktiveres abonnementet mens prøveperioden pågår, trekkes første betaling når prøveperioden er over.',
         'Prisendringer varsles minst 30 dager før de gjelder.',
       ] },
@@ -138,7 +140,7 @@ const en: Record<string, PaginaLegal> = {
     intro: 'How Allop handles personal data when you visit allop.no, register a salon or contact us.',
     sections: [
       { heading: 'Controller and processor', text: [
-        `${EMPRESA} (Spain) operates Allop. We comply with the GDPR (Regulation (EU) 2016/679) and the Norwegian Personal Data Act (personopplysningsloven).`,
+        `${EMPRESA} (Stavanger) operates Allop in Norway. We comply with the GDPR (Regulation (EU) 2016/679) and the Norwegian Personal Data Act (personopplysningsloven).`,
         'Allop is the controller for data about salons and their owners: account, subscription and billing.',
         'Allop is the processor for data about the clients who book at a salon (name, email for the login code and booking history). For that data the salon is the controller.',
         `Privacy contact: ${PERSONVERN}.`,
@@ -194,7 +196,7 @@ const en: Record<string, PaginaLegal> = {
       ] },
       { heading: 'Price and payment', text: [
         'Basic costs NOK 499 per month or NOK 4,990 per year, excluding VAT. There is no commission per booking.',
-        'The service is only provided to businesses with a Norwegian organisation number. It is invoiced from Spain without VAT; the customer accounts for the VAT itself (reverse charge, Merverdiavgiftsloven § 3-30).',
+        'The service is only provided to businesses with a Norwegian organisation number. VAT is charged according to the applicable rules.',
         'Payment is made in advance by card through Stripe. If the subscription is activated during the trial, the first payment is taken when the trial ends.',
         'Price changes are announced at least 30 days before they apply.',
       ] },
