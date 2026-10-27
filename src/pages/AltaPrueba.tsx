@@ -2,7 +2,6 @@ import { CheckCircle, CreditCard, Lock, MailCheck, ShieldCheck, Sparkles } from 
 import { type FormEvent, useEffect, useState } from 'react';
 import { firstError, validateEmail, validateName } from '../lib/validation';
 import {
-  type BillingInterval,
   type BillingProfile,
   applyPublicPricing,
   fetchPublicPricing,
@@ -29,13 +28,13 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
   const [perfil, setPerfil] = useState<BillingProfile>(vacio);
   const [password, setPassword] = useState('');
   const [honeypot, setHoneypot] = useState('');
-  const interval: BillingInterval = 'monthly';
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [hecho, setHecho] = useState(false);
   const [, setPrecios] = useState(0);
   const plan = getBillingPlan('basic');
-  const precio = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice;
+  // Solo informativo (precio mensual): el pago se elige y se abre en el panel.
+  const precio = plan.monthlyPrice;
 
   useEffect(() => {
     setSeo({
@@ -104,7 +103,7 @@ export default function AltaPrueba({ pagar }: { pagar: boolean }) {
               <h2>{tr('Básico')}</h2>
               <div className="billing-total">
                 <span>{tr('Precio')}</span>
-                <strong>{precio === null ? '—' : `${fmtMoney(precio, 0)} ${interval === 'annual' ? tr('/año') : tr('/mes')}`}</strong>
+                <strong>{precio === null ? '—' : `${fmtMoney(precio, 0)} ${tr('/mes')}`}</strong>
               </div>
               <p>{tr('Activa la suscripción desde tu panel, en Suscripción. Si aún te quedan días de prueba, el primer cobro llega cuando terminan.')}</p>
             </div>
