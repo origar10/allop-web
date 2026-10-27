@@ -46,10 +46,10 @@ const DASHBOARD_URL = `https://dashboard.${region().dominio}`;
 const BUSINESS_URL = '/business';
 const SUPPORT_EMAIL = 'soporte@allop.es';
 
-/** Alta con prueba sin tarjeta (Noruega): ?slug=…&pagar=1 abre el pago de la suscripción. */
+/** Alta con prueba sin tarjeta (Noruega). ?pagar=1 (enlaces antiguos) manda a pagar desde el panel. */
 function AltaPruebaRoute() {
   const params = new URLSearchParams(useLocation().search);
-  return <AltaPrueba slug={params.get('slug')} pagar={params.get('pagar') === '1'} />;
+  return <AltaPrueba pagar={params.get('pagar') === '1'} />;
 }
 
 function HashScroller() {

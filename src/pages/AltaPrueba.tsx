@@ -5,7 +5,6 @@ import {
   type BillingInterval,
   type BillingProfile,
   applyPublicPricing,
-  createCheckoutSession,
   fetchPublicPricing,
   getBillingPlan,
   registerSalon,
@@ -17,20 +16,20 @@ import { fmtMoney, tr } from '../lib/tr';
 // Alta Tier 1 en países con prueba gratis SIN tarjeta (region.prueba_gratis_dias, Noruega):
 //  - modo alta:  nombre, contacto, email, ciudad y contraseña → email de verificación → la cuenta
 //                queda activa con N días gratis (lo hace el backend al verificar).
-//  - modo pagar: /business/alta?slug=…&pagar=1 (desde el dashboard: aviso de prueba o prueba
-//                vencida) → elegir mensual/anual → Stripe Checkout.
+//  - modo pagar: /business/alta?pagar=1 (enlaces antiguos) → manda a iniciar sesión en el panel:
+//                el pago se abre allí, con sesión (antes bastaba el slug y salía el email del salón).
 // España no pasa por aquí: sigue con BusinessSignup (pago con prueba de Stripe al darse de alta).
 
 const vacio: BillingProfile = {
   salonName: '', contactName: '', email: '', phone: '', fiscalName: '', taxId: '', address: '', city: '', country: '', coupon: '',
 };
 
-export default function AltaPrueba({ slug, pagar }: { slug: string | null; pagar: boolean }) {
+export default function AltaPrueba({ pagar }: { pagar: boolean }) {
   const dias = region().prueba_gratis_dias ?? 0;
   const [perfil, setPerfil] = useState<BillingProfile>(vacio);
   const [password, setPassword] = useState('');
   const [honeypot, setHoneypot] = useState('');
-  const [interval, setInterval] = useState<BillingInterval>('monthly');
+  const interval: BillingInterval = 'monthly';
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [hecho, setHecho] = useState(false);
@@ -69,18 +68,6 @@ export default function AltaPrueba({ slug, pagar }: { slug: string | null; pagar
     }
   };
 
-  const suscribir = async () => {
-    if (!slug) { setMensaje(tr('Falta el salón. Abre esta página desde tu panel.')); return; }
-    setEnviando(true);
-    setMensaje('');
-    try {
-      const r = await createCheckoutSession('basic', interval, vacio, slug);
-      window.location.assign(r.url);
-    } catch (err) {
-      setEnviando(false);
-      setMensaje(err instanceof Error && err.message ? err.message : tr('No hemos podido abrir la página de pago. Inténtalo de nuevo en unos minutos.'));
-    }
-  };
 
   if (hecho) {
     return (
@@ -113,23 +100,17 @@ export default function AltaPrueba({ slug, pagar }: { slug: string | null; pagar
 
         {pagar ? (
           <div className="billing-card">
-            <div className="billing-toggle" aria-label={tr('Forma de pago')}>
-              <button type="button" className={interval === 'monthly' ? 'active' : ''} onClick={() => setInterval('monthly')}>{tr('Mensual')}</button>
-              <button type="button" className={interval === 'annual' ? 'active' : ''} onClick={() => setInterval('annual')}>{tr('Anual')}</button>
-            </div>
             <div className="billing-summary">
               <h2>{tr('Básico')}</h2>
               <div className="billing-total">
                 <span>{tr('Precio')}</span>
                 <strong>{precio === null ? '—' : `${fmtMoney(precio, 0)} ${interval === 'annual' ? tr('/año') : tr('/mes')}`}</strong>
               </div>
-              <p>{tr('IVA incluido. Si aún te quedan días de prueba, el primer cobro llega cuando terminan.')}</p>
+              <p>{tr('Activa la suscripción desde tu panel, en Suscripción. Si aún te quedan días de prueba, el primer cobro llega cuando terminan.')}</p>
             </div>
-            {mensaje && <p className="auth-message err" role="alert">{mensaje}</p>}
-            <button className="btn btn-primary btn-lg" type="button" onClick={suscribir} disabled={enviando}>
-              {enviando && <span className="inline-spinner" aria-hidden="true" />}
-              <CreditCard size={16} /> {enviando ? tr('Preparando...') : tr('Activar suscripción')}
-            </button>
+            <a className="btn btn-primary btn-lg" href={`https://dashboard.${region().dominio}/suscripcion`}>
+              <Lock size={16} /> {tr('Entrar en mi panel')}
+            </a>
           </div>
         ) : (
           <form className="billing-card" onSubmit={alta}>
